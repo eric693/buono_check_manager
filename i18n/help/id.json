@@ -1,5 +1,12 @@
 {
-  "ui": { "title": "Panduan penggunaan", "expand": "Buka", "collapse": "Tutup", "steps": "Langkah penggunaan", "notes": "Hal yang perlu diperhatikan", "terms": "Penjelasan istilah" },
+  "ui": {
+    "title": "Panduan penggunaan",
+    "expand": "Buka",
+    "collapse": "Tutup",
+    "steps": "Langkah penggunaan",
+    "notes": "Hal yang perlu diperhatikan",
+    "terms": "Penjelasan istilah"
+  },
   "modules": {
     "dashboard-view": {
       "intro": "Halaman yang dibuka pertama setiap hari: pengumuman, tombol absen, data pribadi, dan kejanggalan absensi yang terdeteksi sistem.",
@@ -15,8 +22,14 @@
         "Pengumuman diurutkan menurut tingkat kepentingan; tanda merah berarti penting, harap dibaca."
       ],
       "terms": [
-        ["Absen biometrik", "Memasangkan ponsel ini dengan akun Anda sehingga sidik jari atau wajah menggantikan tombol absen; lokasi tetap dicatat."],
-        ["Perbaikan absensi", "Pengajuan absen susulan; baru masuk ke catatan absensi setelah disetujui admin."]
+        [
+          "Absen biometrik",
+          "Memasangkan ponsel ini dengan akun Anda sehingga sidik jari atau wajah menggantikan tombol absen; lokasi tetap dicatat."
+        ],
+        [
+          "Perbaikan absensi",
+          "Pengajuan absen susulan; baru masuk ke catatan absensi setelah disetujui admin."
+        ]
       ]
     },
     "monthly-view": {
@@ -31,8 +44,14 @@
         "Anda hanya melihat catatan sendiri; atasan dan admin yang melihat data seluruh perusahaan."
       ],
       "terms": [
-        ["Hari janggal", "Jumlah hari yang ditandai karena absen masuk/pulang hilang, terlambat, atau pulang cepat."],
-        ["Hari normal", "Jumlah hari dengan absen masuk dan pulang lengkap serta sesuai jadwal sif."]
+        [
+          "Hari janggal",
+          "Jumlah hari yang ditandai karena absen masuk/pulang hilang, terlambat, atau pulang cepat."
+        ],
+        [
+          "Hari normal",
+          "Jumlah hari dengan absen masuk dan pulang lengkap serta sesuai jadwal sif."
+        ]
       ]
     },
     "location-view": {
@@ -71,8 +90,14 @@
         "Jam lembur dikonversi menjadi upah lembur atau cuti pengganti sesuai tarif yang berlaku."
       ],
       "terms": [
-        ["Jam lembur", "Jam selesai dikurangi jam mulai, belum dipotong istirahat - kurangi sendiri sebelum mengisi."],
-        ["Cuti pengganti", "Jam lembur yang diubah menjadi jam cuti, dipakai lewat jenis \"Cuti pengganti lembur\" di halaman cuti."]
+        [
+          "Jam lembur",
+          "Jam selesai dikurangi jam mulai, belum dipotong istirahat - kurangi sendiri sebelum mengisi."
+        ],
+        [
+          "Cuti pengganti",
+          "Jam lembur yang diubah menjadi jam cuti, dipakai lewat jenis \"Cuti pengganti lembur\" di halaman cuti."
+        ]
       ]
     },
     "leave-view": {
@@ -88,8 +113,14 @@
         "Bila pada masa cuti sudah ada jadwal sif, setelah disetujui koordinasikan penggantinya dengan atasan."
       ],
       "terms": [
-        ["Cuti tahunan", "Cuti tahunan menurut masa kerja; sisa yang tidak terpakai mengikuti aturan perusahaan."],
-        ["Cuti pengganti lembur", "Cuti hasil konversi jam lembur yang telah disetujui, dipakai sampai habis."]
+        [
+          "Cuti tahunan",
+          "Cuti tahunan menurut masa kerja; sisa yang tidak terpakai mengikuti aturan perusahaan."
+        ],
+        [
+          "Cuti pengganti lembur",
+          "Cuti hasil konversi jam lembur yang telah disetujui, dipakai sampai habis."
+        ]
       ]
     },
     "salary-view": {
@@ -118,6 +149,7 @@
     "admin-view": {
       "intro": "Khusus admin: pengumuman, persetujuan berbagai pengajuan, pengaturan lokasi absen, analisis absensi, dan ekspor laporan.",
       "steps": [
+        "'Pengaturan Jam Kerja' menyetel jam masuk, pulang, dan istirahat seluruh perusahaan — jam cuti dihitung terhadap rentang itu.",
         "Terbitkan pengumuman di \"Manajemen pengumuman\"; untuk hal penting setel tingkat kepentingan ke \"Penting\".",
         "Proses pengajuan perbaikan absensi dan kartu virtual di \"Pengajuan menunggu\"; lembur, cuti, dan catatan kerja punya bagian persetujuan sendiri.",
         "Tambah atau ubah koordinat dan radius absen di \"Lokasi absen\" - ini langsung menentukan karyawan bisa absen atau tidak.",
@@ -126,11 +158,18 @@
       "notes": [
         "Persetujuan langsung memengaruhi absensi dan perhitungan gaji; saat menolak, tulis alasannya dengan jelas.",
         "Radius terlalu kecil membuat karyawan gagal absen, terlalu besar menghilangkan makna kontrol lokasi.",
-        "Berkas ekspor memuat data pribadi dan gaji, jangan diteruskan ke luar perusahaan."
+        "Berkas ekspor memuat data pribadi dan gaji, jangan diteruskan ke luar perusahaan.",
+        "Setelah jam kerja diubah, hanya cuti yang diajukan sesudahnya memakai angka baru; cuti yang sudah disetujui tidak dihitung ulang."
       ],
       "terms": [
-        ["Kartu virtual", "Cara absen alternatif yang disetujui admin ketika absen berbasis lokasi tidak bisa dipakai."],
-        ["Radius absen", "Jarak (meter) di sekeliling koordinat yang ditetapkan, tempat absen diizinkan."]
+        [
+          "Kartu virtual",
+          "Cara absen alternatif yang disetujui admin ketika absen berbasis lokasi tidak bisa dipakai."
+        ],
+        [
+          "Radius absen",
+          "Jarak (meter) di sekeliling koordinat yang ditetapkan, tempat absen diizinkan."
+        ]
       ]
     },
     "view-tab": {
@@ -139,7 +178,9 @@
         "Pilih bulan atau rentang tanggal lalu cari; tabel menampilkan semua sif pada periode itu.",
         "Untuk mengubah satu sif, sunting langsung di barisnya atau hapus lalu tambahkan lagi."
       ],
-      "notes": ["Perubahan sif memengaruhi penilaian terlambat/pulang cepat dan perhitungan gaji, selesaikan sebelum hari kerjanya."]
+      "notes": [
+        "Perubahan sif memengaruhi penilaian terlambat/pulang cepat dan perhitungan gaji, selesaikan sebelum hari kerjanya."
+      ]
     },
     "add-tab": {
       "intro": "Tambah satu sif: karyawan, tanggal, jenis sif, dan lokasi.",
@@ -147,7 +188,9 @@
         "Pilih karyawan dan tanggal, lalu jenis sif - jamnya terisi otomatis.",
         "Pastikan lokasi kerja benar lalu kirim, kemudian periksa di \"Lihat jadwal\"."
       ],
-      "notes": ["Menjadwalkan orang yang sama pada hari yang sama dua kali akan bentrok; periksa dulu sebelum menambah."]
+      "notes": [
+        "Menjadwalkan orang yang sama pada hari yang sama dua kali akan bentrok; periksa dulu sebelum menambah."
+      ]
     },
     "batch-tab": {
       "intro": "Menjadwalkan banyak karyawan untuk satu periode sekaligus, cocok untuk jadwal tetap bulan berikutnya.",
@@ -167,7 +210,9 @@
         "Pilih periode lalu cari; grafik dan tabel diperbarui bersamaan.",
         "Bila ada yang jelas kebanyakan atau kekurangan sif, kembali ke penjadwalan massal untuk menyeimbangkan."
       ],
-      "notes": ["Yang dihitung hanya sif yang dijadwalkan, bukan kehadiran nyata; kehadiran dilihat di catatan absensi."]
+      "notes": [
+        "Yang dihitung hanya sif yang dijadwalkan, bukan kehadiran nyata; kehadiran dilihat di catatan absensi."
+      ]
     },
     "employee-salary": {
       "intro": "Karyawan melihat rincian gajinya sendiri: gaji pokok, tunjangan, upah lembur, dan potongan.",
@@ -175,49 +220,37 @@
         "Pilih tahun dan bulan, rincian gaji bulan itu akan ditampilkan.",
         "Bila ada angka yang meragukan, bandingkan dengan catatan absensi dan lembur bulan yang sama sebelum melapor ke admin."
       ],
-      "notes": ["Data gaji rahasia; hindari membuka atau memotret layarnya di perangkat bersama."]
+      "notes": [
+        "Data gaji rahasia; hindari membuka atau memotret layarnya di perangkat bersama."
+      ]
     },
     "salary-setting": {
-      "intro": "Admin mengatur ketentuan gaji tiap karyawan: bulanan atau per jam, berbagai tunjangan, dan tingkat iuran jaminan sosial.",
+      "intro": "Mengatur aturan gaji dan kondisi gaji tiap karyawan. Aturan seluruh perusahaan ada di atas; di bawah, pilih orang di kiri dan isi kondisinya di kanan.",
       "steps": [
-        "Pilih karyawan, tetapkan jenis gaji (bulanan atau per jam) dan nominal dasarnya.",
-        "Isi tunjangan makan dan kehadiran serta tingkat iuran jaminan sosial dan pensiun, lalu simpan."
+        "'Pengaturan tingkat perusahaan' dipakai untuk menentukan tunjangan dan potongan kustom, serta menyetel tarif lembur dan tingkat asuransi.",
+        "Setelah item kustom ditentukan, kolom jumlahnya muncul di bagian bawah formulir setiap karyawan.",
+        "Pilih karyawan dari daftar yang bisa dicari di kiri, lalu isi jenis gaji, jumlah pokok, tunjangan dan potongan di kanan, kemudian simpan."
       ],
       "notes": [
-        "Pengaturan langsung dipakai pada perhitungan gaji berikutnya; pastikan bulan berlakunya sebelum mengubah.",
-        "Isi tingkat iuran sesuai tabel resmi yang diumumkan pemerintah; salah isi membuat potongan tidak tepat."
+        "Pengaturan berlaku untuk perhitungan berikutnya, jadi pastikan bulan berlakunya; slip yang sudah ada tidak dihitung ulang.",
+        "Isi tingkat asuransi sesuai tabel resmi yang diumumkan; salah isi berarti potongan salah.",
+        "Jangan ubah kode item kustom setelah ditetapkan; kode yang berubah dianggap item baru dan jumlah yang sudah diisi tidak lagi cocok.",
+        "Menghapus item kustom hanya membuatnya tidak dihitung ke gaji. Jumlahnya tetap tersimpan dan kembali bila item ditambahkan lagi."
       ],
       "terms": [
-        ["Gaji bulanan", "Gaji tetap per bulan; cuti dan ketidakhadiran dipotong proporsional dari upah harian."],
-        ["Gaji per jam", "Dihitung dari jam kerja nyata, diambil dari catatan absensi."]
+        [
+          "Gaji bulanan",
+          "Gaji tetap per bulan; cuti dan absen dipotong proporsional dari upah harian."
+        ],
+        [
+          "Gaji per jam",
+          "Dibayar sesuai jam kerja nyata, diambil dari catatan absensi."
+        ],
+        [
+          "Tingkat asuransi",
+          "Rentang gaji untuk menghitung asuransi tenaga kerja dan kesehatan, dicocokkan dengan tabel resmi."
+        ]
       ]
-    },
-    "monthly-calc": {
-      "intro": "Menghitung gaji bulan berjalan untuk karyawan bulanan: absensi, lembur, dan cuti diolah menjadi jumlah yang dibayarkan.",
-      "steps": [
-        "Pilih tahun-bulan dan karyawan, jalankan perhitungan lalu periksa hasilnya.",
-        "Pastikan jumlah hari kerja, jam lembur, dan potongan sudah benar, baru simpan sebagai slip gaji resmi."
-      ],
-      "notes": [
-        "Sebelum menghitung, selesaikan dulu persetujuan perbaikan absensi, lembur, dan cuti bulan itu; jika tidak hasilnya kurang.",
-        "Menghitung ulang bulan yang sama akan menimpa hasil sebelumnya."
-      ]
-    },
-    "hourly-calc": {
-      "intro": "Menghitung gaji bulan berjalan untuk karyawan per jam; jamnya diambil langsung dari catatan absensi.",
-      "steps": [
-        "Pilih tahun-bulan dan karyawan, total jam kerja dan jam lembur bulan itu akan ditampilkan.",
-        "Periksa jamnya, lalu hitung dan simpan."
-      ],
-      "notes": ["Absen yang hilang membuat jam menjadi terlalu sedikit; selesaikan semua pengajuan perbaikan sebelum menghitung."]
-    },
-    "salary-list": {
-      "intro": "Mencari slip gaji yang sudah dibuat, sebagai dasar pembayaran dan rekonsiliasi.",
-      "steps": [
-        "Pilih tahun-bulan untuk mencari; daftar menampilkan gaji kotor, potongan, dan gaji bersih tiap karyawan.",
-        "Untuk rekonsiliasi atau keperluan akuntansi, ekspor laporannya dari sini."
-      ],
-      "notes": ["Jangan menghapus slip yang sudah dibayarkan; bila perlu koreksi, buat penyesuaian terpisah dan simpan jejaknya."]
     },
     "bonus-records": {
       "intro": "Catatan pembayaran bonus tiga hari raya: Peh Cun, Tiong Chiu, dan Tahun Baru Imlek.",
@@ -225,7 +258,46 @@
         "Pilih tahun untuk melihat catatan bonus tahun itu.",
         "Admin dapat menambah atau menyesuaikan nominal; karyawan hanya melihat bagiannya sendiri."
       ],
-      "notes": ["Bonus hari raya tidak masuk perhitungan gaji harian, tetapi tetap penghasilan dan muncul dalam data penghasilan tahunan."]
+      "notes": [
+        "Bonus hari raya tidak masuk perhitungan gaji harian, tetapi tetap penghasilan dan muncul dalam data penghasilan tahunan."
+      ]
+    },
+    "salary-calc": {
+      "intro": "Menghitung gaji satu karyawan untuk satu bulan. Cukup pilih orang dan bulannya; rumus bulanan atau per jam dipilih otomatis sesuai jenis gajinya.",
+      "steps": [
+        "Pilih karyawan dan bulan perhitungan. Keterangan di bawah menunjukkan apakah dia bergaji bulanan atau per jam.",
+        "Tekan Mulai hitung lalu periksa hasilnya: absensi, lembur, dan potongan.",
+        "Simpan sebagai slip resmi jika sudah benar. Untuk menghitung seluruh perusahaan sekaligus, gunakan hitung massal di Laporan Gaji."
+      ],
+      "notes": [
+        "Setujui dulu semua koreksi absensi, lembur, dan cuti bulan itu, kalau tidak hasilnya akan kurang.",
+        "Menghitung ulang bulan yang sama akan menimpa hasil sebelumnya.",
+        "Absensi yang hilang membuat jam karyawan per jam jadi kurang, jadi bereskan dulu antrean koreksi absensi."
+      ],
+      "terms": [
+        [
+          "Gaji bulanan",
+          "Gaji tetap per bulan; cuti dan absen dipotong proporsional dari upah harian."
+        ],
+        [
+          "Gaji per jam",
+          "Dibayar sesuai jam kerja nyata, diambil dari catatan absensi."
+        ]
+      ]
+    },
+    "salary-report": {
+      "intro": "Mencari slip gaji yang sudah dibuat, ditambah dua alat penghemat waktu: hitung massal dan salin pengaturan.",
+      "steps": [
+        "Pilih bulan dan muat daftarnya untuk melihat gaji kotor, potongan, dan gaji bersih tiap karyawan; laporan bisa diekspor dari sini.",
+        "'Hitung gaji massal' memproses dan menyimpan gaji bulan itu untuk semua karyawan aktif, bertahap bila jumlahnya banyak.",
+        "'Salin pengaturan gaji' menerapkan pengaturan satu karyawan ke yang lain, berguna untuk karyawan baru atau kenaikan gaji sekaligus."
+      ],
+      "notes": [
+        "Jangan hapus slip gaji yang sudah dibayarkan; buat penyesuaian dan tinggalkan catatannya.",
+        "Hitung massal menimpa slip yang sudah ada untuk bulan itu, jadi selesaikan semua persetujuan lebih dulu.",
+        "Menyalin pengaturan hanya membawa kondisi gaji; data pribadi seperti nomor identitas, rekening, dan tanggal masuk tidak ikut.",
+        "Berkas hasil ekspor memuat data pribadi dan gaji — jangan dikirim ke luar perusahaan."
+      ]
     }
   }
 }

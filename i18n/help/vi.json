@@ -1,5 +1,12 @@
 {
-  "ui": { "title": "Hướng dẫn sử dụng", "expand": "Mở", "collapse": "Thu gọn", "steps": "Các bước", "notes": "Lưu ý", "terms": "Giải thích thuật ngữ" },
+  "ui": {
+    "title": "Hướng dẫn sử dụng",
+    "expand": "Mở",
+    "collapse": "Thu gọn",
+    "steps": "Các bước",
+    "notes": "Lưu ý",
+    "terms": "Giải thích thuật ngữ"
+  },
   "modules": {
     "dashboard-view": {
       "intro": "Trang mở đầu mỗi ngày: thông báo, nút chấm công, thông tin cá nhân và các bất thường chấm công do hệ thống phát hiện.",
@@ -15,8 +22,14 @@
         "Thông báo sắp theo mức quan trọng; mục màu đỏ là thông báo quan trọng, hãy đọc kỹ."
       ],
       "terms": [
-        ["Chấm công sinh trắc học", "Liên kết điện thoại này với tài khoản để dùng vân tay hoặc khuôn mặt thay nút bấm; vị trí vẫn được ghi."],
-        ["Bổ sung chấm công", "Đề nghị ghi bù sau; chỉ vào dữ liệu chấm công khi quản trị viên duyệt."]
+        [
+          "Chấm công sinh trắc học",
+          "Liên kết điện thoại này với tài khoản để dùng vân tay hoặc khuôn mặt thay nút bấm; vị trí vẫn được ghi."
+        ],
+        [
+          "Bổ sung chấm công",
+          "Đề nghị ghi bù sau; chỉ vào dữ liệu chấm công khi quản trị viên duyệt."
+        ]
       ]
     },
     "monthly-view": {
@@ -31,8 +44,14 @@
         "Bạn chỉ xem được dữ liệu của mình; quản lý và quản trị viên mới xem được toàn công ty."
       ],
       "terms": [
-        ["Số ngày bất thường", "Số ngày bị đánh dấu vì thiếu chấm công vào/ra, đi muộn, về sớm..."],
-        ["Số ngày bình thường", "Số ngày có đủ chấm công vào ra và đúng giờ theo ca."]
+        [
+          "Số ngày bất thường",
+          "Số ngày bị đánh dấu vì thiếu chấm công vào/ra, đi muộn, về sớm..."
+        ],
+        [
+          "Số ngày bình thường",
+          "Số ngày có đủ chấm công vào ra và đúng giờ theo ca."
+        ]
       ]
     },
     "location-view": {
@@ -71,8 +90,14 @@
         "Số giờ được quy đổi thành tiền làm thêm hoặc nghỉ bù theo hệ số luật định."
       ],
       "terms": [
-        ["Số giờ làm thêm", "Giờ kết thúc trừ giờ bắt đầu, chưa trừ giờ nghỉ - hãy tự trừ trước khi nhập."],
-        ["Nghỉ bù", "Đổi giờ làm thêm thành giờ nghỉ, dùng sau này bằng loại \"Nghỉ bù làm thêm\" ở trang nghỉ phép."]
+        [
+          "Số giờ làm thêm",
+          "Giờ kết thúc trừ giờ bắt đầu, chưa trừ giờ nghỉ - hãy tự trừ trước khi nhập."
+        ],
+        [
+          "Nghỉ bù",
+          "Đổi giờ làm thêm thành giờ nghỉ, dùng sau này bằng loại \"Nghỉ bù làm thêm\" ở trang nghỉ phép."
+        ]
       ]
     },
     "leave-view": {
@@ -88,8 +113,14 @@
         "Nếu trong thời gian nghỉ đã có xếp ca, sau khi duyệt hãy xác nhận người thay với quản lý."
       ],
       "terms": [
-        ["Phép năm", "Ngày nghỉ hằng năm theo thâm niên; phần chưa dùng xử lý theo quy định công ty."],
-        ["Nghỉ bù làm thêm", "Ngày nghỉ đổi từ giờ làm thêm đã duyệt, dùng đến khi hết."]
+        [
+          "Phép năm",
+          "Ngày nghỉ hằng năm theo thâm niên; phần chưa dùng xử lý theo quy định công ty."
+        ],
+        [
+          "Nghỉ bù làm thêm",
+          "Ngày nghỉ đổi từ giờ làm thêm đã duyệt, dùng đến khi hết."
+        ]
       ]
     },
     "salary-view": {
@@ -118,6 +149,7 @@
     "admin-view": {
       "intro": "Dành cho quản trị viên: thông báo, duyệt các đề nghị, thiết lập địa điểm chấm công, phân tích chấm công và xuất báo cáo.",
       "steps": [
+        "'Cài đặt giờ làm việc' chỉnh giờ vào, giờ tan và nghỉ trưa chung toàn công ty — giờ nghỉ phép được tính theo khung này.",
         "Đăng thông báo ở \"Quản lý thông báo\"; việc quan trọng hãy đặt mức \"Quan trọng\".",
         "Xử lý đề nghị bổ sung chấm công và thẻ ảo ở \"Đề nghị chờ duyệt\"; làm thêm, nghỉ phép, nhật ký công việc có khu duyệt riêng.",
         "Thêm hoặc chỉnh toạ độ và bán kính cho phép ở \"Địa điểm chấm công\" - việc này quyết định nhân viên có chấm công được hay không.",
@@ -126,11 +158,18 @@
       "notes": [
         "Duyệt xong là ảnh hưởng ngay tới chấm công và tính lương; khi từ chối hãy ghi rõ lý do.",
         "Bán kính quá nhỏ khiến nhân viên không chấm được, quá lớn thì mất ý nghĩa kiểm soát vị trí.",
-        "Tệp xuất ra chứa thông tin cá nhân và lương, không chuyển ra ngoài công ty."
+        "Tệp xuất ra chứa thông tin cá nhân và lương, không chuyển ra ngoài công ty.",
+        "Sau khi đổi giờ làm việc, chỉ những đơn nghỉ gửi sau đó mới dùng số giờ mới; đơn đã duyệt không được tính lại."
       ],
       "terms": [
-        ["Thẻ ảo", "Cách chấm công thay thế do quản trị viên duyệt khi không dùng được định vị."],
-        ["Bán kính chấm công", "Phạm vi khoảng cách (mét) quanh toạ độ đã đặt được phép chấm công."]
+        [
+          "Thẻ ảo",
+          "Cách chấm công thay thế do quản trị viên duyệt khi không dùng được định vị."
+        ],
+        [
+          "Bán kính chấm công",
+          "Phạm vi khoảng cách (mét) quanh toạ độ đã đặt được phép chấm công."
+        ]
       ]
     },
     "view-tab": {
@@ -139,7 +178,9 @@
         "Chọn tháng hoặc khoảng ngày rồi tra cứu; bảng liệt kê toàn bộ ca trong kỳ.",
         "Muốn sửa một ca thì sửa ngay trên dòng đó, hoặc xoá rồi thêm lại."
       ],
-      "notes": ["Thay đổi ca ảnh hưởng tới việc tính đi muộn về sớm và tính lương, hãy hoàn tất trước ngày làm việc đó."]
+      "notes": [
+        "Thay đổi ca ảnh hưởng tới việc tính đi muộn về sớm và tính lương, hãy hoàn tất trước ngày làm việc đó."
+      ]
     },
     "add-tab": {
       "intro": "Thêm từng ca một: nhân viên, ngày, loại ca và địa điểm.",
@@ -147,7 +188,9 @@
         "Chọn nhân viên và ngày, chọn loại ca thì giờ sẽ tự điền.",
         "Xác nhận địa điểm rồi gửi, sau đó vào \"Xem xếp ca\" kiểm tra."
       ],
-      "notes": ["Cùng một người trong cùng một ngày mà xếp trùng sẽ xung đột; hãy kiểm tra trước khi thêm."]
+      "notes": [
+        "Cùng một người trong cùng một ngày mà xếp trùng sẽ xung đột; hãy kiểm tra trước khi thêm."
+      ]
     },
     "batch-tab": {
       "intro": "Xếp ca cho nhiều nhân viên trong cả một giai đoạn, phù hợp để lên lịch cố định cho tháng sau.",
@@ -167,7 +210,9 @@
         "Chọn kỳ thống kê rồi tra cứu; biểu đồ và bảng cùng cập nhật.",
         "Thấy ai bị xếp quá nhiều hoặc quá ít thì quay lại xếp ca hàng loạt để cân đối."
       ],
-      "notes": ["Chỉ tính các ca đã xếp, không phải ngày công thực tế; số liệu thực tế xem ở dữ liệu chấm công."]
+      "notes": [
+        "Chỉ tính các ca đã xếp, không phải ngày công thực tế; số liệu thực tế xem ở dữ liệu chấm công."
+      ]
     },
     "employee-salary": {
       "intro": "Nhân viên xem bảng lương của mình: lương cơ bản, phụ cấp, tiền làm thêm và các khoản trừ.",
@@ -175,49 +220,37 @@
         "Chọn tháng cần xem, phần bên dưới liệt kê chi tiết lương tháng đó.",
         "Nếu thấy số tiền bất thường, đối chiếu chấm công và làm thêm cùng tháng rồi báo quản trị viên."
       ],
-      "notes": ["Lương là thông tin mật, tránh mở hoặc chụp màn hình trên thiết bị dùng chung."]
+      "notes": [
+        "Lương là thông tin mật, tránh mở hoặc chụp màn hình trên thiết bị dùng chung."
+      ]
     },
     "salary-setting": {
-      "intro": "Quản trị viên thiết lập điều kiện lương từng người: lương tháng hay lương giờ, các phụ cấp và mức đóng bảo hiểm.",
+      "intro": "Thiết lập quy tắc lương và điều kiện lương của từng nhân viên. Phía trên là quy tắc chung toàn công ty; bên dưới chọn người ở trái và nhập điều kiện ở phải.",
       "steps": [
-        "Chọn nhân viên, đặt hình thức trả lương (theo tháng hoặc theo giờ) và mức cơ bản.",
-        "Nhập phụ cấp ăn ca, chuyên cần cùng mức đóng bảo hiểm, hưu trí rồi lưu lại."
+        "'Thiết lập toàn công ty' cho phép tự định nghĩa phụ cấp và khoản trừ, chỉnh hệ số tăng ca và bậc bảo hiểm.",
+        "Sau khi định nghĩa khoản tự tạo, ô nhập số tiền tương ứng sẽ xuất hiện ở cuối biểu mẫu của mỗi nhân viên.",
+        "Chọn nhân viên từ danh sách tìm kiếm bên trái, rồi nhập loại lương, mức cơ bản, phụ cấp và khoản trừ ở bên phải và lưu."
       ],
       "notes": [
-        "Thiết lập áp dụng ngay cho các kỳ tính lương sau; trước khi sửa hãy xác nhận tháng hiệu lực.",
-        "Mức đóng phải theo bảng do cơ quan quản lý công bố; nhập sai sẽ khiến khoản trừ sai."
+        "Thiết lập áp dụng cho các lần tính sau, hãy xác nhận tháng hiệu lực; bảng lương đã tạo không tự tính lại.",
+        "Điền bậc bảo hiểm theo đúng bảng do cơ quan quản lý công bố, sai sẽ làm lệch khoản trừ.",
+        "Không đổi mã của khoản tự định nghĩa sau khi đã đặt; đổi mã coi như khoản mới và số tiền đã nhập sẽ không khớp.",
+        "Xoá một khoản tự định nghĩa chỉ khiến nó không được tính vào lương; số tiền vẫn được giữ và quay lại khi thêm lại."
       ],
       "terms": [
-        ["Lương tháng", "Lương cố định theo tháng; nghỉ phép và vắng mặt trừ theo tỷ lệ lương ngày."],
-        ["Lương giờ", "Tính theo số giờ làm thực tế, lấy từ dữ liệu chấm công."]
+        [
+          "Lương tháng",
+          "Lương tháng cố định; nghỉ phép và vắng mặt trừ theo tỷ lệ lương ngày."
+        ],
+        [
+          "Lương giờ",
+          "Trả theo số giờ làm thực tế, lấy từ dữ liệu chấm công."
+        ],
+        [
+          "Bậc bảo hiểm",
+          "Khung lương dùng để tính bảo hiểm lao động và y tế, đối chiếu theo bảng công bố."
+        ]
       ]
-    },
-    "monthly-calc": {
-      "intro": "Tính lương tháng cho nhân viên hưởng lương tháng: lấy chấm công, làm thêm và nghỉ phép để ra số tiền phải trả.",
-      "steps": [
-        "Chọn tháng và nhân viên, bấm tính rồi xem kết quả thử.",
-        "Kiểm tra số ngày công, giờ làm thêm và các khoản trừ, sau đó lưu thành bảng lương chính thức."
-      ],
-      "notes": [
-        "Trước khi tính hãy duyệt hết đề nghị bổ sung chấm công, làm thêm và nghỉ phép của tháng, nếu không kết quả sẽ thiếu.",
-        "Tính lại cùng một tháng sẽ ghi đè kết quả cũ."
-      ]
-    },
-    "hourly-calc": {
-      "intro": "Tính lương tháng cho nhân viên hưởng lương giờ; số giờ lấy trực tiếp từ dữ liệu chấm công.",
-      "steps": [
-        "Chọn tháng và nhân viên, hệ thống hiển thị tổng giờ làm và giờ làm thêm của tháng.",
-        "Đối chiếu số giờ rồi tính và lưu."
-      ],
-      "notes": ["Thiếu chấm công sẽ làm số giờ thấp đi; hãy xử lý hết đề nghị bổ sung trước khi tính."]
-    },
-    "salary-list": {
-      "intro": "Tra cứu các bảng lương đã lập, làm căn cứ chi trả và đối chiếu.",
-      "steps": [
-        "Chọn tháng để tra cứu; danh sách hiện số phải trả, khoản trừ và thực lĩnh của từng người.",
-        "Cần đối chiếu hoặc gửi kế toán thì xuất báo cáo tại đây."
-      ],
-      "notes": ["Không xoá bảng lương đã chi trả; cần sửa thì lập điều chỉnh riêng và giữ lại dấu vết."]
     },
     "bonus-records": {
       "intro": "Lịch sử thưởng ba dịp lễ (Đoan Ngọ, Trung Thu, Tết) đã chi.",
@@ -225,7 +258,46 @@
         "Chọn năm để xem lịch sử thưởng của năm đó.",
         "Quản trị viên có thể thêm hoặc chỉnh số tiền; nhân viên chỉ xem phần của mình."
       ],
-      "notes": ["Thưởng lễ không tính vào lương thường kỳ nhưng vẫn là thu nhập và xuất hiện trong dữ liệu thu nhập cả năm."]
+      "notes": [
+        "Thưởng lễ không tính vào lương thường kỳ nhưng vẫn là thu nhập và xuất hiện trong dữ liệu thu nhập cả năm."
+      ]
+    },
+    "salary-calc": {
+      "intro": "Tính lương một tháng cho một nhân viên. Chỉ cần chọn người và tháng, hệ thống tự dùng cách tính lương tháng hoặc lương giờ theo loại lương của họ.",
+      "steps": [
+        "Chọn nhân viên và tháng cần tính. Bên dưới sẽ hiện người đó hưởng lương tháng hay lương giờ.",
+        "Bấm Bắt đầu tính và xem kết quả: chấm công, làm thêm và các khoản trừ.",
+        "Kiểm tra xong thì lưu thành bảng lương chính thức. Muốn tính cả công ty một lượt, dùng tính hàng loạt trong Báo cáo lương."
+      ],
+      "notes": [
+        "Hãy duyệt hết đơn bổ sung chấm công, làm thêm và nghỉ phép của tháng đó trước, nếu không kết quả sẽ bị thiếu.",
+        "Tính lại cùng một tháng sẽ ghi đè kết quả trước đó.",
+        "Thiếu dữ liệu chấm công làm giờ của nhân viên lương giờ bị hụt, nên xử lý hết đơn bổ sung trước."
+      ],
+      "terms": [
+        [
+          "Lương tháng",
+          "Lương tháng cố định; nghỉ phép và vắng mặt trừ theo tỷ lệ lương ngày."
+        ],
+        [
+          "Lương giờ",
+          "Trả theo số giờ làm thực tế, lấy từ dữ liệu chấm công."
+        ]
+      ]
+    },
+    "salary-report": {
+      "intro": "Tra cứu các bảng lương đã tạo, kèm hai công cụ tiết kiệm thời gian: tính hàng loạt và sao chép thiết lập.",
+      "steps": [
+        "Chọn tháng và tải danh sách để xem tổng lương, khoản trừ và thực lĩnh của từng người; có thể xuất báo cáo tại đây.",
+        "'Tính lương hàng loạt' tính và lưu lương tháng cho toàn bộ nhân viên đang làm việc, chia đợt nếu đông người.",
+        "'Sao chép thiết lập lương' áp dụng thiết lập của một người cho những người khác, tiện khi có người mới hoặc tăng lương toàn công ty."
+      ],
+      "notes": [
+        "Đừng xoá bảng lương đã chi trả; nếu cần sửa thì lập điều chỉnh và lưu lại dấu vết.",
+        "Tính hàng loạt sẽ ghi đè bảng lương đã có của tháng đó, hãy duyệt xong mọi đơn trước khi chạy.",
+        "Sao chép thiết lập chỉ mang theo điều kiện lương; dữ liệu cá nhân như CCCD, tài khoản, ngày vào làm không bị sao chép.",
+        "Tệp xuất ra chứa dữ liệu cá nhân và tiền lương, không gửi ra ngoài công ty."
+      ]
     }
   }
 }

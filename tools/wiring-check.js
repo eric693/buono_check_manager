@@ -162,6 +162,36 @@ const i18nMissing = [];
 });
 report('i18n 翻譯鍵', i18nMissing);
 
+// ---------- 8. 操作說明：每個 help 模組都要有對應的容器 ----------
+// help.js 是用容器 id 去掛說明區塊的，改版換了 id 就會靜靜地少一塊說明，
+// 畫面上看不出來，所以在這裡擋住。
+const helpLangs = fs.readdirSync(path.join(ROOT, 'i18n/help'))
+  .filter(f => f.endsWith('.json'))
+  .map(f => f.replace('.json', ''));
+const helpDicts = {};
+helpLangs.forEach(l => { helpDicts[l] = JSON.parse(read(`i18n/help/${l}.json`)); });
+
+const allIds = new Set();
+Object.values(pageIds).forEach(ids => ids.forEach(id => allIds.add(id)));
+
+const helpProblems = [];
+const baseModules = Object.keys(helpDicts[helpLangs[0]].modules);
+
+baseModules.forEach(key => {
+  if (!allIds.has(key)) helpProblems.push(`說明模組「${key}」找不到對應的容器 id`);
+});
+
+// 每個語系的模組要一致，少一個就是某個語言看不到那塊說明
+helpLangs.slice(1).forEach(lang => {
+  const keys = Object.keys(helpDicts[lang].modules);
+  baseModules.filter(k => !keys.includes(k))
+    .forEach(k => helpProblems.push(`${lang} 缺少說明模組「${k}」`));
+  keys.filter(k => !baseModules.includes(k))
+    .forEach(k => helpProblems.push(`${lang} 多出說明模組「${k}」`));
+});
+
+report('操作說明模組', helpProblems);
+
 // ---------- 總結 ----------
 console.log('\n════════════════════════════════');
 if (problems.length === 0) {
