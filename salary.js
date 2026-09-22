@@ -1202,17 +1202,17 @@ function displaySalaryCalculation(data, container) {
             
             <!-- 三大金額卡片 -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div class="info-card" style="background: rgba(34, 197, 94, 0.1);">
+                <div class="info-card" style="background: var(--positive-soft, rgba(34, 197, 94, 0.1)); border-color: transparent;">
                     <div class="info-label">應發總額</div>
-                    <div class="info-value" style="color: #22c55e;">${formatCurrency(data.grossSalary)}</div>
+                    <div class="info-value" style="color: var(--positive, #22c55e);">${formatCurrency(data.grossSalary)}</div>
                 </div>
-                <div class="info-card" style="background: rgba(239, 68, 68, 0.1);">
+                <div class="info-card" style="background: var(--negative-soft, rgba(239, 68, 68, 0.1)); border-color: transparent;">
                     <div class="info-label">扣款總額</div>
-                    <div class="info-value" style="color: #ef4444;">${formatCurrency(totalDeductions)}</div>
+                    <div class="info-value" style="color: var(--negative, #ef4444);">${formatCurrency(totalDeductions)}</div>
                 </div>
-                <div class="info-card" style="background: rgba(168, 85, 247, 0.1);">
+                <div class="info-card" style="background: var(--accent-soft, rgba(168, 85, 247, 0.1)); border-color: transparent;">
                     <div class="info-label">實發金額</div>
-                    <div class="info-value" style="color: #a855f7;">${formatCurrency(data.netSalary)}</div>
+                    <div class="info-value" style="color: var(--accent-text, #a855f7);">${formatCurrency(data.netSalary)}</div>
                 </div>
             </div>
             
@@ -2121,7 +2121,7 @@ function showExportProgress(message) {
         <div class="export-progress">
             <div class="export-progress-spinner"></div>
             <div class="export-progress-text">${message}</div>
-            <p style="color: #94a3b8; font-size: 0.875rem; margin-top: 1rem;">
+            <p class="export-progress-hint" style="color: var(--text-muted, #94a3b8);">
                 請稍候，這可能需要幾秒鐘...
             </p>
         </div>
@@ -2208,7 +2208,7 @@ function onSalaryTypeChange() {
         if (legalSection && !legalSection.querySelector('.weekly-notice')) {
             const notice = document.createElement('div');
             notice.className = 'weekly-notice mt-2 p-3 rounded-lg text-sm';
-            notice.style.cssText = 'background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);color:#f59e0b;';
+            notice.style.cssText = 'background:var(--warning-soft, rgba(245,158,11,0.15));border:1px solid var(--warning, rgba(245,158,11,0.4));color:var(--warning, #f59e0b);';
             notice.textContent = '週薪制員工不適用勞健保及所得稅扣繳，以上欄位已自動清零。';
             legalSection.prepend(notice);
         }
@@ -2290,21 +2290,21 @@ async function loadBonusRecords() {
 function createBonusItem(bonus) {
     const div = document.createElement('div');
     div.className = 'feature-box flex justify-between items-center';
-    div.style.borderColor = 'rgba(245,158,11,0.3)';
-    const statusColor = bonus['狀態'] === '已發放' ? '#22c55e' : '#f59e0b';
+    div.style.borderColor = 'var(--border, rgba(245,158,11,0.3))';
+    const statusColor = bonus['狀態'] === '已發放' ? 'var(--positive, #22c55e)' : 'var(--warning, #f59e0b)';
     div.innerHTML =
         '<div>' +
-            '<div class="font-semibold text-lg">' + (bonus['獎金類型'] || '--') + '</div>' +
-            '<div class="text-sm" style="color:#94a3b8; margin-top:0.25rem;">' +
-                (bonus['年度'] || '--') + ' 年度' +
-                (bonus['員工姓名'] ? ' · ' + bonus['員工姓名'] : '') +
-                (bonus['發放日期'] ? ' · 發放日：' + bonus['發放日期'] : '') +
+            '<div class="font-semibold text-lg">' + escapeHtml(bonus['獎金類型'] || '--') + '</div>' +
+            '<div class="text-sm" style="color:var(--text-muted, #94a3b8); margin-top:0.25rem;">' +
+                escapeHtml(bonus['年度'] || '--') + ' 年度' +
+                (bonus['員工姓名'] ? ' · ' + escapeHtml(bonus['員工姓名']) : '') +
+                (bonus['發放日期'] ? ' · 發放日：' + escapeHtml(bonus['發放日期']) : '') +
             '</div>' +
-            (bonus['備註'] ? '<div class="text-xs" style="color:#64748b; margin-top:0.25rem;">' + bonus['備註'] + '</div>' : '') +
+            (bonus['備註'] ? '<div class="text-xs" style="color:var(--text-subtle, #64748b); margin-top:0.25rem;">' + escapeHtml(bonus['備註']) + '</div>' : '') +
         '</div>' +
         '<div class="text-right">' +
-            '<div class="text-2xl font-bold" style="color:#f59e0b;">' + formatCurrency(bonus['發放金額']) + '</div>' +
-            '<div class="text-sm mt-1" style="color:' + statusColor + ';">' + (bonus['狀態'] || '--') + '</div>' +
+            '<div class="text-2xl font-bold" style="color:var(--warning, #f59e0b);">' + formatCurrency(bonus['發放金額']) + '</div>' +
+            '<div class="text-sm mt-1" style="color:' + statusColor + ';">' + escapeHtml(bonus['狀態'] || '--') + '</div>' +
         '</div>';
     return div;
 }
