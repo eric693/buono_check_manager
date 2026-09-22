@@ -986,5 +986,11 @@
     "MANUAL_GROUP_SALARY": "薪資管理",
     "MANUAL_LOAD_FAILED": "說明資料載入失敗，請重新整理頁面。",
     "BTN_MANUAL": "使用手冊",
+    "SALARY_TAX_TITLE": "所得稅扣繳",
+    "SALARY_TAX_DESC": "應發總額低於起扣門檻不扣稅。稅率填小數（0.05 代表 5%），累計稅額是到該級距下限為止已經要繳的金額。",
+    "SALARY_TAX_THRESHOLD": "起扣門檻",
+    "SALARY_TAX_AUTO_MONTHLY": "月薪也自動計算",
+    "SALARY_TAX_AUTO_HINT": "不勾選時，月薪沿用薪資設定裡手填的所得稅金額",
+    "BTN_ADD_TAX_BRACKET": "新增稅率級距",
     "LUNCH_BREAK_NOTE": "※ 僅計算工作時段（{start}-{end}，已扣午休 {lunchStart}-{lunchEnd}），例假日與國定假日不計"
 }

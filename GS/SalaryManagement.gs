@@ -836,15 +836,13 @@ function getEmployeeMonthlyOvertime(employeeId, yearMonth) {
     Logger.log('   員工ID: ' + employeeId);
     Logger.log('   年月: ' + yearMonth);
     
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName(SHEET_OVERTIME); // "加班申請"
+    // 批次計算時走快取，單筆計算時照樣即時讀取（見 Utils.gs 的 withSheetCache_）
+    const data = getSheetValues_(SHEET_OVERTIME);
     
-    if (!sheet) {
-      Logger.log(' 找不到「加班申請」工作表');
+    if (data.length === 0) {
+      Logger.log(' 找不到「加班申請」工作表或沒有資料');
       return [];
     }
-    
-    const data = sheet.getDataRange().getValues();
     
     if (data.length < 2) {
       Logger.log(' 「加班申請」工作表無資料');
@@ -1386,14 +1384,12 @@ function getEmployeeMonthlyLeave(employeeId, yearMonth) {
   try {
     Logger.log(` 開始取得 ${employeeId} 在 ${yearMonth} 的請假紀錄`);
     
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("請假紀錄");
+    const values = getSheetValues_("請假紀錄");
     
-    if (!sheet) {
-      Logger.log(' 找不到「請假紀錄」工作表');
+    if (values.length === 0) {
+      Logger.log(' 找不到「請假紀錄」工作表或沒有資料');
       return { success: true, data: [] };
     }
-    
-    const values = sheet.getDataRange().getValues();
     const records = [];
     
     Logger.log(` 請假紀錄總行數: ${values.length - 1}`);
@@ -1755,19 +1751,13 @@ function calculateHourlySalary(employeeId, yearMonth) {
     const pensionSelfRate = parseFloat(config['勞退自提率(%)']) || 0;
     pensionSelf = Math.round(insuredSalary * (pensionSelfRate / 100));
 
-    // 月薪 < 88,000 不扣所得稅
-    let incomeTax = 0;
+    // 起扣門檻與稅率級距改由「薪資規則」設定，預設值與原本寫死的相同
+    const incomeTax = calculateIncomeTax_(grossSalary);
 
-    if (grossSalary >= 88000) {
-      // 只有月收入很高的時薪員工才扣稅
-      if (grossSalary >= 88000 && grossSalary < 176000) {
-        incomeTax = Math.round((grossSalary - 88000) * 0.05);
-      } else if (grossSalary >= 176000) {
-        incomeTax = Math.round(4400 + (grossSalary - 176000) * 0.12);
-      }
-      Logger.log(` 時薪員工月收入 ≥ 88,000，計算所得稅: $${incomeTax}`);
+    if (incomeTax > 0) {
+      Logger.log(` 時薪員工計算所得稅: $${incomeTax}`);
     } else {
-      Logger.log(` 時薪員工月收入 < 88,000，不扣所得稅`);
+      Logger.log(` 時薪員工未達起扣門檻，不扣所得稅`);
     }
 
     Logger.log(` 時薪人員扣款計算 (固定投保級距: $${insuredSalary})`);
@@ -1924,18 +1914,11 @@ function getEmployeeMonthlyAttendanceInternal(employeeId, yearMonth) {
     Logger.log('   員工ID: ' + employeeId);
     Logger.log('   年月: ' + yearMonth);
     
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName(SHEET_ATTENDANCE);
-    
-    if (!sheet) {
-      Logger.log(' 找不到「打卡紀錄」工作表');
-      return [];
-    }
-    
-    const data = sheet.getDataRange().getValues();
+    // 打卡紀錄是最大的一張表，批次計算時特別值得快取
+    const data = getSheetValues_(SHEET_ATTENDANCE);
     
     if (data.length < 2) {
-      Logger.log(' 「打卡紀錄」工作表無資料');
+      Logger.log(' 找不到「打卡紀錄」工作表或無資料');
       return [];
     }
     
@@ -2415,16 +2398,20 @@ function calculateMonthlySalaryInternal(employeeId, yearMonth) {
     // 取得該月份的打卡記錄
     const attendanceRecords = getEmployeeMonthlyAttendanceInternal(employeeId, yearMonth);
 
+    // 整月排班一次讀進來。以前是每個打卡日都呼叫 getEmployeeShiftForDate()，
+    // 而那支每次都會把整張排班表讀一遍 —— 22 個工作天就是 22 次全表讀取。
+    const shiftMap = (typeof getEmployeeShiftMapForMonth === 'function')
+      ? getEmployeeShiftMapForMonth(employeeId, yearMonth)
+      : {};
+
     attendanceRecords.forEach(record => {
       const date = record.date;
       
       // ⭐⭐⭐ 使用 try-catch 避免錯誤中斷流程
       try {
-        // 取得該日期的排班資訊
-        const shiftResult = getEmployeeShiftForDate(employeeId, date);
+        const shift = shiftMap[date];
         
-        if (shiftResult && shiftResult.success && shiftResult.hasShift) {
-          const shift = shiftResult.data;
+        if (shift) {
           const scheduledEndTime = shift.endTime;
           const actualEndTime = record.punchOut;
           
@@ -2528,7 +2515,16 @@ function calculateMonthlySalaryInternal(employeeId, yearMonth) {
     const employmentFee = parseFloat(config['就業保險費']) || 0;
     const pensionSelf = parseFloat(config['勞退自提']) || 0;
     const pensionSelfRate = parseFloat(config['勞退自提率(%)']) || 0;
-    const incomeTax = parseFloat(config['所得稅']) || 0;
+    // 月薪的所得稅預設沿用設定表裡手填的金額；管理員在「薪資規則」把
+    // autoCalculateForMonthly 打開之後，才改成跟時薪一樣自動依級距計算。
+    const taxRules = (typeof getSalaryRules_ === 'function')
+      ? getSalaryRules_().incomeTaxRules
+      : null;
+    const incomeTax = (taxRules && taxRules.autoCalculateForMonthly)
+      ? calculateIncomeTax_(baseSalary + positionAllowance + mealAllowance +
+                            transportAllowance + attendanceBonus + performanceBonus +
+                            otherAllowances)
+      : (parseFloat(config['所得稅']) || 0);
     
     Logger.log(`\n 使用設定表中的扣款數值:`);
     Logger.log(`   勞保費: $${laborFee}`);

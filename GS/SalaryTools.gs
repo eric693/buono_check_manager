@@ -122,45 +122,49 @@ function handleBatchCalculateSalary(params) {
 
     Logger.log(` 批次計算 ${yearMonth}：第 ${startIndex + 1} 到 ${endIndex} 人（共 ${total} 人）`);
 
-    for (let i = startIndex; i < endIndex; i++) {
-      const employee = employees[i];
+    // 這一批共用同一份試算表快取：打卡、加班、請假、排班各只讀一次，
+    // 而不是每位員工都把這四張表各讀一遍。離開這個區塊快取就會清掉。
+    withSheetCache_(() => {
+      for (let i = startIndex; i < endIndex; i++) {
+        const employee = employees[i];
 
-      // 單一員工失敗不能拖垮整批，記下原因繼續跑下一個
-      try {
-        const calculated = calculateMonthlySalary(employee.employeeId, yearMonth);
+        // 單一員工失敗不能拖垮整批，記下原因繼續跑下一個
+        try {
+          const calculated = calculateMonthlySalary(employee.employeeId, yearMonth);
 
-        if (!calculated.success) {
+          if (!calculated.success) {
+            results.push({
+              employeeId: employee.employeeId,
+              employeeName: employee.employeeName,
+              ok: false,
+              msg: calculated.message || '計算失敗'
+            });
+            continue;
+          }
+
+          const saved = saveMonthlySalary(calculated.data);
+
+          results.push({
+            employeeId: employee.employeeId,
+            employeeName: employee.employeeName,
+            ok: !!saved.success,
+            msg: saved.success ? '' : (saved.message || '儲存失敗'),
+            salaryType: calculated.data.salaryType,
+            grossSalary: calculated.data.grossSalary,
+            netSalary: calculated.data.netSalary
+          });
+
+        } catch (error) {
+          Logger.log(` ${employee.employeeName} 計算失敗: ${error.message}`);
           results.push({
             employeeId: employee.employeeId,
             employeeName: employee.employeeName,
             ok: false,
-            msg: calculated.message || '計算失敗'
+            msg: error.message
           });
-          continue;
         }
-
-        const saved = saveMonthlySalary(calculated.data);
-
-        results.push({
-          employeeId: employee.employeeId,
-          employeeName: employee.employeeName,
-          ok: !!saved.success,
-          msg: saved.success ? '' : (saved.message || '儲存失敗'),
-          salaryType: calculated.data.salaryType,
-          grossSalary: calculated.data.grossSalary,
-          netSalary: calculated.data.netSalary
-        });
-
-      } catch (error) {
-        Logger.log(` ${employee.employeeName} 計算失敗: ${error.message}`);
-        results.push({
-          employeeId: employee.employeeId,
-          employeeName: employee.employeeName,
-          ok: false,
-          msg: error.message
-        });
       }
-    }
+    });
 
     const nextIndex = (endIndex < total) ? endIndex : null;
 

@@ -782,3 +782,54 @@ function checkExistingShifts() {
     Logger.log(`  格式化後: ${formatDateOnly(data[i][3])}`);
   }
 }
+// ==================== 整月排班快取 ====================
+//
+// getEmployeeShiftForDate() 每次呼叫都會把整張排班表讀進來。算薪資時它被放在
+// 「逐日檢查早退」的迴圈裡，一位員工 22 個工作天就讀 22 次整表；批次計算 30 人
+// 等於 600 多次全表讀取，六分鐘的執行上限根本撐不住。
+//
+// 這裡改成一次讀完整表、整理成 { 'yyyy-MM-dd': 班別資料 }，之後查哪一天都不必再碰試算表。
+
+/**
+ * 取得某位員工某個月的所有排班，回傳以日期為鍵的物件。
+ *
+ * @param {string} employeeId 員工ID
+ * @param {string} yearMonth  yyyy-MM
+ * @return {Object} { 'yyyy-MM-dd': { shiftId, shiftType, startTime, endTime, location } }
+ */
+function getEmployeeShiftMapForMonth(employeeId, yearMonth) {
+  const map = {};
+
+  try {
+    getShiftSheet();  // 確保工作表存在
+    const data = getSheetValues_('排班表');
+    const targetId = String(employeeId).trim();
+
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][1]).trim() !== targetId) continue;
+      if (data[i][13] === '已刪除') continue;
+
+      const shiftDate = formatDateOnly(data[i][3]);
+      if (!shiftDate || shiftDate.substring(0, 7) !== yearMonth) continue;
+
+      // 同一天有多筆時以第一筆為準，與 getEmployeeShiftForDate 的行為一致
+      if (map[shiftDate]) continue;
+
+      map[shiftDate] = {
+        shiftId: data[i][0],
+        shiftType: data[i][4],
+        startTime: formatTimeOnly(data[i][5]),
+        endTime: formatTimeOnly(data[i][6]),
+        location: data[i][7]
+      };
+    }
+
+    Logger.log(` ${employeeId} 在 ${yearMonth} 共 ${Object.keys(map).length} 天有排班（整月一次讀取）`);
+
+  } catch (error) {
+    // 讀不到就回空的，呼叫端會當作「沒有排班」，不會讓薪資算不出來
+    Logger.log(' getEmployeeShiftMapForMonth 錯誤: ' + error);
+  }
+
+  return map;
+}

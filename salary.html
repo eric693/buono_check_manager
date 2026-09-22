@@ -1165,6 +1165,34 @@
                         由低到高排列，級距不可重疊。最後一級的上限留白代表「以上」。
                     </p>
                     <div id="insurance-brackets-editor"></div>
+
+                    <hr style="border-color: rgba(255,255,255,0.08); margin: 2rem 0;">
+
+                    <!-- 所得稅 -->
+                    <h3 class="text-lg font-semibold mb-2" data-i18n="SALARY_TAX_TITLE">所得稅扣繳</h3>
+                    <p class="summary-hint mb-4" data-i18n="SALARY_TAX_DESC">
+                        應發總額低於起扣門檻不扣稅。稅率填小數（0.05 代表 5%），累計稅額是到該級距下限為止已經要繳的金額。
+                    </p>
+
+                    <div class="form-grid" style="margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="tax-threshold" data-i18n="SALARY_TAX_THRESHOLD">起扣門檻</label>
+                            <input type="number" id="tax-threshold" class="form-input" min="0" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="SALARY_TAX_AUTO_MONTHLY">月薪也自動計算</label>
+                            <label style="display:flex;align-items:center;gap:8px;color:#e2e8f0;">
+                                <input type="checkbox" id="tax-auto-monthly">
+                                <span class="summary-hint" data-i18n="SALARY_TAX_AUTO_HINT">不勾選時，月薪沿用薪資設定裡手填的所得稅金額</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="income-tax-editor"></div>
+                    <div class="button-row">
+                        <button type="button" class="ghost-btn" id="add-tax-bracket-btn" data-i18n="BTN_ADD_TAX_BRACKET">新增稅率級距</button>
+                    </div>
+
                     <div class="button-row">
                         <button type="button" class="ghost-btn" id="add-bracket-btn" data-i18n="BTN_ADD_BRACKET">新增級距</button>
                         <button type="button" class="submit-btn" style="max-width: 200px;" id="save-salary-rules-btn" data-i18n="BTN_SAVE_RULES">儲存規則</button>

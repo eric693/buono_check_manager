@@ -967,5 +967,11 @@
     "MANUAL_GROUP_SALARY": "Payroll",
     "MANUAL_LOAD_FAILED": "Could not load the help content. Please refresh the page.",
     "BTN_MANUAL": "Manual",
+    "SALARY_TAX_TITLE": "Income tax withholding",
+    "SALARY_TAX_DESC": "No tax below the threshold. Enter the rate as a decimal (0.05 means 5%); the cumulative amount is the tax already due at that bracket's lower bound.",
+    "SALARY_TAX_THRESHOLD": "Threshold",
+    "SALARY_TAX_AUTO_MONTHLY": "Also calculate for monthly pay",
+    "SALARY_TAX_AUTO_HINT": "When unchecked, monthly pay uses the income tax figure entered by hand in the salary settings.",
+    "BTN_ADD_TAX_BRACKET": "Add tax bracket",
     "LUNCH_BREAK_NOTE": "Counts working hours only ({start}-{end}, lunch {lunchStart}-{lunchEnd} excluded); weekends and public holidays are not counted."
 }

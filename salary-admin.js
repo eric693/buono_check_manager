@@ -468,6 +468,84 @@ function buildBracketRow(bracket) {
   return row;
 }
 
+function renderIncomeTaxEditor(rules) {
+  const container = document.getElementById('income-tax-editor');
+  if (!container || !rules) return;
+
+  const threshold = document.getElementById('tax-threshold');
+  const auto = document.getElementById('tax-auto-monthly');
+  if (threshold) threshold.value = rules.threshold;
+  if (auto) auto.checked = !!rules.autoCalculateForMonthly;
+
+  container.innerHTML = '';
+
+  const header = document.createElement('div');
+  header.className = 'item-row tax-header summary-hint';
+  header.style.gridTemplateColumns = 'repeat(3, 1fr) auto';
+  [
+    ta('TAX_MIN', '級距下限'),
+    ta('TAX_RATE', '稅率（0.05 = 5%）'),
+    ta('TAX_BASE', '累計稅額'),
+    ''
+  ].forEach(text => {
+    const cell = document.createElement('span');
+    cell.textContent = text;
+    header.appendChild(cell);
+  });
+  container.appendChild(header);
+
+  (rules.brackets || []).forEach(bracket => container.appendChild(buildTaxBracketRow(bracket)));
+}
+
+function buildTaxBracketRow(bracket) {
+  const row = document.createElement('div');
+  row.className = 'item-row tax-row';
+  row.style.gridTemplateColumns = 'repeat(3, 1fr) auto';
+
+  [
+    { field: 'min', value: bracket.min, step: '1' },
+    { field: 'rate', value: bracket.rate, step: '0.001' },
+    { field: 'base', value: bracket.base, step: '1' }
+  ].forEach(cell => {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.className = `form-input tax-${cell.field}`;
+    input.min = '0';
+    input.step = cell.step;
+    input.value = cell.value;
+    row.appendChild(input);
+  });
+
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'row-remove-btn';
+  remove.textContent = ta('BTN_REMOVE', '刪除');
+  remove.addEventListener('click', () => row.remove());
+  row.appendChild(remove);
+
+  return row;
+}
+
+/**
+ * 把畫面上的所得稅設定讀回來
+ */
+function collectIncomeTaxRules() {
+  const brackets = [];
+  document.querySelectorAll('#income-tax-editor .tax-row').forEach(row => {
+    brackets.push({
+      min: parseFloat(row.querySelector('.tax-min').value),
+      rate: parseFloat(row.querySelector('.tax-rate').value),
+      base: parseFloat(row.querySelector('.tax-base').value)
+    });
+  });
+
+  return {
+    autoCalculateForMonthly: !!document.getElementById('tax-auto-monthly')?.checked,
+    threshold: parseFloat(document.getElementById('tax-threshold')?.value),
+    brackets: brackets
+  };
+}
+
 async function loadSalaryRules() {
   try {
     const res = await callApifetch('getSalaryRules', null);
@@ -475,6 +553,7 @@ async function loadSalaryRules() {
     if (res.ok && res.overtimeRules && Array.isArray(res.insuranceBrackets)) {
       renderOvertimeRulesEditor(res.overtimeRules);
       renderInsuranceBracketsEditor(res.insuranceBrackets);
+      renderIncomeTaxEditor(res.incomeTaxRules);
     }
   } catch (error) {
     console.error('載入薪資規則失敗:', error);
@@ -508,12 +587,14 @@ async function saveSalaryRules() {
   try {
     const query =
       `overtimeRules=${encodeURIComponent(JSON.stringify(overtimeRules))}` +
-      `&insuranceBrackets=${encodeURIComponent(JSON.stringify(brackets))}`;
+      `&insuranceBrackets=${encodeURIComponent(JSON.stringify(brackets))}` +
+      `&incomeTaxRules=${encodeURIComponent(JSON.stringify(collectIncomeTaxRules()))}`;
     const res = await callApifetch(`updateSalaryRules&${query}`, null);
 
     if (res.ok) {
       renderOvertimeRulesEditor(res.overtimeRules || overtimeRules);
       renderInsuranceBracketsEditor(res.insuranceBrackets || brackets);
+      if (res.incomeTaxRules) renderIncomeTaxEditor(res.incomeTaxRules);
       showNotification(ta('SALARY_RULES_SAVED', '薪資規則已更新'), 'success');
     } else {
       showNotification(res.msg || ta('SALARY_RULES_SAVE_FAILED', '薪資規則更新失敗'), 'error');
@@ -534,6 +615,7 @@ async function resetSalaryRules() {
     if (res.ok) {
       renderOvertimeRulesEditor(res.overtimeRules);
       renderInsuranceBracketsEditor(res.insuranceBrackets);
+      renderIncomeTaxEditor(res.incomeTaxRules);
       showNotification(ta('SALARY_RULES_RESET_DONE', '已還原為預設薪資規則'), 'success');
     } else {
       showNotification(res.msg || ta('SALARY_RULES_SAVE_FAILED', '薪資規則更新失敗'), 'error');
@@ -962,6 +1044,11 @@ async function initSalarySettingTab() {
     if (container) {
       container.appendChild(buildBracketRow({ min: 0, max: '', insured: 0, labor: 0, health: 0 }));
     }
+  });
+
+  document.getElementById('add-tax-bracket-btn')?.addEventListener('click', () => {
+    const container = document.getElementById('income-tax-editor');
+    if (container) container.appendChild(buildTaxBracketRow({ min: 0, rate: 0, base: 0 }));
   });
 
   document.getElementById('save-salary-rules-btn')?.addEventListener('click', saveSalaryRules);

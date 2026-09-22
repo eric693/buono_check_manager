@@ -394,3 +394,62 @@ function formatDateTime(date) {
     return String(date);
   }
 }
+
+// ==================== 單次執行內的試算表讀取快取 ====================
+//
+// 算一位員工的薪資要把「打卡紀錄」「加班紀錄」「請假紀錄」「排班表」各讀一次整表。
+// 單筆計算沒問題，但批次計算 30 個人就是 120 次全表讀取，很容易撞到 Apps Script
+// 的六分鐘上限。
+//
+// 這個快取「預設關閉」，只有批次流程會用 withSheetCache_() 明確打開。這樣一般操作
+// 永遠讀得到最新資料，不會因為快取而看到別人剛改過的舊值。
+
+let _sheetValuesCache = null;
+
+/**
+ * 在快取開啟的狀態下執行 fn；結束後一定關閉並清空。
+ */
+function withSheetCache_(fn) {
+  const previous = _sheetValuesCache;
+  _sheetValuesCache = {};
+
+  try {
+    return fn();
+  } finally {
+    _sheetValuesCache = previous;
+  }
+}
+
+/**
+ * 讀取整張工作表的值。快取開啟時，同一次執行內同一張表只會真的讀一次。
+ *
+ * @param {string} sheetName 工作表名稱
+ * @return {Array<Array>} 整張表的值；找不到工作表時回傳空陣列
+ */
+function getSheetValues_(sheetName) {
+  if (_sheetValuesCache && _sheetValuesCache[sheetName]) {
+    return _sheetValuesCache[sheetName];
+  }
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  const values = sheet ? sheet.getDataRange().getValues() : [];
+
+  if (_sheetValuesCache) {
+    _sheetValuesCache[sheetName] = values;
+  }
+
+  return values;
+}
+
+/**
+ * 明確作廢某張表的快取。寫入之後若同一次執行還要再讀，就要呼叫這個。
+ */
+function invalidateSheetCache_(sheetName) {
+  if (!_sheetValuesCache) return;
+
+  if (sheetName) {
+    delete _sheetValuesCache[sheetName];
+  } else {
+    _sheetValuesCache = {};
+  }
+}

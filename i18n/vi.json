@@ -1002,5 +1002,11 @@
     "MANUAL_GROUP_SALARY": "Quản lý lương",
     "MANUAL_LOAD_FAILED": "Không tải được nội dung hướng dẫn. Vui lòng tải lại trang.",
     "BTN_MANUAL": "Hướng dẫn",
+    "SALARY_TAX_TITLE": "Khấu trừ thuế thu nhập",
+    "SALARY_TAX_DESC": "Không tính thuế nếu tổng lương dưới ngưỡng. Nhập thuế suất dạng thập phân (0,05 nghĩa là 5%); số luỹ kế là thuế đã phải nộp tính đến giới hạn dưới của bậc đó.",
+    "SALARY_TAX_THRESHOLD": "Ngưỡng chịu thuế",
+    "SALARY_TAX_AUTO_MONTHLY": "Tính tự động cả cho lương tháng",
+    "SALARY_TAX_AUTO_HINT": "Nếu không tích, lương tháng dùng số thuế thu nhập nhập tay trong thiết lập lương.",
+    "BTN_ADD_TAX_BRACKET": "Thêm bậc thuế",
     "LUNCH_BREAK_NOTE": "※ Chỉ tính giờ trong ca làm ({start}-{end}, trừ nghỉ trưa {lunchStart}-{lunchEnd}); cuối tuần và ngày lễ không tính."
 }

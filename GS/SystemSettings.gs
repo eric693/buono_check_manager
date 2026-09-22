@@ -273,6 +273,81 @@ const DEFAULT_INSURANCE_BRACKETS = [
 ];
 
 /**
+ * 所得稅扣繳級距的預設值。
+ *
+ * 原本只有時薪計算會自動算稅，而且門檻（88,000）與稅率（5% / 12%）是寫死的；
+ * 月薪則完全不算，直接用管理員在薪資設定裡手填的數字。同一家公司兩套邏輯，
+ * 法規一改還得改程式重新部署。現在統一由這裡設定。
+ *
+ * threshold 以下不扣；rate 是超過該級距下限的部分適用的稅率；
+ * base 是到這一級距下限為止的累計稅額。
+ */
+const DEFAULT_INCOME_TAX_RULES = {
+  // 月薪制是否也自動計算。預設 false —— 沿用現況（讀設定表裡手填的金額），
+  // 避免一升級就讓所有月薪員工的實發金額改變。要自動算再由管理員打開。
+  autoCalculateForMonthly: false,
+  threshold: 88000,
+  brackets: [
+    { min: 88000,  rate: 0.05, base: 0 },
+    { min: 176000, rate: 0.12, base: 4400 }
+  ]
+};
+
+/**
+ * 驗證所得稅設定
+ */
+function validateIncomeTaxRules_(input) {
+  if (!input || typeof input !== 'object') {
+    return { ok: false, msg: '所得稅設定格式錯誤' };
+  }
+
+  const threshold = parseFloat(input.threshold);
+  if (isNaN(threshold) || threshold < 0) {
+    return { ok: false, msg: '起扣門檻必須是 0 以上的數字' };
+  }
+
+  if (!Array.isArray(input.brackets) || input.brackets.length === 0) {
+    return { ok: false, msg: '所得稅級距不能是空的' };
+  }
+
+  const brackets = [];
+  let previousMin = -1;
+
+  for (let i = 0; i < input.brackets.length; i++) {
+    const row = input.brackets[i] || {};
+    const min = parseFloat(row.min);
+    const rate = parseFloat(row.rate);
+    const base = parseFloat(row.base);
+
+    if (isNaN(min) || min < 0) {
+      return { ok: false, msg: `第 ${i + 1} 級的下限不正確` };
+    }
+    if (isNaN(rate) || rate < 0 || rate > 1) {
+      return { ok: false, msg: `第 ${i + 1} 級的稅率必須介於 0 與 1 之間（0.05 代表 5%）` };
+    }
+    if (isNaN(base) || base < 0) {
+      return { ok: false, msg: `第 ${i + 1} 級的累計稅額不正確` };
+    }
+    if (min <= previousMin) {
+      return { ok: false, msg: `第 ${i + 1} 級的下限必須大於上一級` };
+    }
+
+    previousMin = min;
+    brackets.push({ min: min, rate: rate, base: base });
+  }
+
+  return {
+    ok: true,
+    incomeTaxRules: {
+      autoCalculateForMonthly: input.autoCalculateForMonthly === true ||
+                               input.autoCalculateForMonthly === 'true',
+      threshold: threshold,
+      brackets: brackets
+    }
+  };
+}
+
+/**
  * 驗證加班倍率設定
  */
 function validateOvertimeRules_(input) {
@@ -356,6 +431,7 @@ function getSalaryRules_() {
     const stored = readSystemSetting_(SETTING_KEY_SALARY_RULES);
     let overtimeRules = DEFAULT_OVERTIME_RULES;
     let insuranceBrackets = DEFAULT_INSURANCE_BRACKETS;
+    let incomeTaxRules = DEFAULT_INCOME_TAX_RULES;
 
     if (stored && stored.value) {
       const parsed = JSON.parse(stored.value);
@@ -373,9 +449,23 @@ function getSalaryRules_() {
       } else {
         Logger.log(` 投保級距設定不合法，改用預設值：${checkedBrackets.msg}`);
       }
+
+      // 舊的設定裡還沒有這一段，沒有就沿用預設值
+      if (parsed.incomeTaxRules) {
+        const checkedTax = validateIncomeTaxRules_(parsed.incomeTaxRules);
+        if (checkedTax.ok) {
+          incomeTaxRules = checkedTax.incomeTaxRules;
+        } else {
+          Logger.log(` 所得稅設定不合法，改用預設值：${checkedTax.msg}`);
+        }
+      }
     }
 
-    const rules = { overtimeRules: overtimeRules, insuranceBrackets: insuranceBrackets };
+    const rules = {
+      overtimeRules: overtimeRules,
+      insuranceBrackets: insuranceBrackets,
+      incomeTaxRules: incomeTaxRules
+    };
     cache.put(SALARY_RULES_CACHE_KEY, JSON.stringify(rules), WORK_SCHEDULE_CACHE_TTL);
     return rules;
 
@@ -383,9 +473,32 @@ function getSalaryRules_() {
     Logger.log(` 讀取薪資規則失敗，改用預設值: ${error.message}`);
     return {
       overtimeRules: DEFAULT_OVERTIME_RULES,
-      insuranceBrackets: DEFAULT_INSURANCE_BRACKETS
+      insuranceBrackets: DEFAULT_INSURANCE_BRACKETS,
+      incomeTaxRules: DEFAULT_INCOME_TAX_RULES
     };
   }
+}
+
+/**
+ * 依設定計算所得稅。門檻以下不扣，否則取適用的級距算「累計稅額 + 超過部分 × 稅率」。
+ */
+function calculateIncomeTax_(grossSalary) {
+  const rules = (typeof getSalaryRules_ === 'function')
+    ? getSalaryRules_().incomeTaxRules
+    : DEFAULT_INCOME_TAX_RULES;
+
+  const amount = parseFloat(grossSalary) || 0;
+  if (amount < rules.threshold) return 0;
+
+  // 級距由低到高，取最後一個「下限 <= 應發總額」的
+  let applicable = null;
+  for (let i = 0; i < rules.brackets.length; i++) {
+    if (amount >= rules.brackets[i].min) applicable = rules.brackets[i];
+  }
+
+  if (!applicable) return 0;
+
+  return Math.round(applicable.base + (amount - applicable.min) * applicable.rate);
 }
 
 /**
@@ -404,9 +517,11 @@ function handleGetSalaryRules(params) {
       ok: true,
       overtimeRules: rules.overtimeRules,
       insuranceBrackets: rules.insuranceBrackets,
+      incomeTaxRules: rules.incomeTaxRules,
       defaults: {
         overtimeRules: DEFAULT_OVERTIME_RULES,
-        insuranceBrackets: DEFAULT_INSURANCE_BRACKETS
+        insuranceBrackets: DEFAULT_INSURANCE_BRACKETS,
+        incomeTaxRules: DEFAULT_INCOME_TAX_RULES
       },
       isDefault: !(stored && stored.value)
     };
@@ -431,6 +546,7 @@ function handleUpdateSalaryRules(params) {
     const current = getSalaryRules_();
     let overtimeRules = current.overtimeRules;
     let insuranceBrackets = current.insuranceBrackets;
+    let incomeTaxRules = current.incomeTaxRules;
 
     // 兩個區塊各自獨立，只送其中一個就只改那一個
     if (params.overtimeRules) {
@@ -445,13 +561,29 @@ function handleUpdateSalaryRules(params) {
       insuranceBrackets = checked.insuranceBrackets;
     }
 
-    const rules = { overtimeRules: overtimeRules, insuranceBrackets: insuranceBrackets };
+    if (params.incomeTaxRules) {
+      const checked = validateIncomeTaxRules_(JSON.parse(params.incomeTaxRules));
+      if (!checked.ok) return { ok: false, code: 'INVALID_INCOME_TAX_RULES', msg: checked.msg };
+      incomeTaxRules = checked.incomeTaxRules;
+    }
+
+    const rules = {
+      overtimeRules: overtimeRules,
+      insuranceBrackets: insuranceBrackets,
+      incomeTaxRules: incomeTaxRules
+    };
     writeSystemSetting_(SETTING_KEY_SALARY_RULES, JSON.stringify(rules), user.name || '');
     CacheService.getScriptCache().remove(SALARY_RULES_CACHE_KEY);
 
     Logger.log(` 管理員 ${user.name} 更新薪資規則`);
 
-    return { ok: true, msg: '薪資規則已更新', overtimeRules: overtimeRules, insuranceBrackets: insuranceBrackets };
+    return {
+      ok: true,
+      msg: '薪資規則已更新',
+      overtimeRules: overtimeRules,
+      insuranceBrackets: insuranceBrackets,
+      incomeTaxRules: incomeTaxRules
+    };
 
   } catch (error) {
     Logger.log(` handleUpdateSalaryRules 錯誤: ${error.message}`);
@@ -477,7 +609,8 @@ function handleResetSalaryRules(params) {
       ok: true,
       msg: '已還原為預設薪資規則',
       overtimeRules: DEFAULT_OVERTIME_RULES,
-      insuranceBrackets: DEFAULT_INSURANCE_BRACKETS
+      insuranceBrackets: DEFAULT_INSURANCE_BRACKETS,
+      incomeTaxRules: DEFAULT_INCOME_TAX_RULES
     };
 
   } catch (error) {

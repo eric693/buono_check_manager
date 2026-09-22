@@ -946,5 +946,11 @@
     "MANUAL_GROUP_SALARY": "Penggajian",
     "MANUAL_LOAD_FAILED": "Gagal memuat konten bantuan. Silakan muat ulang halaman.",
     "BTN_MANUAL": "Panduan",
+    "SALARY_TAX_TITLE": "Pemotongan pajak penghasilan",
+    "SALARY_TAX_DESC": "Tidak ada pajak di bawah ambang batas. Isi tarif sebagai desimal (0,05 berarti 5%); jumlah kumulatif adalah pajak yang sudah terutang pada batas bawah tingkat itu.",
+    "SALARY_TAX_THRESHOLD": "Ambang batas",
+    "SALARY_TAX_AUTO_MONTHLY": "Hitung otomatis juga untuk gaji bulanan",
+    "SALARY_TAX_AUTO_HINT": "Bila tidak dicentang, gaji bulanan memakai angka pajak yang diisi manual di pengaturan gaji.",
+    "BTN_ADD_TAX_BRACKET": "Tambah tingkat pajak",
     "LUNCH_BREAK_NOTE": "※ Hanya menghitung jam kerja ({start}-{end}, istirahat {lunchStart}-{lunchEnd} dikurangi); akhir pekan dan hari libur tidak dihitung."
 }

@@ -946,5 +946,11 @@
     "MANUAL_GROUP_SALARY": "給与管理",
     "MANUAL_LOAD_FAILED": "説明データの読み込みに失敗しました。ページを再読み込みしてください。",
     "BTN_MANUAL": "マニュアル",
+    "SALARY_TAX_TITLE": "所得税の源泉徴収",
+    "SALARY_TAX_DESC": "総支給額が起算基準未満なら課税しません。税率は小数で入力します（0.05 は 5%）。累計税額はその等級の下限までに既に課される金額です。",
+    "SALARY_TAX_THRESHOLD": "起算基準",
+    "SALARY_TAX_AUTO_MONTHLY": "月給も自動計算する",
+    "SALARY_TAX_AUTO_HINT": "チェックしない場合、月給は給与設定に手入力した所得税額をそのまま使います。",
+    "BTN_ADD_TAX_BRACKET": "税率等級を追加",
     "LUNCH_BREAK_NOTE": "※ 勤務時間帯（{start}-{end}、昼休み {lunchStart}-{lunchEnd} を除く）のみ計算し、休日と祝日は含みません。"
 }

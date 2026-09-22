@@ -946,5 +946,11 @@
     "MANUAL_GROUP_SALARY": "급여 관리",
     "MANUAL_LOAD_FAILED": "안내 데이터를 불러오지 못했습니다. 페이지를 새로고침해 주세요.",
     "BTN_MANUAL": "설명서",
+    "SALARY_TAX_TITLE": "소득세 원천징수",
+    "SALARY_TAX_DESC": "지급 총액이 기준 미만이면 과세하지 않습니다. 세율은 소수로 입력하세요(0.05는 5%). 누계 세액은 해당 구간 하한까지 이미 부과되는 금액입니다.",
+    "SALARY_TAX_THRESHOLD": "과세 기준",
+    "SALARY_TAX_AUTO_MONTHLY": "월급도 자동 계산",
+    "SALARY_TAX_AUTO_HINT": "선택하지 않으면 월급은 급여 설정에 직접 입력한 소득세 금액을 사용합니다.",
+    "BTN_ADD_TAX_BRACKET": "세율 구간 추가",
     "LUNCH_BREAK_NOTE": "※ 근무 시간대({start}-{end}, 점심 {lunchStart}-{lunchEnd} 제외)만 계산하며 주말과 공휴일은 포함하지 않습니다."
 }
