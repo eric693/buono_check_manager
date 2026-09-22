@@ -582,7 +582,7 @@ async function loadLeaveRecords() {
             });
             
             console.log(` 去重後剩餘 ${uniqueRecords.length} 筆記錄`);
-            renderLeaveRecords(uniqueRecords);
+            await renderLeaveRecords(uniqueRecords);
         } else {
             console.log('ℹ 沒有請假記錄');
             if (emptyEl) emptyEl.style.display = 'block';
@@ -621,9 +621,17 @@ function formatDateTime(isoString) {
 /**
  * 渲染請假記錄
  */
-function renderLeaveRecords(records) {
+async function renderLeaveRecords(records) {
     const listEl = document.getElementById('leave-records-list');
     if (!listEl) return;
+    
+    // 整頁的附件一次抓完，不要每筆各打一次 API
+    if (typeof prefetchAttachments === 'function') {
+        await prefetchAttachments('leave', records.map(r => buildAttachmentKey('leave', {
+            employeeId: r.employeeId || userId,
+            startDateTime: r.startDateTime || r.startTime
+        })));
+    }
     
     console.log(` 開始渲染 ${records.length} 筆請假記錄`);
     
@@ -690,7 +698,7 @@ function renderLeaveRecords(records) {
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                     </svg>
                     <span>請假原因:</span>
-                    <span class="ml-1">${record.reason || '無'}</span>
+                    <span class="ml-1">${escapeHtml(record.reason || '無')}</span>
                 </div>
             </div>
         `;
@@ -738,7 +746,7 @@ async function loadPendingLeaveRequests() {
         
         if (res.ok) {
             if (res.requests && res.requests.length > 0) {
-                renderPendingLeaveRequests(res.requests);
+                await renderPendingLeaveRequests(res.requests);
             } else {
                 if (emptyEl) emptyEl.style.display = 'block';
             }
@@ -750,7 +758,14 @@ async function loadPendingLeaveRequests() {
     }
 }
 
-function renderPendingLeaveRequests(requests) {
+async function renderPendingLeaveRequests(requests) {
+    if (typeof prefetchAttachments === 'function') {
+        await prefetchAttachments('leave', requests.map(r => buildAttachmentKey('leave', {
+            employeeId: r.employeeId,
+            startDateTime: r.startDateTime || r.startTime
+        })));
+    }
+
     const listEl = document.getElementById('pending-leave-list');
     if (!listEl) return;
     

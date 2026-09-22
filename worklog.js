@@ -501,9 +501,9 @@ function renderPendingWorklogs(worklogs) {
             <div class="flex justify-between items-start mb-3">
                 <div class="flex-1">
                     <div class="flex items-center space-x-2 mb-2">
-                        <span class="font-bold text-gray-800 dark:text-white">${log.userName || unknownEmployee}</span>
+                        <span class="font-bold text-gray-800 dark:text-white">${escapeHtml(log.userName || unknownEmployee)}</span>
                         <span class="text-xs px-2 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
-                            ${log.department || uncategorized}
+                            ${escapeHtml(log.department || uncategorized)}
                         </span>
                     </div>
                     <div class="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">

@@ -633,7 +633,7 @@ function createShiftItem(shift) {
             <h3>${escapeHtml(shift.employeeName)} ${shiftTypeBadge}</h3>
             <p>${t('SHIFT_DATE_LABEL')}: ${formatDate(shift.date)}</p>
             <p>${t('SHIFT_TIME_LABEL')}: ${startTime} - ${endTime}</p>
-            <p>${t('SHIFT_LOCATION_LABEL')}: ${shift.location}</p>
+            <p>${t('SHIFT_LOCATION_LABEL')}: ${escapeHtml(shift.location || '')}</p>
             ${shift.note ? `<p>${t('SHIFT_NOTE_LABEL')}: ${escapeHtml(shift.note)}</p>` : ''}
         </div>
         ${actionButtons}

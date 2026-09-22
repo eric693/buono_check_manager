@@ -1194,7 +1194,7 @@ function displaySalaryCalculation(data, container) {
                 </button>
             </div>
             <h3 class="text-xl font-bold mb-4">
-                ${data.employeeName || '--'} - ${data.yearMonth || '--'} 薪資計算結果
+                ${escapeHtml(data.employeeName || '--')} - ${escapeHtml(data.yearMonth || '--')} 薪資計算結果
                 <span class="ml-2 px-3 py-1 text-sm rounded-full ${isHourly ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}">
                     ${data.salaryType || '月薪'}
                 </span>

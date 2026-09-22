@@ -85,7 +85,7 @@ function renderUsersList(users) {
                 </div>
                 
                 <p class="text-xs text-gray-600 dark:text-gray-400 mb-2 truncate">
-                    ${user.dept || '未設定部門'} ${user.rate ? `| ${user.rate}` : ''}
+                    ${escapeHtml(user.dept || '未設定部門')} ${user.rate ? `| ${user.rate}` : ''}
                 </p>
                 
                 ${!isCurrentUser ? `

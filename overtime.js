@@ -64,7 +64,7 @@ async function loadEmployeeOvertimeRecords() {
             //  顯示本月統計
             displayMonthlyOvertimeStats(totalApprovedHours);
             
-            renderOvertimeRecords(res.requests, recordsList);
+            await renderOvertimeRecords(res.requests, recordsList);
         } else {
             recordsEmpty.style.display = 'block';
             displayMonthlyOvertimeStats(0); // 顯示 0 小時
@@ -160,8 +160,17 @@ function formatTimeDisplay(timeStr) {
 /**
  * 渲染加班記錄列表
  */
-function renderOvertimeRecords(requests, container) {
+async function renderOvertimeRecords(requests, container) {
     container.innerHTML = '';
+    
+    // 整頁的附件一次抓完，不要每筆各打一次 API
+    if (typeof prefetchAttachments === 'function') {
+        await prefetchAttachments('overtime', requests.map(r => buildAttachmentKey('overtime', {
+            employeeId: r.employeeId || userId,
+            overtimeDate: r.overtimeDate || r.date,
+            startTime: r.startTime
+        })));
+    }
     
     requests.forEach(req => {
         const li = document.createElement('li');
@@ -568,7 +577,7 @@ async function _doLoadPendingOvertime() {
                 return true;
             });
             console.log(`載入待審核: 原始 ${res.requests.length} 筆 → 去重後 ${uniqueRequests.length} 筆`);
-            renderPendingOvertimeRequests(uniqueRequests, requestsList);
+            await renderPendingOvertimeRequests(uniqueRequests, requestsList);
         } else {
             requestsEmpty.style.display = 'block';
         }
@@ -581,8 +590,16 @@ async function _doLoadPendingOvertime() {
 /**
  * 渲染待審核列表
  */
-function renderPendingOvertimeRequests(requests, container) {
+async function renderPendingOvertimeRequests(requests, container) {
     container.innerHTML = '';
+    
+    if (typeof prefetchAttachments === 'function') {
+        await prefetchAttachments('overtime', requests.map(r => buildAttachmentKey('overtime', {
+            employeeId: r.employeeId,
+            overtimeDate: r.overtimeDate || r.date,
+            startTime: r.startTime
+        })));
+    }
     
     requests.forEach(req => {
         const li = document.createElement('li');

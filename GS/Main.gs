@@ -356,6 +356,8 @@ function doGet(e) {
         return respond1(handleUploadAttachment(e.parameter));
       case "listAttachments":
         return respond1(handleListAttachments(e.parameter));
+      case "listAttachmentsBatch":
+        return respond1(handleListAttachmentsBatch(e.parameter));
       case "getAttachment":
         return respond1(handleGetAttachment(e.parameter));
       case "deleteAttachment":

@@ -7,6 +7,10 @@
 // 兩邊算出來的值一定相同。
 
 const ATTACHMENT_MAX_MB = 3;
+
+// 清單畫面會先用一次 listAttachmentsBatch 把整頁的附件撈回來放這裡，
+// 之後每一筆記錄直接從快取畫，不必各自再打一次 API。
+let _attachmentCache = null;
 const ATTACHMENT_ACCEPT = 'image/jpeg,image/png,image/webp,image/heic,application/pdf';
 
 /**
@@ -55,6 +59,38 @@ function formatFileSize(bytes) {
     if (size < 1024) return `${size} B`;
     if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`;
     return `${(size / 1024 / 1024).toFixed(1)} MB`;
+}
+
+/**
+ * 清單渲染前先把整頁的附件一次抓回來。
+ *
+ * 沒有這一步的話，每一筆記錄都會各自呼叫 listAttachments —— 20 筆請假就是
+ * 20 次 Apps Script 呼叫，而 Apps Script 對同一個使用者是排隊處理的。
+ *
+ * @param {string} type
+ * @param {Array<string>} recordKeys
+ */
+async function prefetchAttachments(type, recordKeys) {
+    const keys = [...new Set((recordKeys || []).filter(Boolean))];
+    if (keys.length === 0) {
+        _attachmentCache = { type: type, data: {} };
+        return;
+    }
+
+    try {
+        const res = await callApifetch(
+            `listAttachmentsBatch&type=${encodeURIComponent(type)}` +
+            `&recordKeys=${encodeURIComponent(JSON.stringify(keys))}`, null);
+
+        _attachmentCache = {
+            type: type,
+            data: (res.ok && res.attachments) ? res.attachments : {}
+        };
+    } catch (error) {
+        // 抓不到就退回逐筆查詢，不要讓整頁的附件都消失
+        console.warn('批次載入附件失敗，改為逐筆查詢:', error);
+        _attachmentCache = null;
+    }
 }
 
 /**
@@ -129,6 +165,7 @@ function buildAttachmentUploader(type, recordKey, onDone) {
 
             if (res.ok) {
                 showNotification(t('ATTACHMENT_UPLOADED'), 'success');
+                _attachmentCache = null;  // 剛上傳的不在批次快取裡
                 if (onDone) await onDone();
             } else {
                 showNotification(res.msg || t('ATTACHMENT_UPLOAD_FAILED'), 'error');
@@ -154,11 +191,17 @@ async function refreshAttachmentList(list, type, recordKey, canUpload) {
     list.innerHTML = '';
 
     try {
-        const res = await callApifetch(
-            `listAttachments&type=${encodeURIComponent(type)}&recordKey=${encodeURIComponent(recordKey)}`,
-            null);
+        let attachments;
 
-        const attachments = (res.ok && res.attachments) || [];
+        // 有批次快取就直接用；上傳或刪除之後會清掉快取，改走即時查詢拿到最新結果
+        if (_attachmentCache && _attachmentCache.type === type) {
+            attachments = _attachmentCache.data[recordKey] || [];
+        } else {
+            const res = await callApifetch(
+                `listAttachments&type=${encodeURIComponent(type)}&recordKey=${encodeURIComponent(recordKey)}`,
+                null);
+            attachments = (res.ok && res.attachments) || [];
+        }
 
         if (attachments.length === 0) {
             const empty = document.createElement('span');
@@ -200,6 +243,7 @@ function buildAttachmentItem(attachment, canDelete, onDone) {
                     `deleteAttachment&attachmentId=${encodeURIComponent(attachment.attachmentId)}`, null);
                 if (res.ok) {
                     showNotification(t('ATTACHMENT_DELETED'), 'success');
+                    _attachmentCache = null;  // 快取裡還有剛刪掉的那筆
                     if (onDone) await onDone();
                 } else {
                     showNotification(res.msg || t('ATTACHMENT_DELETE_FAILED'), 'error');

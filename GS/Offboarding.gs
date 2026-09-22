@@ -114,6 +114,11 @@ function handleGetPayslipAcknowledgements(params) {
     const yearMonthIndex = headers.indexOf('年月');
     const ackIndex = headers.indexOf(MONTHLY_ACK_COLUMN);
 
+    // 欄位缺了就直接說清楚，不要讓 data[i][-1] 變成 undefined 一路傳到前端
+    if (nameIndex === -1 || idIndex === -1 || yearMonthIndex === -1 || ackIndex === -1) {
+      return { ok: false, msg: '薪資記錄表缺少必要欄位' };
+    }
+
     const rows = [];
 
     for (let i = 1; i < data.length; i++) {

@@ -201,6 +201,73 @@ function handleListAttachments(params) {
 }
 
 /**
+ * API：一次查詢多筆申請單的附件。
+ *
+ * 清單畫面上每一筆記錄各打一次 listAttachments 的話，20 筆請假就是 20 次
+ * Apps Script 呼叫 —— 而 Apps Script 對同一個使用者是排隊處理的，畫面會很慢。
+ * 這裡讓前端把所有記錄鍵一次送上來，整張表只掃一遍。
+ *
+ * 參數：type、recordKeys（JSON 陣列）
+ * 回傳：{ 記錄鍵: [附件...] }
+ */
+function handleListAttachmentsBatch(params) {
+  try {
+    const session = checkSession_(params.token);
+    if (!session.ok || !session.user) {
+      return { ok: false, code: 'SESSION_INVALID', msg: '未授權或 session 已過期' };
+    }
+
+    const type = String(params.type || '').trim();
+    if (!type) {
+      return { ok: false, code: 'MISSING_PARAMS', msg: '缺少類型' };
+    }
+
+    let recordKeys;
+    try {
+      recordKeys = JSON.parse(params.recordKeys || '[]');
+    } catch (error) {
+      return { ok: false, code: 'INVALID_PARAMS', msg: '記錄識別格式錯誤' };
+    }
+
+    if (!Array.isArray(recordKeys) || recordKeys.length === 0) {
+      return { ok: true, attachments: {} };
+    }
+
+    // 用物件當 set，查詢是 O(1)，不必對每一列跑 indexOf
+    const wanted = {};
+    recordKeys.forEach(key => { wanted[String(key)] = true; });
+
+    const isAdmin = (session.user.dept === '管理員');
+    const data = getAttachmentSheet_().getDataRange().getValues();
+    const grouped = {};
+
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][1]).trim() !== type) continue;
+
+      const key = String(data[i][2]).trim();
+      if (!wanted[key]) continue;
+      if (!isAdmin && String(data[i][3]).trim() !== session.user.userId) continue;
+
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push({
+        attachmentId: data[i][0],
+        filename: data[i][5],
+        mimeType: data[i][6],
+        size: data[i][8],
+        uploadedBy: data[i][4],
+        uploadedAt: formatDateTime(data[i][9])
+      });
+    }
+
+    return { ok: true, attachments: grouped };
+
+  } catch (error) {
+    Logger.log(' handleListAttachmentsBatch 錯誤: ' + error.message);
+    return { ok: false, msg: error.toString() };
+  }
+}
+
+/**
  * API：取得附件內容（base64）。本人或管理員才能讀。
  */
 function handleGetAttachment(params) {
