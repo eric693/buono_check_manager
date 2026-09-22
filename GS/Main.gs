@@ -361,6 +361,16 @@ function doGet(e) {
       case "deleteAttachment":
         return respond1(handleDeleteAttachment(e.parameter));
 
+      // ==================== 薪資簽收與離職 ====================
+      case "acknowledgePayslip":
+        return respond1(handleAcknowledgePayslip(e.parameter));
+      case "getPayslipAcknowledgements":
+        return respond1(handleGetPayslipAcknowledgements(e.parameter));
+      case "offboardEmployee":
+        return respond1(handleOffboardEmployee(e.parameter));
+      case "reinstateEmployee":
+        return respond1(handleReinstateEmployee(e.parameter));
+
       case "getAnnouncements":
         return respond1(handleGetAnnouncements(e.parameter));
       case "addAnnouncement":

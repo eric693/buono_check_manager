@@ -507,8 +507,58 @@ function renderCustomSalaryItems(data) {
     });
 }
 
+/**
+ * 薪資單簽收區塊。
+ *
+ * 只有列印版而沒有簽收記錄的話，公司拿不出「員工已收到」的證明；
+ * 已簽收的不再顯示按鈕，第一次簽收的時間才有意義，不覆蓋。
+ */
+function renderPayslipAcknowledgement(data) {
+    const status = document.getElementById('payslip-ack-status');
+    const button = document.getElementById('acknowledge-payslip-btn');
+    if (!status || !button) return;
+
+    const yearMonth = data.yearMonth || data['年月'] || '';
+    const acknowledgedAt = data['簽收時間'] || data.acknowledgedAt || '';
+
+    if (acknowledgedAt) {
+        status.textContent = `${t('PAYSLIP_ACKNOWLEDGED_AT')}：${acknowledgedAt}`;
+        button.style.display = 'none';
+        return;
+    }
+
+    status.textContent = t('PAYSLIP_NOT_ACKNOWLEDGED');
+    button.style.display = 'inline-block';
+    button.disabled = false;
+
+    button.onclick = async () => {
+        if (!yearMonth) return;
+        button.disabled = true;
+
+        try {
+            const res = await callApifetch(
+                `acknowledgePayslip&yearMonth=${encodeURIComponent(yearMonth)}`, null);
+
+            if (res.ok) {
+                status.textContent = `${t('PAYSLIP_ACKNOWLEDGED_AT')}：${res.acknowledgedAt}`;
+                button.style.display = 'none';
+                showNotification(t('PAYSLIP_ACK_DONE'), 'success');
+            } else {
+                showNotification(res.msg || t('PAYSLIP_ACK_FAILED'), 'error');
+                button.disabled = false;
+            }
+        } catch (error) {
+            console.error('簽收薪資單失敗:', error);
+            showNotification(t('PAYSLIP_ACK_FAILED'), 'error');
+            button.disabled = false;
+        }
+    };
+}
+
 function displayEmployeeSalary(data) {
     console.log(' 顯示薪資明細（完整版）:', data);
+    
+    renderPayslipAcknowledgement(data);
     
     const safeSet = (id, value) => {
         const el = document.getElementById(id);

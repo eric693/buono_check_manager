@@ -1084,6 +1084,62 @@ function buildAuditRow(entry) {
   return el;
 }
 
+// ==================== 薪資單簽收狀況 ====================
+
+async function loadPayslipAcknowledgements() {
+  const resultsEl = document.getElementById('ack-results');
+  const summaryEl = document.getElementById('ack-summary');
+  const btn = document.getElementById('load-ack-btn');
+  const yearMonth = document.getElementById('ack-month')?.value || '';
+
+  if (!yearMonth) {
+    showNotification(ta('SALARY_SELECT_MONTH', '請選擇年月'), 'error');
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+  if (resultsEl) resultsEl.innerHTML = '';
+  if (summaryEl) summaryEl.textContent = '';
+
+  try {
+    const res = await callApifetch(
+      `getPayslipAcknowledgements&yearMonth=${encodeURIComponent(yearMonth)}`, null);
+
+    if (!res.ok) {
+      showNotification(res.msg || ta('PAYSLIP_ACK_LOAD_FAILED', '查詢簽收狀況失敗'), 'error');
+      return;
+    }
+
+    if (summaryEl) {
+      summaryEl.textContent = `${res.acknowledged} / ${res.total} ` +
+        ta('PAYSLIP_ACK_COUNT', '位已簽收');
+    }
+
+    (res.rows || []).forEach(row => {
+      const el = document.createElement('div');
+      el.className = 'batch-result-row' + (row.acknowledged ? '' : ' failed');
+
+      const name = document.createElement('span');
+      name.textContent = row.employeeName || row.employeeId;
+
+      const detail = document.createElement('span');
+      detail.textContent = row.acknowledged
+        ? row.acknowledgedAt
+        : ta('PAYSLIP_NOT_ACKNOWLEDGED', '尚未簽收');
+
+      el.appendChild(name);
+      el.appendChild(detail);
+      if (resultsEl) resultsEl.appendChild(el);
+    });
+
+  } catch (error) {
+    console.error('查詢簽收狀況失敗:', error);
+    showNotification(ta('PAYSLIP_ACK_LOAD_FAILED', '查詢簽收狀況失敗'), 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 // ==================== 各分頁初始化 ====================
 
 async function initSalarySettingTab() {
@@ -1193,6 +1249,10 @@ async function initSalaryReportTab() {
     });
   }
 
+  const ackMonth = document.getElementById('ack-month');
+  if (ackMonth && !ackMonth.value) ackMonth.value = new Date().toISOString().slice(0, 7);
+
+  document.getElementById('load-ack-btn')?.addEventListener('click', loadPayslipAcknowledgements);
   document.getElementById('load-audit-btn')?.addEventListener('click', loadSalaryAuditLog);
   document.getElementById('batch-calc-btn')?.addEventListener('click', runBatchCalculation);
   document.getElementById('copy-config-btn')?.addEventListener('click', runCopySalaryConfig);

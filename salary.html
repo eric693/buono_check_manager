@@ -899,6 +899,15 @@
                     </div>
                     
                     <div id="current-salary-content" style="display: none;">
+                        <!-- 簽收：讓公司留下「員工已收到薪資單」的證明 -->
+                        <div id="payslip-ack-box" class="feature-box" style="margin-bottom: 1rem;">
+                            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;">
+                                <span id="payslip-ack-status" class="summary-hint"></span>
+                                <button type="button" id="acknowledge-payslip-btn" class="attachment-btn"
+                                        data-i18n="BTN_ACKNOWLEDGE_PAYSLIP" style="display:none;">確認已收到</button>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div class="info-card" style="background: rgba(34, 197, 94, 0.1);">
                                 <div class="info-label" data-i18n="SALARY_GROSS">應發總額</div>
@@ -1727,6 +1736,26 @@
 
                 <div id="batch-calc-progress" class="batch-progress"></div>
                 <div id="batch-calc-results" style="margin-top: 1rem;"></div>
+            </div>
+
+            <!-- 簽收狀況 -->
+            <div class="form-section">
+                <div class="feature-title" data-i18n="PAYSLIP_ACK_TITLE">薪資單簽收狀況</div>
+                <p style="color: #94a3b8; margin-bottom: 1.5rem;" data-i18n="PAYSLIP_ACK_DESC">
+                    查看某個月有哪些員工已經確認收到薪資單、哪些還沒。
+                </p>
+
+                <div class="form-group" style="max-width: 300px; margin-bottom: 1rem;">
+                    <label class="form-label" data-i18n="CALC_YEAR_MONTH_LABEL">年月</label>
+                    <input type="month" id="ack-month" class="form-input">
+                </div>
+
+                <button type="button" id="load-ack-btn" class="submit-btn" style="max-width: 300px;" data-i18n="BTN_LOAD_ACK">
+                    查詢簽收狀況
+                </button>
+
+                <div id="ack-summary" class="batch-progress"></div>
+                <div id="ack-results" style="margin-top: 1rem;"></div>
             </div>
 
             <!-- 薪資異動記錄 -->

@@ -124,6 +124,11 @@ function renderUsersList(users) {
                             </button>
                         `}
                         
+                        <button onclick="offboardEmployee('${user.userId}', '${escapeJsAttr(user.name)}')"
+                                class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-md transition-colors">
+                            辦理離職
+                        </button>
+                        
                         <button onclick="confirmDeleteUser('${user.userId}', '${escapeJsAttr(user.name)}')"
                                 class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-md transition-colors">
                             刪除
@@ -516,5 +521,67 @@ async function saveEmployeeBasicInfo() {
         if (saveBtn) {
             generalButtonState(saveBtn, 'idle');
         }
+    }
+}
+
+
+// ==================== 離職處理 ====================
+//
+// 刪除員工會把人整個移掉，出勤與薪資記錄就對不上人了。
+// 離職是把狀態標記起來：保留所有歷史資料，但他登不進來、也不會再被算薪。
+
+/**
+ * 辦理離職
+ */
+async function offboardEmployee(userId, userName) {
+    const today = new Date().toISOString().slice(0, 10);
+    const leaveDate = prompt(t('OFFBOARD_PROMPT_DATE'), today);
+    if (leaveDate === null) return;
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(leaveDate.trim())) {
+        showNotification(t('OFFBOARD_INVALID_DATE'), 'error');
+        return;
+    }
+
+    if (!confirm(t('OFFBOARD_CONFIRM', { name: userName, date: leaveDate }))) return;
+
+    try {
+        const res = await callApifetch(
+            `offboardEmployee&employeeId=${encodeURIComponent(userId)}` +
+            `&leaveDate=${encodeURIComponent(leaveDate.trim())}`);
+
+        if (res.ok) {
+            // 後端實際做了哪幾件事列在 console，管理員才知道狀態已經一致
+            showNotification(res.msg || t('OFFBOARD_DONE'), 'success');
+            if (res.steps) console.log(' 離職處理:\n' + res.steps.join('\n'));
+            await loadAllUsers();
+        } else {
+            showNotification(res.msg || t('OFFBOARD_FAILED'), 'error');
+        }
+    } catch (error) {
+        console.error('辦理離職失敗:', error);
+        showNotification(t('OFFBOARD_FAILED'), 'error');
+    }
+}
+
+/**
+ * 復職（誤操作要救得回來）
+ */
+async function reinstateEmployee(userId, userName) {
+    if (!confirm(t('REINSTATE_CONFIRM', { name: userName }))) return;
+
+    try {
+        const res = await callApifetch(
+            `reinstateEmployee&employeeId=${encodeURIComponent(userId)}`);
+
+        if (res.ok) {
+            showNotification(res.msg || t('REINSTATE_DONE'), 'success');
+            await loadAllUsers();
+        } else {
+            showNotification(res.msg || t('REINSTATE_FAILED'), 'error');
+        }
+    } catch (error) {
+        console.error('辦理復職失敗:', error);
+        showNotification(t('REINSTATE_FAILED'), 'error');
     }
 }
