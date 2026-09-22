@@ -15,6 +15,8 @@ const PRECACHE_URLS = [
   './index.html',
   './salary.html',
   './shift.html',
+  './manual.html',
+  './manual.js',
   './style.css',
   './config.js',
   './utils.js',

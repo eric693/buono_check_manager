@@ -992,5 +992,15 @@
     "SALARY_COPY_CONFIRM_DETAIL": "Ghi đè",
     "SALARY_COPY_CONFIRM_EXISTING": "thiết lập hiện có, tạo mới",
     "SALARY_COPY_CONFIRM_NEW": "thiết lập. Tiếp tục?",
+    "MANUAL_TITLE": "Hướng dẫn sử dụng",
+    "MANUAL_SUBTITLE": "Tài liệu này được tổng hợp tự động từ phần \"Hướng dẫn thao tác\" trên từng trang, nên luôn khớp với những gì bạn thấy.",
+    "MANUAL_TOC": "Mục lục",
+    "MANUAL_PRINT": "In",
+    "MANUAL_BACK": "Quay lại hệ thống",
+    "MANUAL_GROUP_MAIN": "Hệ thống chính",
+    "MANUAL_GROUP_SHIFT": "Quản lý ca làm",
+    "MANUAL_GROUP_SALARY": "Quản lý lương",
+    "MANUAL_LOAD_FAILED": "Không tải được nội dung hướng dẫn. Vui lòng tải lại trang.",
+    "BTN_MANUAL": "Hướng dẫn",
     "LUNCH_BREAK_NOTE": "※ Chỉ tính giờ trong ca làm ({start}-{end}, trừ nghỉ trưa {lunchStart}-{lunchEnd}); cuối tuần và ngày lễ không tính."
 }

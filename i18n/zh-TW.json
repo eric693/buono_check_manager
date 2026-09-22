@@ -976,5 +976,15 @@
     "SALARY_COPY_CONFIRM_DETAIL": "將覆寫",
     "SALARY_COPY_CONFIRM_EXISTING": "位既有設定、新建",
     "SALARY_COPY_CONFIRM_NEW": "位新設定，確定要繼續嗎？",
+    "MANUAL_TITLE": "使用手冊",
+    "MANUAL_SUBTITLE": "本手冊由系統內各功能頁的「操作說明」自動彙整，內容與畫面上看到的一致。",
+    "MANUAL_TOC": "目錄",
+    "MANUAL_PRINT": "列印",
+    "MANUAL_BACK": "返回系統",
+    "MANUAL_GROUP_MAIN": "主系統",
+    "MANUAL_GROUP_SHIFT": "排班管理",
+    "MANUAL_GROUP_SALARY": "薪資管理",
+    "MANUAL_LOAD_FAILED": "說明資料載入失敗，請重新整理頁面。",
+    "BTN_MANUAL": "使用手冊",
     "LUNCH_BREAK_NOTE": "※ 僅計算工作時段（{start}-{end}，已扣午休 {lunchStart}-{lunchEnd}），例假日與國定假日不計"
 }

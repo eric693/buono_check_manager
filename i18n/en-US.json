@@ -957,5 +957,15 @@
     "SALARY_COPY_CONFIRM_DETAIL": "Overwrite",
     "SALARY_COPY_CONFIRM_EXISTING": "existing, create",
     "SALARY_COPY_CONFIRM_NEW": "new. Continue?",
+    "MANUAL_TITLE": "User Manual",
+    "MANUAL_SUBTITLE": "This manual is assembled from the in-app help on each page, so it always matches what you see on screen.",
+    "MANUAL_TOC": "Contents",
+    "MANUAL_PRINT": "Print",
+    "MANUAL_BACK": "Back to app",
+    "MANUAL_GROUP_MAIN": "Main system",
+    "MANUAL_GROUP_SHIFT": "Shift management",
+    "MANUAL_GROUP_SALARY": "Payroll",
+    "MANUAL_LOAD_FAILED": "Could not load the help content. Please refresh the page.",
+    "BTN_MANUAL": "Manual",
     "LUNCH_BREAK_NOTE": "Counts working hours only ({start}-{end}, lunch {lunchStart}-{lunchEnd} excluded); weekends and public holidays are not counted."
 }

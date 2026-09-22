@@ -936,5 +936,15 @@
     "SALARY_COPY_CONFIRM_DETAIL": "Timpa",
     "SALARY_COPY_CONFIRM_EXISTING": "pengaturan yang ada, buat",
     "SALARY_COPY_CONFIRM_NEW": "pengaturan baru. Lanjutkan?",
+    "MANUAL_TITLE": "Panduan Pengguna",
+    "MANUAL_SUBTITLE": "Panduan ini disusun otomatis dari bantuan di tiap halaman, jadi selalu sesuai dengan yang tampil di layar.",
+    "MANUAL_TOC": "Daftar isi",
+    "MANUAL_PRINT": "Cetak",
+    "MANUAL_BACK": "Kembali ke aplikasi",
+    "MANUAL_GROUP_MAIN": "Sistem utama",
+    "MANUAL_GROUP_SHIFT": "Manajemen jadwal",
+    "MANUAL_GROUP_SALARY": "Penggajian",
+    "MANUAL_LOAD_FAILED": "Gagal memuat konten bantuan. Silakan muat ulang halaman.",
+    "BTN_MANUAL": "Panduan",
     "LUNCH_BREAK_NOTE": "※ Hanya menghitung jam kerja ({start}-{end}, istirahat {lunchStart}-{lunchEnd} dikurangi); akhir pekan dan hari libur tidak dihitung."
 }

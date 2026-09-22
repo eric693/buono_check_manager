@@ -936,5 +936,15 @@
     "SALARY_COPY_CONFIRM_DETAIL": "上書き",
     "SALARY_COPY_CONFIRM_EXISTING": "件、新規作成",
     "SALARY_COPY_CONFIRM_NEW": "件です。続行しますか？",
+    "MANUAL_TITLE": "利用マニュアル",
+    "MANUAL_SUBTITLE": "本マニュアルは各機能ページの「操作説明」から自動生成しており、画面の表示と常に一致します。",
+    "MANUAL_TOC": "目次",
+    "MANUAL_PRINT": "印刷",
+    "MANUAL_BACK": "システムへ戻る",
+    "MANUAL_GROUP_MAIN": "メインシステム",
+    "MANUAL_GROUP_SHIFT": "シフト管理",
+    "MANUAL_GROUP_SALARY": "給与管理",
+    "MANUAL_LOAD_FAILED": "説明データの読み込みに失敗しました。ページを再読み込みしてください。",
+    "BTN_MANUAL": "マニュアル",
     "LUNCH_BREAK_NOTE": "※ 勤務時間帯（{start}-{end}、昼休み {lunchStart}-{lunchEnd} を除く）のみ計算し、休日と祝日は含みません。"
 }

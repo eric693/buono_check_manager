@@ -99,7 +99,17 @@ console.log('載入腳本:', scripts.join(', '));
     'salary.html': ['buildPayslipHtml', 'printPayslip', 'displaySalaryCalculation', 'saveSalaryRecord'],
     'shift.html': ['isFullDayOvertime'].filter(() => false)
   };
-  const probes = common.concat(perPage[page] || []);
+  // 只檢查這一頁真的有載入的工具檔提供的函式；
+  // 像 manual.html 只需要 i18n，沒載 utils.js / libs.js 是正常的
+  const providedBy = {
+    todayStr: 'utils.js', toLocalDateStr: 'utils.js', escapeHtml: 'utils.js',
+    escapeJsAttr: 'utils.js', generalButtonState: 'utils.js',
+    ensureLib: 'libs.js',
+    t: 'i18n.js', renderTranslations: 'i18n.js', loadTranslations: 'i18n.js'
+  };
+  const probes = common
+    .filter(fn => !providedBy[fn] || scripts.includes(providedBy[fn]))
+    .concat(perPage[page] || []);
   for (const fn of probes) {
     if (typeof window[fn] !== 'function') errors.push(`缺少全域函式: ${fn}`);
   }

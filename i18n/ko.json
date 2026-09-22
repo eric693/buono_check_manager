@@ -936,5 +936,15 @@
     "SALARY_COPY_CONFIRM_DETAIL": "덮어쓰기",
     "SALARY_COPY_CONFIRM_EXISTING": "건, 신규 생성",
     "SALARY_COPY_CONFIRM_NEW": "건입니다. 계속할까요?",
+    "MANUAL_TITLE": "사용 설명서",
+    "MANUAL_SUBTITLE": "이 설명서는 각 기능 페이지의 '사용 안내'를 모아 자동 생성하므로 화면 내용과 항상 일치합니다.",
+    "MANUAL_TOC": "목차",
+    "MANUAL_PRINT": "인쇄",
+    "MANUAL_BACK": "시스템으로 돌아가기",
+    "MANUAL_GROUP_MAIN": "메인 시스템",
+    "MANUAL_GROUP_SHIFT": "근무표 관리",
+    "MANUAL_GROUP_SALARY": "급여 관리",
+    "MANUAL_LOAD_FAILED": "안내 데이터를 불러오지 못했습니다. 페이지를 새로고침해 주세요.",
+    "BTN_MANUAL": "설명서",
     "LUNCH_BREAK_NOTE": "※ 근무 시간대({start}-{end}, 점심 {lunchStart}-{lunchEnd} 제외)만 계산하며 주말과 공휴일은 포함하지 않습니다."
 }
