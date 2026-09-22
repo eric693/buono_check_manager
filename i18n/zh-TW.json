@@ -998,5 +998,16 @@
     "SALARY_AUDIT_MONTH": "年月",
     "SALARY_AUDIT_ALL": "全部",
     "BTN_LOAD_AUDIT": "查詢異動記錄",
+    "BTN_ADD_ATTACHMENT": "附加檔案",
+    "ATTACHMENT_NONE": "無附件",
+    "ATTACHMENT_UPLOADING": "上傳中...",
+    "ATTACHMENT_UPLOADED": "附件已上傳",
+    "ATTACHMENT_UPLOAD_FAILED": "附件上傳失敗",
+    "ATTACHMENT_TOO_LARGE": "檔案超過 {max} MB 上限",
+    "ATTACHMENT_DELETE_CONFIRM": "確定要刪除這個附件嗎？",
+    "ATTACHMENT_DELETED": "附件已刪除",
+    "ATTACHMENT_DELETE_FAILED": "附件刪除失敗",
+    "ATTACHMENT_OPEN_FAILED": "開啟附件失敗",
+    "ATTACHMENT_POPUP_BLOCKED": "瀏覽器阻擋了新分頁，請允許彈出視窗",
     "LUNCH_BREAK_NOTE": "※ 僅計算工作時段（{start}-{end}，已扣午休 {lunchStart}-{lunchEnd}），例假日與國定假日不計"
 }

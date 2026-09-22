@@ -958,5 +958,16 @@
     "SALARY_AUDIT_MONTH": "年月",
     "SALARY_AUDIT_ALL": "すべて",
     "BTN_LOAD_AUDIT": "変更履歴を表示",
+    "BTN_ADD_ATTACHMENT": "ファイルを添付",
+    "ATTACHMENT_NONE": "添付なし",
+    "ATTACHMENT_UPLOADING": "アップロード中...",
+    "ATTACHMENT_UPLOADED": "添付しました",
+    "ATTACHMENT_UPLOAD_FAILED": "アップロードに失敗しました",
+    "ATTACHMENT_TOO_LARGE": "ファイルが {max} MB の上限を超えています",
+    "ATTACHMENT_DELETE_CONFIRM": "この添付ファイルを削除しますか？",
+    "ATTACHMENT_DELETED": "添付を削除しました",
+    "ATTACHMENT_DELETE_FAILED": "添付の削除に失敗しました",
+    "ATTACHMENT_OPEN_FAILED": "添付を開けませんでした",
+    "ATTACHMENT_POPUP_BLOCKED": "ブラウザが新しいタブをブロックしました。ポップアップを許可してください",
     "LUNCH_BREAK_NOTE": "※ 勤務時間帯（{start}-{end}、昼休み {lunchStart}-{lunchEnd} を除く）のみ計算し、休日と祝日は含みません。"
 }

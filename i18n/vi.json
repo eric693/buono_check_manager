@@ -1014,5 +1014,16 @@
     "SALARY_AUDIT_MONTH": "Tháng",
     "SALARY_AUDIT_ALL": "Tất cả",
     "BTN_LOAD_AUDIT": "Xem nhật ký",
+    "BTN_ADD_ATTACHMENT": "Đính kèm tệp",
+    "ATTACHMENT_NONE": "Không có tệp đính kèm",
+    "ATTACHMENT_UPLOADING": "Đang tải lên...",
+    "ATTACHMENT_UPLOADED": "Đã tải tệp lên",
+    "ATTACHMENT_UPLOAD_FAILED": "Tải lên thất bại",
+    "ATTACHMENT_TOO_LARGE": "Tệp vượt quá giới hạn {max} MB",
+    "ATTACHMENT_DELETE_CONFIRM": "Xoá tệp đính kèm này?",
+    "ATTACHMENT_DELETED": "Đã xoá tệp đính kèm",
+    "ATTACHMENT_DELETE_FAILED": "Không xoá được tệp đính kèm",
+    "ATTACHMENT_OPEN_FAILED": "Không mở được tệp đính kèm",
+    "ATTACHMENT_POPUP_BLOCKED": "Trình duyệt đã chặn tab mới, vui lòng cho phép cửa sổ bật lên",
     "LUNCH_BREAK_NOTE": "※ Chỉ tính giờ trong ca làm ({start}-{end}, trừ nghỉ trưa {lunchStart}-{lunchEnd}); cuối tuần và ngày lễ không tính."
 }

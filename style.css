@@ -681,3 +681,85 @@ html.dark .day-cell.leave-day.abnormal-day {
     background: linear-gradient(135deg, #991b1b 0%, #1e40af 100%);
     border: 2px dashed #ef4444;
 }
+
+/* ==================== 申請單附件 ==================== */
+.attachment-box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(156, 163, 175, 0.4);
+}
+
+.attachment-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.attachment-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #eef2ff;
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 12px;
+}
+
+.attachment-link {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: #4338ca;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.attachment-remove {
+    background: none;
+    border: 0;
+    padding: 0 2px;
+    color: #ef4444;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.attachment-empty {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.attachment-btn {
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 12px;
+    color: #4338ca;
+    cursor: pointer;
+}
+
+.attachment-btn:hover {
+    background: #e0e7ff;
+}
+
+.attachment-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.dark .attachment-item,
+.dark .attachment-btn {
+    background: rgba(67, 56, 202, 0.2);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.dark .attachment-link,
+.dark .attachment-btn {
+    color: #a5b4fc;
+}

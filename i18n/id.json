@@ -958,5 +958,16 @@
     "SALARY_AUDIT_MONTH": "Bulan",
     "SALARY_AUDIT_ALL": "Semua",
     "BTN_LOAD_AUDIT": "Muat riwayat",
+    "BTN_ADD_ATTACHMENT": "Lampirkan berkas",
+    "ATTACHMENT_NONE": "Tidak ada lampiran",
+    "ATTACHMENT_UPLOADING": "Mengunggah...",
+    "ATTACHMENT_UPLOADED": "Lampiran terunggah",
+    "ATTACHMENT_UPLOAD_FAILED": "Gagal mengunggah",
+    "ATTACHMENT_TOO_LARGE": "Berkas melebihi batas {max} MB",
+    "ATTACHMENT_DELETE_CONFIRM": "Hapus lampiran ini?",
+    "ATTACHMENT_DELETED": "Lampiran dihapus",
+    "ATTACHMENT_DELETE_FAILED": "Gagal menghapus lampiran",
+    "ATTACHMENT_OPEN_FAILED": "Gagal membuka lampiran",
+    "ATTACHMENT_POPUP_BLOCKED": "Browser memblokir tab baru, izinkan pop-up",
     "LUNCH_BREAK_NOTE": "※ Hanya menghitung jam kerja ({start}-{end}, istirahat {lunchStart}-{lunchEnd} dikurangi); akhir pekan dan hari libur tidak dihitung."
 }

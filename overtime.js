@@ -228,6 +228,20 @@ function renderOvertimeRecords(requests, container) {
             ` : ''}
         `;
         
+        // 加班佐證（工作照片、主管信件等）
+        if (typeof renderAttachments === 'function') {
+            const box = document.createElement('div');
+            box.className = 'mt-2';
+            li.appendChild(box);
+
+            const key = buildAttachmentKey('overtime', {
+                employeeId: req.employeeId || userId,
+                overtimeDate: req.overtimeDate || req.date,
+                startTime: req.startTime
+            });
+            renderAttachments(box, 'overtime', key, { canUpload: req.status === 'PENDING' || req.reviewStatus === '待審核' });
+        }
+
         container.appendChild(li);
         renderTranslations(li);
     });
@@ -614,9 +628,24 @@ function renderPendingOvertimeRequests(requests, container) {
             </div>
         `;
         
+        // 加班佐證（工作照片、主管信件等）
+        if (typeof renderAttachments === 'function') {
+            const box = document.createElement('div');
+            box.className = 'mt-2';
+            li.appendChild(box);
+
+            const key = buildAttachmentKey('overtime', {
+                employeeId: req.employeeId || '',
+                overtimeDate: req.overtimeDate || req.date,
+                startTime: req.startTime
+            });
+            renderAttachments(box, 'overtime', key, { canUpload: false });
+        }
+
         container.appendChild(li);
         renderTranslations(li);
     });
+
     
     // 綁定審核按鈕事件
     container.querySelectorAll('.approve-overtime-btn').forEach(btn => {

@@ -351,6 +351,16 @@ function doGet(e) {
       case "getSalaryAuditLog":
         return respond1(handleGetSalaryAuditLog(e.parameter));
 
+      // ==================== 申請單附件 ====================
+      case "uploadAttachment":
+        return respond1(handleUploadAttachment(e.parameter));
+      case "listAttachments":
+        return respond1(handleListAttachments(e.parameter));
+      case "getAttachment":
+        return respond1(handleGetAttachment(e.parameter));
+      case "deleteAttachment":
+        return respond1(handleDeleteAttachment(e.parameter));
+
       case "getAnnouncements":
         return respond1(handleGetAnnouncements(e.parameter));
       case "addAnnouncement":

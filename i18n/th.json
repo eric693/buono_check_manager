@@ -1017,5 +1017,16 @@
     "SALARY_AUDIT_MONTH": "ปีเดือน",
     "SALARY_AUDIT_ALL": "ทั้งหมด",
     "BTN_LOAD_AUDIT": "ดูประวัติการแก้ไข",
+    "BTN_ADD_ATTACHMENT": "แนบไฟล์",
+    "ATTACHMENT_NONE": "ไม่มีไฟล์แนบ",
+    "ATTACHMENT_UPLOADING": "กำลังอัปโหลด...",
+    "ATTACHMENT_UPLOADED": "อัปโหลดไฟล์แนบแล้ว",
+    "ATTACHMENT_UPLOAD_FAILED": "อัปโหลดไม่สำเร็จ",
+    "ATTACHMENT_TOO_LARGE": "ไฟล์เกินขีดจำกัด {max} MB",
+    "ATTACHMENT_DELETE_CONFIRM": "ต้องการลบไฟล์แนบนี้หรือไม่?",
+    "ATTACHMENT_DELETED": "ลบไฟล์แนบแล้ว",
+    "ATTACHMENT_DELETE_FAILED": "ลบไฟล์แนบไม่สำเร็จ",
+    "ATTACHMENT_OPEN_FAILED": "เปิดไฟล์แนบไม่สำเร็จ",
+    "ATTACHMENT_POPUP_BLOCKED": "เบราว์เซอร์บล็อกแท็บใหม่ กรุณาอนุญาตป๊อปอัป",
     "LUNCH_BREAK_NOTE": "※ นับเฉพาะเวลาทำงาน ({start}-{end} หักพักเที่ยง {lunchStart}-{lunchEnd}) ไม่นับวันหยุดสุดสัปดาห์และวันหยุดนักขัตฤกษ์"
 }

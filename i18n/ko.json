@@ -958,5 +958,16 @@
     "SALARY_AUDIT_MONTH": "연월",
     "SALARY_AUDIT_ALL": "전체",
     "BTN_LOAD_AUDIT": "변경 이력 조회",
+    "BTN_ADD_ATTACHMENT": "파일 첨부",
+    "ATTACHMENT_NONE": "첨부 없음",
+    "ATTACHMENT_UPLOADING": "업로드 중...",
+    "ATTACHMENT_UPLOADED": "첨부되었습니다",
+    "ATTACHMENT_UPLOAD_FAILED": "업로드 실패",
+    "ATTACHMENT_TOO_LARGE": "파일이 {max} MB 제한을 초과했습니다",
+    "ATTACHMENT_DELETE_CONFIRM": "이 첨부 파일을 삭제할까요?",
+    "ATTACHMENT_DELETED": "첨부를 삭제했습니다",
+    "ATTACHMENT_DELETE_FAILED": "첨부 삭제에 실패했습니다",
+    "ATTACHMENT_OPEN_FAILED": "첨부를 열지 못했습니다",
+    "ATTACHMENT_POPUP_BLOCKED": "브라우저가 새 탭을 차단했습니다. 팝업을 허용해 주세요",
     "LUNCH_BREAK_NOTE": "※ 근무 시간대({start}-{end}, 점심 {lunchStart}-{lunchEnd} 제외)만 계산하며 주말과 공휴일은 포함하지 않습니다."
 }

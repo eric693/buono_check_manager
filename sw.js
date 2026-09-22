@@ -31,6 +31,7 @@ const PRECACHE_URLS = [
   './users.js',
   './punch-adjust.js',
   './qr-punch.js',
+  './attachments.js',
   './location-picker.js',
   './analytics.js',
   './biometric.js',

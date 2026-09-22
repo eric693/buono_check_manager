@@ -695,6 +695,19 @@ function renderLeaveRecords(records) {
             </div>
         `;
         
+        // 附件（診斷證明之類）。待審核的才可以再加或刪，已審完的只能看。
+        if (typeof renderAttachments === 'function') {
+            const box = document.createElement('div');
+            box.className = 'mt-3';
+            card.appendChild(box);
+
+            const key = buildAttachmentKey('leave', {
+                employeeId: record.employeeId || userId,
+                startDateTime: record.startDateTime || record.startTime
+            });
+            renderAttachments(box, 'leave', key, { canUpload: record.status === 'PENDING' });
+        }
+
         listEl.appendChild(card);
     });
     
@@ -802,6 +815,19 @@ function renderPendingLeaveRequests(requests) {
             </div>
         `;
         
+        // 審核者要看得到附件才有依據，但不該替別人加或刪
+        if (typeof renderAttachments === 'function') {
+            const box = document.createElement('div');
+            box.className = 'mt-2';
+            li.appendChild(box);
+
+            const key = buildAttachmentKey('leave', {
+                employeeId: req.employeeId,
+                startDateTime: req.startDateTime || req.startTime
+            });
+            renderAttachments(box, 'leave', key, { canUpload: false });
+        }
+
         listEl.appendChild(li);
     });
     

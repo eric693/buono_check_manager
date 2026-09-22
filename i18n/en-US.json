@@ -979,5 +979,16 @@
     "SALARY_AUDIT_MONTH": "Month",
     "SALARY_AUDIT_ALL": "All",
     "BTN_LOAD_AUDIT": "Load change log",
+    "BTN_ADD_ATTACHMENT": "Attach file",
+    "ATTACHMENT_NONE": "No attachments",
+    "ATTACHMENT_UPLOADING": "Uploading...",
+    "ATTACHMENT_UPLOADED": "Attachment uploaded",
+    "ATTACHMENT_UPLOAD_FAILED": "Upload failed",
+    "ATTACHMENT_TOO_LARGE": "File exceeds the {max} MB limit",
+    "ATTACHMENT_DELETE_CONFIRM": "Delete this attachment?",
+    "ATTACHMENT_DELETED": "Attachment deleted",
+    "ATTACHMENT_DELETE_FAILED": "Could not delete the attachment",
+    "ATTACHMENT_OPEN_FAILED": "Could not open the attachment",
+    "ATTACHMENT_POPUP_BLOCKED": "The browser blocked the new tab; please allow pop-ups",
     "LUNCH_BREAK_NOTE": "Counts working hours only ({start}-{end}, lunch {lunchStart}-{lunchEnd} excluded); weekends and public holidays are not counted."
 }
