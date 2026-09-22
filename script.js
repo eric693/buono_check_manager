@@ -1983,7 +1983,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (logoutBtn) logoutBtn.onclick = () => {
         localStorage.removeItem("sessionToken");
-        window.location.href = "/Bryan_check_manager"
+        window.location.href = "/buono_check_manager"
     };
     
     /* ===== 打卡功能 ===== */

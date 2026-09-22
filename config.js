@@ -2,10 +2,10 @@
 
 const API_CONFIG = {
   // 正式環境的 API URL
-  apiUrl: "https://script.google.com/macros/s/AKfycby2OqUo5ZJqV7g_qXDTyh07ZnC5NjMg_LloYjpd5B4c8rMZFxtSN4MAGxSMaQpsf05xEA/exec",
+  apiUrl: "https://script.google.com/macros/s/AKfycbxf6v0b4dN2XKqRj2SkTywvLuJRiLYwmFtdtHMQKNs0LuptSvgkYMdfEpqt1EyGi9Az/exec",
   
   // 新增回呼網址
-  redirectUrl: "https://eric693.github.io/Bryan_check_manager/",
+  redirectUrl: "https://eric693.github.io/buono_check_manager/",
   
   // 是否改用 POST 呼叫後端。
   // GET 會把 sessionToken 留在網址列、瀏覽器歷史與各層存取紀錄裡；POST 放在請求主體就不會。
