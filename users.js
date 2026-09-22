@@ -1,0 +1,520 @@
+// users.js
+//
+// 員工管理：清單、角色調整、刪除、改姓名，以及員工自己的基本資料。
+//
+// 從 script.js 拆出來的：那支原本 4,000 多行，每個頁面都要整份載入。
+// 這裡的函式仍然是全域的，載入順序沒有相依性。
+
+/**
+ * 載入所有用戶
+ */
+async function loadAllUsers() {
+    const loadingEl = document.getElementById('users-loading');
+    const emptyEl = document.getElementById('users-empty');
+    const listEl = document.getElementById('users-list');
+    const refreshBtn = document.getElementById('refresh-users-btn');
+    
+    try {
+        if (loadingEl) loadingEl.style.display = 'block';
+        if (emptyEl) emptyEl.style.display = 'none';
+        if (listEl) listEl.innerHTML = '';
+        
+        // 按鈕進入處理中狀態
+        if (refreshBtn) {
+            generalButtonState(refreshBtn, 'processing', '載入中...');
+        }
+        
+        const res = await callApifetch('getAllUsers');
+        
+        if (loadingEl) loadingEl.style.display = 'none';
+        
+        if (res.ok && res.users && res.users.length > 0) {
+            allUsersCache = res.users;
+            renderUsersList(allUsersCache);
+            updateUsersStats(allUsersCache);
+        } else {
+            if (emptyEl) emptyEl.style.display = 'block';
+        }
+        
+    } catch (error) {
+        console.error('載入用戶失敗:', error);
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (emptyEl) emptyEl.style.display = 'block';
+        showNotification(t('NOTIF_LOAD_FAILED_RETRY'), 'error');
+        
+    } finally {
+        // 恢復按鈕狀態
+        if (refreshBtn) {
+            generalButtonState(refreshBtn, 'idle');
+        }
+    }
+}
+
+function renderUsersList(users) {
+    const listEl = document.getElementById('users-list');
+    if (!listEl) return;
+    
+    listEl.innerHTML = '';
+    
+    const currentUserId = localStorage.getItem('sessionUserId');
+    
+    users.forEach((user, index) => {
+        const isCurrentUser = user.userId === currentUserId;
+        const isAdmin = user.dept === '管理員';
+        const isScheduler = user.dept === '排班人員';  //  新增
+        
+        const div = document.createElement('div');
+        div.className = 'bg-gray-50 dark:bg-gray-700 rounded-lg p-4 flex items-center justify-between hover:shadow-md transition-shadow';
+        div.dataset.userId = user.userId;
+        div.dataset.userName = user.name;
+        div.dataset.userDept = user.dept || '';
+
+        div.innerHTML = `
+        <div class="flex items-start space-x-3">
+            <img src="${user.picture || 'https://via.placeholder.com/48'}" 
+                alt="${escapeHtml(user.name)}" 
+                class="w-12 h-12 flex-shrink-0 rounded-full border-2 ${isAdmin ? 'border-yellow-400' : isScheduler ? 'border-blue-400' : 'border-gray-300'}">
+            
+            <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-1 mb-1">
+                    <p class="font-bold text-gray-800 dark:text-white truncate">${escapeHtml(user.name)}</p>
+                    ${isCurrentUser ? '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full whitespace-nowrap">您</span>' : ''}
+                    ${isAdmin ? '<span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full whitespace-nowrap">管理員</span>' : 
+                      isScheduler ? '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full whitespace-nowrap">排班人員</span>' :
+                      '<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full whitespace-nowrap">員工</span>'}
+                </div>
+                
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2 truncate">
+                    ${user.dept || '未設定部門'} ${user.rate ? `| ${user.rate}` : ''}
+                </p>
+                
+                ${!isCurrentUser ? `
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="openEditNameDialog('${user.userId}', '${escapeJsAttr(user.name)}')"
+                                class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-md transition-colors">
+                             編輯姓名
+                        </button>
+                        
+                        ${isAdmin ? `
+                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'scheduler')"
+                                    class="flex-1 min-w-[120px] px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-md transition-colors">
+                                改為排班人員
+                            </button>
+                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'employee')"
+                                    class="flex-1 min-w-[120px] px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-md transition-colors">
+                                降級為員工
+                            </button>
+                        ` : isScheduler ? `
+                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'admin')"
+                                    class="flex-1 min-w-[120px] px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs font-semibold rounded-md transition-colors">
+                                升級為管理員
+                            </button>
+                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'employee')"
+                                    class="flex-1 min-w-[120px] px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-md transition-colors">
+                                降級為員工
+                            </button>
+                        ` : `
+                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'admin')"
+                                    class="flex-1 min-w-[120px] px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs font-semibold rounded-md transition-colors">
+                                升級為管理員
+                            </button>
+                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'scheduler')"
+                                    class="flex-1 min-w-[120px] px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-md transition-colors">
+                                升級為排班人員
+                            </button>
+                        `}
+                        
+                        <button onclick="confirmDeleteUser('${user.userId}', '${escapeJsAttr(user.name)}')"
+                                class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-md transition-colors">
+                            刪除
+                        </button>
+                    </div>
+                ` : `
+                    <span class="text-xs text-gray-500 dark:text-gray-400">無法操作自己</span>
+                `}
+            </div>
+        </div>
+        `;
+        
+        listEl.appendChild(div);
+    });
+}
+
+/**
+ * 更新統計數據
+ */
+function updateUsersStats(users) {
+    const totalEl = document.getElementById('total-users-count');
+    const adminEl = document.getElementById('admin-users-count');
+    const employeeEl = document.getElementById('employee-users-count');
+    
+    const adminCount = users.filter(u => u.dept === '管理員').length;
+    const employeeCount = users.length - adminCount;
+    
+    if (totalEl) totalEl.textContent = users.length;
+    if (adminEl) adminEl.textContent = adminCount;
+    if (employeeEl) employeeEl.textContent = employeeCount;
+}
+
+/**
+ * 搜尋用戶
+ */
+function filterUsersList(query) {
+    const lowerQuery = query.toLowerCase().trim();
+    
+    if (!lowerQuery) {
+        renderUsersList(allUsersCache);
+        return;
+    }
+    
+    const filtered = allUsersCache.filter(user => {
+        const name = (user.name || '').toLowerCase();
+        const dept = (user.dept || '').toLowerCase();
+        return name.includes(lowerQuery) || dept.includes(lowerQuery);
+    });
+    
+    renderUsersList(filtered);
+}
+
+/**
+ * 更改用戶角色
+ */
+async function changeUserRole(userId, userName, newRole) {
+    // const roleText = newRole === 'admin' ? '管理員' : '員工';
+    
+    const roleMap = {
+        'admin': '管理員',
+        'scheduler': '排班人員',  //  新增
+        'employee': '員工'
+    };
+
+    const roleText = roleMap[newRole] || newRole;
+    
+    if (!confirm(`確定要將「${userName}」的角色改為「${roleText}」嗎？`)) {
+        return;
+    }
+
+    
+    try {
+        showNotification(t('NOTIF_PROCESSING'), 'info');
+        
+        const res = await callApifetch(`updateUserRole&userId=${encodeURIComponent(userId)}&role=${newRole}`);
+        
+        if (res.ok) {
+            showNotification(t('NOTIF_ROLE_UPDATED', { name: userName, role: roleText }), 'success');
+            
+            // 重新載入列表
+            await loadAllUsers();
+            
+            // 如果改的是當前用戶，需要重新整理頁面
+            const currentUserId = localStorage.getItem('sessionUserId');
+            if (userId === currentUserId) {
+                showNotification(t('NOTIF_ROLE_CHANGED_RELOAD'), 'warning');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+        } else {
+            showNotification(res.msg || '操作失敗', 'error');
+        }
+        
+    } catch (error) {
+        console.error('更改角色失敗:', error);
+        showNotification(t('NOTIF_OPERATION_FAILED'), 'error');
+    }
+}
+
+/**
+ * 確認刪除用戶
+ */
+function confirmDeleteUser(userId, userName) {
+    if (!confirm(` 警告：確定要刪除用戶「${userName}」嗎？\n\n此操作無法復原！`)) {
+        return;
+    }
+    
+    if (!confirm(`再次確認：真的要刪除「${userName}」嗎？`)) {
+        return;
+    }
+    
+    deleteUser(userId, userName);
+}
+
+/**
+ * 刪除用戶
+ */
+async function deleteUser(userId, userName) {
+    try {
+        showNotification(t('NOTIF_DELETING'), 'warning');
+        
+        const res = await callApifetch(`deleteUser&userId=${encodeURIComponent(userId)}`);
+        
+        if (res.ok) {
+            showNotification(t('NOTIF_USER_DELETED', { name: userName }), 'success');
+            
+            // 重新載入列表
+            await loadAllUsers();
+        } else {
+            showNotification(res.msg || '刪除失敗', 'error');
+        }
+        
+    } catch (error) {
+        console.error('刪除用戶失敗:', error);
+        showNotification(t('NOTIF_DELETE_FAILED_RETRY'), 'error');
+    }
+}
+
+/**
+ * 打開編輯姓名對話框
+ */
+function openEditNameDialog(userId, currentName) {
+    const dialog = document.createElement('div');
+    dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    dialog.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">
+                 編輯員工姓名
+            </h3>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    目前姓名
+                </label>
+                <input type="text" 
+                       value="${currentName}" 
+                       disabled
+                       class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    新姓名 <span class="text-red-500">*</span>
+                </label>
+                <input type="text" 
+                       id="new-name-input"
+                       placeholder="請輸入新姓名（至少 2 個字）"
+                       maxlength="50"
+                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    ℹ 修改後將立即生效
+                </p>
+            </div>
+            
+            <div class="flex space-x-3">
+                <button onclick="closeEditNameDialog()"
+                        class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-semibold transition-colors">
+                    取消
+                </button>
+                <button onclick="saveNewName('${userId}')"
+                        class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
+                    確認修改
+                </button>
+            </div>
+        </div>
+    `;
+    
+    dialog.id = 'edit-name-dialog';
+    document.body.appendChild(dialog);
+    
+    // 自動聚焦輸入框
+    setTimeout(() => {
+        document.getElementById('new-name-input').focus();
+    }, 100);
+    
+    // 按 Enter 提交
+    document.getElementById('new-name-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            saveNewName(userId);
+        }
+    });
+    
+    // 點擊背景關閉
+    dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) {
+            closeEditNameDialog();
+        }
+    });
+}
+
+/**
+ * 關閉編輯姓名對話框
+ */
+function closeEditNameDialog() {
+    const dialog = document.getElementById('edit-name-dialog');
+    if (dialog) {
+        dialog.remove();
+    }
+}
+
+/**
+ * 儲存新姓名
+ */
+async function saveNewName(userId) {
+    const input = document.getElementById('new-name-input');
+    const newName = input.value.trim();
+    
+    // 驗證
+    if (!newName) {
+        showNotification(t('NOTIF_NEW_NAME_REQUIRED'), 'error');
+        input.focus();
+        return;
+    }
+    
+    if (newName.length < 2) {
+        showNotification(t('NOTIF_NAME_TOO_SHORT'), 'error');
+        input.focus();
+        return;
+    }
+    
+    if (newName.length > 50) {
+        showNotification(t('NOTIF_NAME_TOO_LONG'), 'error');
+        input.focus();
+        return;
+    }
+    
+    try {
+        showNotification(t('NOTIF_UPDATING'), 'info');
+        
+        const res = await callApifetch(
+            `updateEmployeeName&userId=${encodeURIComponent(userId)}&newName=${encodeURIComponent(newName)}`
+        );
+        
+        if (res.ok) {
+            showNotification(t('NOTIF_NAME_UPDATED', { name: res.newName }), 'success');
+            
+            // 關閉對話框
+            closeEditNameDialog();
+            
+            // 重新載入用戶列表
+            await loadAllUsers();
+        } else {
+            showNotification(res.msg || '更新失敗', 'error');
+        }
+        
+    } catch (error) {
+        console.error('更新姓名失敗:', error);
+        showNotification(t('NOTIF_UPDATE_FAILED'), 'error');
+    }
+}
+
+/**
+ *  初始化員工基本資料（自動載入）
+ */
+async function initEmployeeBasicInfo() {
+    try {
+        console.log(' 初始化員工基本資料'); //  改這裡
+        
+        const token = localStorage.getItem('sessionToken');
+        if (!token) {
+            console.log(' 未登入，跳過載入'); //  改這裡
+            return;
+        }
+        
+        const loadingEl = document.getElementById('basic-info-loading');
+        const formEl = document.getElementById('basic-info-form');
+        
+        // 這個表單只有 index.html 有，其他頁面直接跳過
+        if (!formEl) return;
+        
+        if (loadingEl) loadingEl.style.display = 'block';
+        if (formEl) formEl.style.display = 'none';
+        
+        const res = await callApifetch('getEmployeeBasicInfo');
+        
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (formEl) formEl.style.display = 'block';
+        
+        if (res.ok && res.data) {
+            console.log(' 載入成功，填入資料'); //  改這裡
+            
+            // 填入表單
+            document.getElementById('employee-id-number').value = res.data.idNumber || '';
+            document.getElementById('employee-address').value = res.data.address || '';
+            document.getElementById('employee-phone').value = res.data.phone || '';
+            document.getElementById('employee-birthdate').value = res.data.birthDate || '';
+            
+            // 顯示最後更新時間
+            if (res.data.updatedAt) {
+                const updateTimeEl = document.getElementById('basic-info-update-time');
+                const updateTimeText = document.getElementById('update-time-text');
+                
+                if (updateTimeEl && updateTimeText) {
+                    const date = new Date(res.data.updatedAt);
+                    updateTimeText.textContent = date.toLocaleString('zh-TW');
+                    updateTimeEl.style.display = 'block';
+                }
+            }
+        } else {
+            console.log('ℹ 尚未填寫基本資料'); //  改這裡
+        }
+        
+    } catch (error) {
+        console.error(' initEmployeeBasicInfo 錯誤:', error); //  改這裡
+    }
+}
+
+/**
+ *  儲存員工基本資料
+ */
+async function saveEmployeeBasicInfo() {
+    try {
+        console.log(' 儲存員工基本資料'); //  改這裡
+        
+        const saveBtn = document.getElementById('save-basic-info-btn');
+        const loadingText = t('SAVING') || '儲存中...';
+        
+        // 取得表單資料
+        const idNumber = document.getElementById('employee-id-number').value.trim();
+        const address = document.getElementById('employee-address').value.trim();
+        const phone = document.getElementById('employee-phone').value.trim();
+        const birthDate = document.getElementById('employee-birthdate').value;
+        
+        // 驗證必填欄位
+        if (!idNumber) {
+            showNotification(t('NOTIF_ID_NUMBER_REQUIRED'), 'error');
+            return;
+        }
+        
+        // 驗證身分證格式（台灣身分證）
+        const idPattern = /^[A-Z][12]\d{8}$/;
+        if (!idPattern.test(idNumber)) {
+            showNotification(t('NOTIF_ID_FORMAT_INVALID'), 'error');
+            return;
+        }
+        
+        // 按鈕進入處理中狀態
+        if (saveBtn) {
+            generalButtonState(saveBtn, 'processing', loadingText);
+        }
+        
+        // 呼叫 API
+        const res = await callApifetch(
+            `setEmployeeBasicInfo&idNumber=${encodeURIComponent(idNumber)}&address=${encodeURIComponent(address)}&phone=${encodeURIComponent(phone)}&birthDate=${encodeURIComponent(birthDate)}`
+        );
+        
+        if (res.ok) {
+            showNotification(t('SAVE_SUCCESS') || '儲存成功！', 'success');
+            
+            // 更新最後更新時間
+            const updateTimeEl = document.getElementById('basic-info-update-time');
+            const updateTimeText = document.getElementById('update-time-text');
+            
+            if (updateTimeEl && updateTimeText) {
+                const now = new Date();
+                updateTimeText.textContent = now.toLocaleString('zh-TW');
+                updateTimeEl.style.display = 'block';
+            }
+        } else {
+            showNotification(res.msg || '儲存失敗', 'error');
+        }
+        
+    } catch (error) {
+        console.error(' saveEmployeeBasicInfo 錯誤:', error); //  改這裡
+        showNotification(t('NOTIF_SAVE_FAILED'), 'error');
+        
+    } finally {
+        const saveBtn = document.getElementById('save-basic-info-btn');
+        if (saveBtn) {
+            generalButtonState(saveBtn, 'idle');
+        }
+    }
+}

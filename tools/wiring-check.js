@@ -174,7 +174,26 @@ gsFiles.filter(f => !f.endsWith('Tests.gs')).forEach(file => {
 });
 report('測試函式集中度', strayTests);
 
-// ---------- 9. 同名函式不能重複定義 ----------
+// ---------- 9. 前端同名函式不能重複定義 ----------
+// 所有前端腳本共用一個全域範圍，後載入的會蓋掉先載入的，症狀跟 GS 一樣難查。
+const frontFunctionLocations = new Map();
+listFiles('.', '.js')
+  .filter(f => !f.includes('qrcode.min'))
+  .forEach(file => {
+    const src = read(file);
+    for (const m of src.matchAll(/^(?:async )?function (\w+)\s*\(/gm)) {
+      if (!frontFunctionLocations.has(m[1])) frontFunctionLocations.set(m[1], []);
+      frontFunctionLocations.get(m[1]).push(file);
+    }
+  });
+
+report('前端同名函式重複定義',
+  [...frontFunctionLocations.entries()]
+    .filter(([, files]) => files.length > 1)
+    .map(([name, files]) => `${name}()：${files.join('、')}`)
+    .sort());
+
+// ---------- 10. GS 同名函式不能重複定義 ----------
 // Apps Script 把所有 .gs 當成同一個全域範圍，同名函式後載入的會蓋掉先載入的，
 // 而檔案順序不是我們控制的 —— 兩份內容不同時，實際跑到哪一份等於不可預期。
 const gsFunctionLocations = new Map();
@@ -192,7 +211,7 @@ report('GS 同名函式重複定義',
     .map(([name, files]) => `${name}()：${files.join('、')}`)
     .sort());
 
-// ---------- 10. 月薪資記錄：表頭順序必須與 saveMonthlySalary 寫入的順序一致 ----------
+// ---------- 11. 月薪資記錄：表頭順序必須與 saveMonthlySalary 寫入的順序一致 ----------
 // saveMonthlySalary 是按「位置」寫入的，表頭跟它差一格，整排欄位的名稱就會錯位，
 // 而 getMySalary 是依名稱取值的 —— 薪資單上就會顯示到別欄的金額。
 const salarySource = read('GS/SalaryManagement.gs');
@@ -232,7 +251,7 @@ if (!headerMatch || !rowMatch) {
 
 report('月薪資記錄欄位對齊', salaryProblems);
 
-// ---------- 11. 操作說明：每個 help 模組都要有對應的容器 ----------
+// ---------- 12. 操作說明：每個 help 模組都要有對應的容器 ----------
 // help.js 是用容器 id 去掛說明區塊的，改版換了 id 就會靜靜地少一塊說明，
 // 畫面上看不出來，所以在這裡擋住。
 const helpLangs = fs.readdirSync(path.join(ROOT, 'i18n/help'))
