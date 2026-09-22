@@ -557,20 +557,3 @@ function getDailySalaryRecords(yearMonth) {
   }
 }
 
-function testDailySalaryCalculation() {
-  const params = {
-    token: '3b419320-57b1-4cd0-861a-23a48b132a5c',
-    employeeId: 'D001',
-    yearMonth: '2025-11',
-    workDays: 20,
-    overtimeHours: 10,
-    leaveDeduction: 500,
-    advancePayment: 1000,
-    agencyDeduction: 200,
-    otherDeduction: 100,
-    fineDeduction: 50
-  };
-  
-  const result = handleCalculateDailySalary(params);
-  Logger.log(JSON.stringify(result, null, 2));
-}

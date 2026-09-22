@@ -645,40 +645,6 @@ function verifyLineSignature_(body, signature) {
 
 // ==================== 排班系統 Handler 函數（修正版）====================
 
-/**
- * 測試排班系統
- */
-function testShiftAPI() {
-  Logger.log('===== 測試排班 API =====');
-  
-  // 模擬前端請求參數
-  const testParams = {
-    token: '2d3ce046-3dcc-4a62-ac92-ac0c87993669',  // 請替換成真實的 token
-    employeeId: 'U123456',
-    employeeName: '測試員工',
-    date: '2025-10-25',
-    shiftType: '早班',
-    startTime: '09:00',
-    endTime: '18:00',
-    location: '台北辦公室',
-    note: '測試排班'
-  };
-  
-  // 測試新增排班
-  const addResult = handleAddShift(testParams);
-  Logger.log('新增排班結果: ' + JSON.stringify(addResult));
-  
-  // 測試查詢排班
-  const queryParams = {
-    token: '2d3ce046-3dcc-4a62-ac92-ac0c87993669',
-    employeeId: 'U123456'
-  };
-  const queryResult = handleGetShifts(queryParams);
-  Logger.log('查詢排班結果: ' + JSON.stringify(queryResult));
-}
-
-
-
 // ==================== 薪資系統 Handler 函數 ====================
 
 // LineBotPunch.gs - 補充缺少的函數

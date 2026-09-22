@@ -18,6 +18,150 @@ function getDistanceMeters_(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+// 工具函式：將日期格式化 yyyy-mm-dd
+/** 取得 row 的 yyy-MM-dd（支援物件/陣列、字串/Date），以台北時區輸出 */
+function getYmdFromRow(row) {
+  const raw = (row && (row.date ?? row[0])) ?? null; // 物件 row.date 或 陣列 row[0]
+  if (raw == null) return null;
+
+  try {
+    if (raw instanceof Date) {
+      return Utilities.formatDate(raw, "Asia/Taipei", "yyyy-MM-dd");
+    }
+    const s = String(raw).trim();
+
+    // 先嘗試用 Date 解析（支援 ISO 或一般日期字串）
+    const d = new Date(s);
+    if (!isNaN(d)) {
+      return Utilities.formatDate(d, "Asia/Taipei", "yyyy-MM-dd");
+    }
+
+    // 再退而求其次處理 ISO 字串（有 T）
+    if (s.includes("T")) return s.split("T")[0];
+
+    return s; // 最後保底，讓外層去判斷是否為有效格式
+  } catch (e) {
+    return null;
+  }
+}
+
+/** 取欄位：優先物件屬性，其次陣列索引 */
+function pick(row, objKey, idx) {
+  const v = row?.[objKey];
+  return (v !== undefined && v !== null) ? v : row?.[idx];
+}
+
+// ==================== 日期格式化（全專案唯一的一份） ====================
+//
+// 這兩支原本散在 Constants.gs / LeaveManagement.gs / OvertimeOperations.gs /
+// DbOperations.gs / ShiftManagement.gs，各自的行為還不一樣：有的收到 null 會回傳
+// "NaN-NaN-NaN"，有的字串原樣退回，有的寫死 Asia/Taipei。同名函式在 Apps Script
+// 裡是後載入的蓋掉先載入的，所以實際跑到哪一份取決於檔案順序——等於行為不可預期。
+//
+// 這裡合成一份涵蓋所有既有行為的版本，任何呼叫端的預期都不會被破壞。
+
+/**
+ * 格式化為 yyyy-MM-dd
+ *
+ * - null / undefined / 空字串 → 回傳空字串
+ * - 已經是 yyyy-MM-dd 的字串 → 原樣回傳（不重新解析，避免時區位移）
+ * - 其他字串或 Date → 依腳本時區格式化
+ */
+function formatDate(date) {
+  if (!date) return '';
+
+  if (typeof date === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) return date.trim();
+    const parsed = new Date(date);
+    if (isNaN(parsed.getTime())) return date;
+    date = parsed;
+  }
+
+  try {
+    return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  } catch (error) {
+    return String(date);
+  }
+}
+
+/**
+ * 格式化為 yyyy-MM-dd HH:mm:ss；空值回傳空字串
+ */
+function formatDateTime(date) {
+  if (!date) return '';
+
+  if (typeof date === 'string') {
+    const parsed = new Date(date);
+    if (isNaN(parsed.getTime())) return date;
+    date = parsed;
+  }
+
+  try {
+    return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+  } catch (error) {
+    return String(date);
+  }
+}
+
+// ==================== 單次執行內的試算表讀取快取 ====================
+//
+// 算一位員工的薪資要把「打卡紀錄」「加班紀錄」「請假紀錄」「排班表」各讀一次整表。
+// 單筆計算沒問題，但批次計算 30 個人就是 120 次全表讀取，很容易撞到 Apps Script
+// 的六分鐘上限。
+//
+// 這個快取「預設關閉」，只有批次流程會用 withSheetCache_() 明確打開。這樣一般操作
+// 永遠讀得到最新資料，不會因為快取而看到別人剛改過的舊值。
+
+let _sheetValuesCache = null;
+
+/**
+ * 在快取開啟的狀態下執行 fn；結束後一定關閉並清空。
+ */
+function withSheetCache_(fn) {
+  const previous = _sheetValuesCache;
+  _sheetValuesCache = {};
+
+  try {
+    return fn();
+  } finally {
+    _sheetValuesCache = previous;
+  }
+}
+
+/**
+ * 讀取整張工作表的值。快取開啟時，同一次執行內同一張表只會真的讀一次。
+ *
+ * @param {string} sheetName 工作表名稱
+ * @return {Array<Array>} 整張表的值；找不到工作表時回傳空陣列
+ */
+function getSheetValues_(sheetName) {
+  if (_sheetValuesCache && _sheetValuesCache[sheetName]) {
+    return _sheetValuesCache[sheetName];
+  }
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  const values = sheet ? sheet.getDataRange().getValues() : [];
+
+  if (_sheetValuesCache) {
+    _sheetValuesCache[sheetName] = values;
+  }
+
+  return values;
+}
+
+/**
+ * 明確作廢某張表的快取。寫入之後若同一次執行還要再讀，就要呼叫這個。
+ */
+function invalidateSheetCache_(sheetName) {
+  if (!_sheetValuesCache) return;
+
+  if (sheetName) {
+    delete _sheetValuesCache[sheetName];
+  } else {
+    _sheetValuesCache = {};
+  }
+}
+
 /**
  * 檢查員工每天的打卡異常狀態，並回傳格式化的異常列表
  * @param {Array} attendanceRows 打卡紀錄，每筆包含：
@@ -191,265 +335,4 @@ function checkAttendanceAbnormal(attendanceRows) {
   Logger.log("═══════════════════════════════════════");
   
   return abnormalRecords;
-}
-
-function checkAttendance(attendanceRows) {
-  const dailyRecords = {}; // 按 userId+date 分組
-  const dailyStatus = []; // 用於儲存格式化的異常紀錄
-  let abnormalIdCounter = 0; // 用於產生唯一的 id
-  
-  // 輔助函式：從時間戳記中擷取 'YYYY-MM-DD'
-  function getYmdFromRow(row) {
-    if (row.date) {
-      const d = new Date(row.date);
-      return Utilities.formatDate(d, 'Asia/Taipei', 'yyyy-MM-dd');
-    }
-    return '';
-  }
-
-  // 輔助函式：從時間戳記中擷取 'HH:mm'
-  function getHhMmFromRow(row) {
-    if (row.date) {
-      const d = new Date(row.date);
-      return Utilities.formatDate(d, 'Asia/Taipei', 'HH:mm');
-    }
-    return '未知時間';
-  }
-  
-  attendanceRows.forEach(row => {
-    try {
-      const date = getYmdFromRow(row);
-      const userId = row.userId;
-  
-      if (!dailyRecords[userId]) dailyRecords[userId] = {};
-      if (!dailyRecords[userId][date]) dailyRecords[userId][date] = [];
-      dailyRecords[userId][date].push(row);
-
-    } catch (err) {
-      Logger.log(" 解析 row 失敗: " + JSON.stringify(row) + " | 錯誤: " + err.message);
-    }
-  });
-
-  for (const userId in dailyRecords) {
-    for (const date in dailyRecords[userId]) {
-      const rows = dailyRecords[userId][date] || [];
-
-      //  新增：取得員工姓名（從第一筆記錄中取得）
-      const userName = rows[0]?.name || '未知員工';
-      const userDept = rows[0]?.dept || '';
-
-      // 過濾系統虛擬卡
-      const filteredRows = rows.filter(r => r.note !== "系統虛擬卡");
-
-      const record = filteredRows.map(r => ({
-        time: getHhMmFromRow(r),
-        type: r.type || '未知類型',
-        note: r.note || "",
-        audit: r.audit || "",
-        location: r.location || ""
-      }));
-
-      const types = record.map(r => r.type);
-      const notes = record.map(r => r.note);
-      const audits = record.map(r => r.audit);
-
-      let reason = "";
-      let id = "normal";
-
-      const hasAdjustment = notes.some(note => note === "補打卡");
-      
-      const approvedAdjustments = record.filter(r => r.note === "補打卡");
-      const isAllApproved = approvedAdjustments.length > 0 &&
-                      approvedAdjustments.every(r => r.audit === "v");
-
-      // 計算成對數量
-      const typeCounts = { 上班: 0, 下班: 0 };
-      record.forEach(r => {
-        if (r.type === "上班") typeCounts["上班"]++;
-        else if (r.type === "下班") typeCounts["下班"]++;
-      });
-
-      // 只要至少有一對就算正常
-      const hasPair = typeCounts["上班"] > 0 && typeCounts["下班"] > 0;
-
-      if (!hasPair) {
-        if (typeCounts["上班"] === 0 && typeCounts["下班"] === 0) {
-          reason = "未打上班卡, 未打下班卡";
-        } else if (typeCounts["上班"] > 0) {
-          reason = "未打下班卡";
-        } else if (typeCounts["下班"] > 0) {
-          reason = "未打上班卡";
-        }
-      } else if (isAllApproved) {
-        reason = "補卡通過";
-      } else if (hasAdjustment) {
-        reason = "有補卡(審核中)";
-      } else {
-        reason = "正常";
-      }
-
-      if (reason) {
-        abnormalIdCounter++;
-        id = `abnormal-${abnormalIdCounter}`;
-      }
-
-      dailyStatus.push({
-        ok: !reason,
-        date: date,
-        userId: userId,
-        name: userName,
-        dept: userDept,
-        record: record,
-        reason: reason,
-        id: id
-      });
-    }
-  }
-
-  Logger.log("checkAttendance debug: %s", JSON.stringify(dailyStatus));
-  return dailyStatus;
-}
-
-// 工具函式：將日期格式化 yyyy-mm-dd
-/** 取得 row 的 yyy-MM-dd（支援物件/陣列、字串/Date），以台北時區輸出 */
-function getYmdFromRow(row) {
-  const raw = (row && (row.date ?? row[0])) ?? null; // 物件 row.date 或 陣列 row[0]
-  if (raw == null) return null;
-
-  try {
-    if (raw instanceof Date) {
-      return Utilities.formatDate(raw, "Asia/Taipei", "yyyy-MM-dd");
-    }
-    const s = String(raw).trim();
-
-    // 先嘗試用 Date 解析（支援 ISO 或一般日期字串）
-    const d = new Date(s);
-    if (!isNaN(d)) {
-      return Utilities.formatDate(d, "Asia/Taipei", "yyyy-MM-dd");
-    }
-
-    // 再退而求其次處理 ISO 字串（有 T）
-    if (s.includes("T")) return s.split("T")[0];
-
-    return s; // 最後保底，讓外層去判斷是否為有效格式
-  } catch (e) {
-    return null;
-  }
-}
-
-/** 取欄位：優先物件屬性，其次陣列索引 */
-function pick(row, objKey, idx) {
-  const v = row?.[objKey];
-  return (v !== undefined && v !== null) ? v : row?.[idx];
-}
-
-// ==================== 日期格式化（全專案唯一的一份） ====================
-//
-// 這兩支原本散在 Constants.gs / LeaveManagement.gs / OvertimeOperations.gs /
-// DbOperations.gs / ShiftManagement.gs，各自的行為還不一樣：有的收到 null 會回傳
-// "NaN-NaN-NaN"，有的字串原樣退回，有的寫死 Asia/Taipei。同名函式在 Apps Script
-// 裡是後載入的蓋掉先載入的，所以實際跑到哪一份取決於檔案順序——等於行為不可預期。
-//
-// 這裡合成一份涵蓋所有既有行為的版本，任何呼叫端的預期都不會被破壞。
-
-/**
- * 格式化為 yyyy-MM-dd
- *
- * - null / undefined / 空字串 → 回傳空字串
- * - 已經是 yyyy-MM-dd 的字串 → 原樣回傳（不重新解析，避免時區位移）
- * - 其他字串或 Date → 依腳本時區格式化
- */
-function formatDate(date) {
-  if (!date) return '';
-
-  if (typeof date === 'string') {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) return date.trim();
-    const parsed = new Date(date);
-    if (isNaN(parsed.getTime())) return date;
-    date = parsed;
-  }
-
-  try {
-    return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  } catch (error) {
-    return String(date);
-  }
-}
-
-/**
- * 格式化為 yyyy-MM-dd HH:mm:ss；空值回傳空字串
- */
-function formatDateTime(date) {
-  if (!date) return '';
-
-  if (typeof date === 'string') {
-    const parsed = new Date(date);
-    if (isNaN(parsed.getTime())) return date;
-    date = parsed;
-  }
-
-  try {
-    return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
-  } catch (error) {
-    return String(date);
-  }
-}
-
-// ==================== 單次執行內的試算表讀取快取 ====================
-//
-// 算一位員工的薪資要把「打卡紀錄」「加班紀錄」「請假紀錄」「排班表」各讀一次整表。
-// 單筆計算沒問題，但批次計算 30 個人就是 120 次全表讀取，很容易撞到 Apps Script
-// 的六分鐘上限。
-//
-// 這個快取「預設關閉」，只有批次流程會用 withSheetCache_() 明確打開。這樣一般操作
-// 永遠讀得到最新資料，不會因為快取而看到別人剛改過的舊值。
-
-let _sheetValuesCache = null;
-
-/**
- * 在快取開啟的狀態下執行 fn；結束後一定關閉並清空。
- */
-function withSheetCache_(fn) {
-  const previous = _sheetValuesCache;
-  _sheetValuesCache = {};
-
-  try {
-    return fn();
-  } finally {
-    _sheetValuesCache = previous;
-  }
-}
-
-/**
- * 讀取整張工作表的值。快取開啟時，同一次執行內同一張表只會真的讀一次。
- *
- * @param {string} sheetName 工作表名稱
- * @return {Array<Array>} 整張表的值；找不到工作表時回傳空陣列
- */
-function getSheetValues_(sheetName) {
-  if (_sheetValuesCache && _sheetValuesCache[sheetName]) {
-    return _sheetValuesCache[sheetName];
-  }
-
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  const values = sheet ? sheet.getDataRange().getValues() : [];
-
-  if (_sheetValuesCache) {
-    _sheetValuesCache[sheetName] = values;
-  }
-
-  return values;
-}
-
-/**
- * 明確作廢某張表的快取。寫入之後若同一次執行還要再讀，就要呼叫這個。
- */
-function invalidateSheetCache_(sheetName) {
-  if (!_sheetValuesCache) return;
-
-  if (sheetName) {
-    delete _sheetValuesCache[sheetName];
-  } else {
-    _sheetValuesCache = {};
-  }
 }

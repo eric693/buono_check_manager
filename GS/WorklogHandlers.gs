@@ -302,55 +302,6 @@ function handleGetWorklogReport(params) {
 // ==================== 測試函數 ====================
 
 /**
- *  測試提交工作日誌 API
- */
-function testHandleSubmitWorklog() {
-  Logger.log(' 測試 handleSubmitWorklog');
-  
-  const testParams = {
-    token: '你的有效token',  //  替換成有效的 token
-    date: '2026-01-16',
-    hours: '8.5',
-    content: '測試工作日誌內容：完成系統開發、修復 bug、參與會議討論。'
-  };
-  
-  const result = handleSubmitWorklog(testParams);
-  Logger.log('結果: ' + JSON.stringify(result, null, 2));
-}
-
-/**
- *  測試查詢工作日誌 API
- */
-function testHandleGetWorklogs() {
-  Logger.log(' 測試 handleGetWorklogs');
-  
-  const testParams = {
-    token: '71cff111-bdd2-4c44-ae34-ba86265d1c78',
-    limit: 10
-  };
-  
-  const result = handleGetWorklogs(testParams);
-  Logger.log('結果: ' + JSON.stringify(result, null, 2));
-}
-
-/**
- *  測試審核工作日誌 API
- */
-function testHandleReviewWorklog() {
-  Logger.log(' 測試 handleReviewWorklog');
-  
-  const testParams = {
-    token: '71cff111-bdd2-4c44-ae34-ba86265d1c78',  //  需要管理員權限
-    id: 'WL_1234567890',  //  替換成實際的工作日誌 ID
-    action: 'approve',
-    comment: '工作內容詳實，核准通過'
-  };
-  
-  const result = handleReviewWorklog(testParams);
-  Logger.log('結果: ' + JSON.stringify(result, null, 2));
-}
-
-/**
  *  處理取得全部員工工作日誌報表
  */
 function handleGetAllWorklogReport(params) {

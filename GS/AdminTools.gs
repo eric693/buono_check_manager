@@ -85,34 +85,6 @@ function manualInitializeEmployeeLeave(userId, hireDate) {
 }
 
 /**
- * 查看特休假計算規則測試
- * 這個函數可以用來測試不同到職日期對應的特休假天數
- */
-function testAnnualLeaveCalculation() {
-  const testCases = [
-    { hireDate: '2024-10-01', description: '剛到職（未滿6個月）' },
-    { hireDate: '2024-04-01', description: '6個月（應得3天）' },
-    { hireDate: '2023-10-01', description: '1年（應得7天）' },
-    { hireDate: '2022-10-01', description: '2年（應得10天）' },
-    { hireDate: '2021-10-01', description: '3年（應得14天）' },
-    { hireDate: '2019-10-01', description: '5年（應得15天）' },
-    { hireDate: '2014-10-01', description: '10年（應得15天）' },
-    { hireDate: '2009-10-01', description: '15年（應得20天）' },
-    { hireDate: '1994-10-01', description: '30年（應得30天，最高上限）' }
-  ];
-  
-  Logger.log(' 特休假計算規則測試：\n');
-  Logger.log('=' .repeat(60));
-  
-  testCases.forEach(testCase => {
-    const days = calculateAnnualLeave_(new Date(testCase.hireDate));
-    Logger.log(`${testCase.description}`);
-    Logger.log(`  到職日期: ${testCase.hireDate}`);
-    Logger.log(`  特休假: ${days} 天\n`);
-  });
-}
-
-/**
  * 查看員工假期使用情況報表
  */
 function generateLeaveUsageReport() {

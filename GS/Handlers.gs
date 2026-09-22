@@ -400,51 +400,6 @@ function handleAdjustPunch(params) {
   }
 }
 
-/**
- *  測試 handleAdjustPunch（完整流程）
- */
-function testHandleAdjustPunchComplete() {
-  Logger.log(' 測試 handleAdjustPunch 完整流程');
-  Logger.log('═══════════════════════════════════════');
-  Logger.log('');
-  
-  const testParams = {
-    token: 'a8f8ca99-97d6-4643-ad8e-67a73f2bb649',  //  替換成你的有效 token
-    type: '上班',
-    datetime: '2025-12-16T10:30:00',
-    lat: '25.0330',
-    lng: '121.5654',
-    note: '測試補打卡理由：系統測試用'
-  };
-  
-  Logger.log(' 測試參數:');
-  Logger.log(JSON.stringify(testParams, null, 2));
-  Logger.log('');
-  
-  const result = handleAdjustPunch(testParams);
-  
-  Logger.log('');
-  Logger.log(' 最終測試結果:');
-  Logger.log(JSON.stringify(result, null, 2));
-  Logger.log('');
-  
-  if (result.ok) {
-    Logger.log(' 測試成功！');
-    Logger.log('');
-    Logger.log(' 請檢查 Google Sheet:');
-    Logger.log('   1. 打開「補打卡申請」工作表');
-    Logger.log('   2. 應該看到新增一筆「待審核」的記錄');
-    Logger.log('   3. 「原因」欄應該有:「測試補打卡理由：系統測試用」');
-    Logger.log('');
-  } else {
-    Logger.log(' 測試失敗');
-    Logger.log('   code: ' + result.code);
-    Logger.log('   msg: ' + result.msg);
-  }
-  
-  Logger.log('═══════════════════════════════════════');
-}
-
 // ==================== 出勤記錄相關 ====================
 
 function handleGetAbnormalRecords(params) {
@@ -1173,300 +1128,8 @@ function handleSetEmployeeSalaryTW(params) {
   }
 }
 
-/**
- *  測試函數
- */
-function testHandleSetEmployeeSalaryTW() {
-  Logger.log(' 測試 handleSetEmployeeSalaryTW（完整版）');
-  Logger.log('');
-  
-  const testParams = {
-    token: '3577f5c0-7e0a-4082-9593-d84fb9ba1db1',  //  替換成有效的 token
-    employeeId: 'Uffac21d92d99e3404b9228fd8c251e2a',
-    employeeName: '洪培瑜Eric',
-    idNumber: 'A173123222',
-    employeeType: '正職',
-    salaryType: '月薪',
-    baseSalary: '50000',
-    
-    // ⭐ 固定津貼
-    positionAllowance: '10',
-    mealAllowance: '10',
-    transportAllowance: '0',
-    attendanceBonus: '16',
-    performanceBonus: '0',
-    otherAllowances: '56',
-    
-    // 銀行資訊
-    bankCode: '052',
-    bankAccount: '1111',
-    hireDate: '',
-    paymentDay: '5',
-    
-    // 法定扣款
-    pensionSelfRate: '0',
-    laborFee: '1053',
-    healthFee: '710',
-    employmentFee: '92',
-    pensionSelf: '0',
-    incomeTax: '800',
-    
-    // ⭐ 其他扣款
-    welfareFee: '40',
-    dormitoryFee: '0',
-    groupInsurance: '0',
-    otherDeductions: '36',
-    
-    // 備註
-    note: '測試完整版薪資設定'
-  };
-  
-  Logger.log(' 測試參數已準備');
-  Logger.log('');
-  
-  const result = handleSetEmployeeSalaryTW(testParams);
-  
-  Logger.log('');
-  Logger.log(' 測試結果:');
-  Logger.log(JSON.stringify(result, null, 2));
-  
-  if (result.ok) {
-    Logger.log('');
-    Logger.log(' 測試成功！');
-    Logger.log('   請檢查 Google Sheet 中的資料是否正確');
-  } else {
-    Logger.log('');
-    Logger.log(' 測試失敗');
-    Logger.log('   原因: ' + result.msg);
-  }
-}
-
-/**
- *  檢查 salaryData 物件是否正確組裝
- */
-function testCheckSalaryDataObject() {
-  Logger.log('═══════════════════════════════════════');
-  Logger.log(' 檢查 salaryData 物件組裝');
-  Logger.log('═══════════════════════════════════════');
-  Logger.log('');
-  
-  const params = {
-    employeeId: 'TEST123',
-    employeeName: '測試員工',
-    baseSalary: '60000',
-    positionAllowance: '10',
-    mealAllowance: '10',
-    otherAllowances: '47',
-    dormitoryFee: '67',
-    otherDeductions: '90'
-  };
-  
-  const safeString = (value) => {
-    if (value === null || value === undefined) return '';
-    return String(value).trim();
-  };
-  
-  const safeNumber = (value) => {
-    if (value === null || value === undefined) return 0;
-    const num = parseFloat(value);
-    return isNaN(num) ? 0 : num;
-  };
-  
-  const salaryData = {
-    employeeId: safeString(params.employeeId),
-    employeeName: safeString(params.employeeName),
-    baseSalary: safeNumber(params.baseSalary),
-    positionAllowance: safeNumber(params.positionAllowance),
-    mealAllowance: safeNumber(params.mealAllowance),
-    otherAllowances: safeNumber(params.otherAllowances),
-    dormitoryFee: safeNumber(params.dormitoryFee),
-    otherDeductions: safeNumber(params.otherDeductions)
-  };
-  
-  Logger.log(' salaryData 物件內容:');
-  Logger.log('   employeeId: ' + salaryData.employeeId);
-  Logger.log('   employeeName: ' + salaryData.employeeName);
-  Logger.log('   baseSalary: ' + salaryData.baseSalary + ' (型別: ' + typeof salaryData.baseSalary + ')');
-  Logger.log('   positionAllowance: ' + salaryData.positionAllowance + ' ⭐ (型別: ' + typeof salaryData.positionAllowance + ')');
-  Logger.log('   mealAllowance: ' + salaryData.mealAllowance + ' ⭐ (型別: ' + typeof salaryData.mealAllowance + ')');
-  Logger.log('   otherAllowances: ' + salaryData.otherAllowances + ' ⭐ (型別: ' + typeof salaryData.otherAllowances + ')');
-  Logger.log('   dormitoryFee: ' + salaryData.dormitoryFee + ' ⭐ (型別: ' + typeof salaryData.dormitoryFee + ')');
-  Logger.log('   otherDeductions: ' + salaryData.otherDeductions + ' ⭐ (型別: ' + typeof salaryData.otherDeductions + ')');
-  Logger.log('');
-  
-  if (salaryData.positionAllowance === 10 && 
-      salaryData.mealAllowance === 10 && 
-      salaryData.otherAllowances === 47) {
-    Logger.log(' salaryData 物件組裝正確！');
-  } else {
-    Logger.log(' salaryData 物件組裝有問題');
-  }
-  
-  Logger.log('═══════════════════════════════════════');
-}
-
 // 診斷測試腳本 - 完整版
 
-/**
- *  測試 handleSetEmployeeSalaryTW 是否正確接收參數
- */
-function testDiagnoseSalaryParams() {
-  Logger.log('═══════════════════════════════════════');
-  Logger.log(' 診斷測試：薪資參數接收（完整版 v2.0）');
-  Logger.log('═══════════════════════════════════════');
-  Logger.log('');
-  
-  // ⭐⭐⭐ 模擬前端送出的參數（完整 29 個參數）
-  const testParams = {
-    token: '3577f5c0-7e0a-4082-9593-d84fb9ba1db1',  //  替換成你的有效 token
-    
-    // 基本資訊 (6 個)
-    employeeId: 'Uffac21d92d99e3404b9228fd8c251e2a',
-    employeeName: '張鈺宸(傻傻)',
-    idNumber: 'A173123222',
-    employeeType: '正職',
-    salaryType: '月薪',
-    baseSalary: '60000',
-    
-    // ⭐ 固定津貼 (6 個) - 這是測試重點！
-    positionAllowance: '10',
-    mealAllowance: '10',
-    transportAllowance: '0',
-    attendanceBonus: '0',
-    performanceBonus: '0',
-    otherAllowances: '47',
-    
-    // 銀行資訊 (4 個)
-    bankCode: '822',
-    bankAccount: '22214',
-    hireDate: '',
-    paymentDay: '5',
-    
-    // 法定扣款 (6 個)
-    pensionSelfRate: '0',
-    laborFee: '1053',
-    healthFee: '710',
-    employmentFee: '92',
-    pensionSelf: '0',
-    incomeTax: '1300',
-    
-    // ⭐ 其他扣款 (4 個) - 這也是測試重點！
-    welfareFee: '0',
-    dormitoryFee: '67',
-    groupInsurance: '0',
-    otherDeductions: '90',
-    
-    // 備註 (1 個)
-    note: '診斷測試 v2.0'
-  };
-  
-  Logger.log(' 測試參數 (共 29 個):');
-  Logger.log('');
-  Logger.log('【基本資訊 - 6 個】');
-  Logger.log('   1. employeeId: ' + testParams.employeeId);
-  Logger.log('   2. employeeName: ' + testParams.employeeName);
-  Logger.log('   3. idNumber: ' + testParams.idNumber);
-  Logger.log('   4. employeeType: ' + testParams.employeeType);
-  Logger.log('   5. salaryType: ' + testParams.salaryType);
-  Logger.log('   6. baseSalary: ' + testParams.baseSalary);
-  Logger.log('');
-  Logger.log('【固定津貼 - 6 個】⭐⭐⭐');
-  Logger.log('   7. positionAllowance: ' + testParams.positionAllowance + ' ⭐');
-  Logger.log('   8. mealAllowance: ' + testParams.mealAllowance + ' ⭐');
-  Logger.log('   9. transportAllowance: ' + testParams.transportAllowance);
-  Logger.log('  10. attendanceBonus: ' + testParams.attendanceBonus);
-  Logger.log('  11. performanceBonus: ' + testParams.performanceBonus);
-  Logger.log('  12. otherAllowances: ' + testParams.otherAllowances + ' ⭐');
-  Logger.log('');
-  Logger.log('【銀行資訊 - 4 個】');
-  Logger.log('  13. bankCode: ' + testParams.bankCode);
-  Logger.log('  14. bankAccount: ' + testParams.bankAccount);
-  Logger.log('  15. hireDate: ' + (testParams.hireDate || '(空)'));
-  Logger.log('  16. paymentDay: ' + testParams.paymentDay);
-  Logger.log('');
-  Logger.log('【法定扣款 - 6 個】');
-  Logger.log('  17. pensionSelfRate: ' + testParams.pensionSelfRate);
-  Logger.log('  18. laborFee: ' + testParams.laborFee);
-  Logger.log('  19. healthFee: ' + testParams.healthFee);
-  Logger.log('  20. employmentFee: ' + testParams.employmentFee);
-  Logger.log('  21. pensionSelf: ' + testParams.pensionSelf);
-  Logger.log('  22. incomeTax: ' + testParams.incomeTax);
-  Logger.log('');
-  Logger.log('【其他扣款 - 4 個】⭐⭐⭐');
-  Logger.log('  23. welfareFee: ' + testParams.welfareFee);
-  Logger.log('  24. dormitoryFee: ' + testParams.dormitoryFee + ' ⭐');
-  Logger.log('  25. groupInsurance: ' + testParams.groupInsurance);
-  Logger.log('  26. otherDeductions: ' + testParams.otherDeductions + ' ⭐');
-  Logger.log('');
-  Logger.log('【備註 - 1 個】');
-  Logger.log('  27. note: ' + testParams.note);
-  Logger.log('');
-  
-  // ⭐ 呼叫 Handler 函數
-  Logger.log(' 開始呼叫 handleSetEmployeeSalaryTW()');
-  Logger.log('');
-  
-  const result = handleSetEmployeeSalaryTW(testParams);
-  
-  Logger.log('');
-  Logger.log(' Handler 返回結果:');
-  Logger.log('   ok: ' + result.ok);
-  Logger.log('   msg: ' + result.msg);
-  Logger.log('');
-  
-  if (result.ok) {
-    Logger.log(' Handler 執行成功');
-    Logger.log('');
-    Logger.log(' 請檢查 Google Sheet「員工薪資設定」:');
-    Logger.log('   G 欄（職務加給）應該是: 10');
-    Logger.log('   H 欄（伙食費）應該是: 10');
-    Logger.log('   L 欄（其他津貼）應該是: 47');
-    Logger.log('   X 欄（宿舍費用）應該是: 67');
-    Logger.log('   Z 欄（其他扣款）應該是: 90');
-    Logger.log('');
-    Logger.log(' 如果以上欄位仍然是 0，則問題在於 setEmployeeSalaryTW()');
-  } else {
-    Logger.log(' Handler 執行失敗');
-    Logger.log('   錯誤訊息: ' + result.msg);
-  }
-  
-  Logger.log('═══════════════════════════════════════');
-}
-
-/**
- *  檢查 Sheet 欄位結構
- */
-function testCheckSheetStructure() {
-  Logger.log('═══════════════════════════════════════');
-  Logger.log(' 檢查 Sheet 欄位結構');
-  Logger.log('═══════════════════════════════════════');
-  Logger.log('');
-  
-  const sheet = getEmployeeSalarySheet();
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  
-  Logger.log(' Sheet 欄位總數: ' + headers.length);
-  Logger.log('');
-  Logger.log(' 完整欄位列表:');
-  
-  headers.forEach((header, index) => {
-    const column = String.fromCharCode(65 + index);
-    Logger.log(`   ${column} (${index + 1}): ${header}`);
-  });
-  
-  Logger.log('');
-  Logger.log(' 關鍵欄位檢查:');
-  Logger.log('   G 欄 (7):  ' + headers[6] + (headers[6] === '職務加給' ? ' ' : ' '));
-  Logger.log('   H 欄 (8):  ' + headers[7] + (headers[7] === '伙食費' ? ' ' : ' '));
-  Logger.log('   I 欄 (9):  ' + headers[8] + (headers[8] === '交通補助' ? ' ' : ' '));
-  Logger.log('   L 欄 (12): ' + headers[11] + (headers[11] === '其他津貼' ? ' ' : ' '));
-  Logger.log('   M 欄 (13): ' + headers[12] + (headers[12] === '銀行代碼' ? ' ' : ' '));
-  Logger.log('   N 欄 (14): ' + headers[13] + (headers[13] === '銀行帳號' ? ' ' : ' '));
-  Logger.log('   X 欄 (24): ' + headers[23] + (headers[23] === '宿舍費用' ? ' ' : ' '));
-  Logger.log('   Z 欄 (26): ' + headers[25] + (headers[25] === '其他扣款' ? ' ' : ' '));
-  
-  Logger.log('═══════════════════════════════════════');
-}
 /**
  *  處理取得員工薪資
  */
@@ -1689,38 +1352,6 @@ function handleGetMySalaryHistory(params) {
   }
 }
 
-/**
- *  測試函數
- */
-function testHandleGetMySalaryFinal() {
-  Logger.log(' 測試最終修正版 handleGetMySalary');
-  Logger.log('');
-  
-  const testParams = {
-    token: '04fd1452-4aca-4b03-ad17-45f03144c6ff',
-    yearMonth: '2025-11'
-  };
-  
-  Logger.log(' 測試參數:');
-  Logger.log('   token: ' + testParams.token.substring(0, 20) + '...');
-  Logger.log('   yearMonth: ' + testParams.yearMonth);
-  Logger.log('');
-  
-  const result = handleGetMySalary(testParams);
-  
-  Logger.log('');
-  Logger.log(' 最終結果:');
-  Logger.log(JSON.stringify(result, null, 2));
-  
-  if (result.ok) {
-    Logger.log('');
-    Logger.log(' 測試成功！');
-  } else {
-    Logger.log('');
-    Logger.log(' 測試失敗');
-    Logger.log('   原因: ' + result.msg);
-  }
-}
 function manualTestGetMySalary() {
   Logger.log(' 手動測試 getMySalary');
   Logger.log('');
@@ -1892,45 +1523,6 @@ function getUserIdFromSession(token) {
 }
 
 // ==================== 測試函數 ====================
-
-/**
- *  測試取得我的薪資
- */
-function testHandleGetMySalary() {
-  Logger.log(' 測試 handleGetMySalary');
-  Logger.log('');
-  
-  const testParams = {
-    token: '04fd1452-4aca-4b03-ad17-45f03144c6ff',  //  替換成有效的 token
-    yearMonth: '2025-11'
-  };
-  
-  Logger.log(' 測試參數:');
-  Logger.log('   token: ' + testParams.token.substring(0, 20) + '...');
-  Logger.log('   yearMonth: ' + testParams.yearMonth);
-  Logger.log('');
-  
-  const result = handleGetMySalary(testParams);
-  
-  Logger.log('');
-  Logger.log(' 最終結果:');
-  Logger.log(JSON.stringify(result, null, 2));
-  Logger.log('');
-  
-  if (result.ok) {
-    Logger.log(' 測試成功！');
-    if (result.data) {
-      Logger.log('');
-      Logger.log(' 薪資資料:');
-      Logger.log('   員工姓名: ' + result.data['員工姓名']);
-      Logger.log('   年月: ' + result.data['年月']);
-      Logger.log('   實發金額: ' + result.data['實發金額']);
-    }
-  } else {
-    Logger.log(' 測試失敗');
-    Logger.log('   原因: ' + result.msg);
-  }
-}
 
 // DailySalaryHandlers.gs - 日薪系統 Handler 函數
 
@@ -2769,32 +2361,6 @@ function handleDeleteEmployeeBasicInfo(params) {
 
 // ==================== 2. 新增權限檢查函數 ====================
 
-/**
- * 檢查是否有排班權限（管理員或排班人員）
- */
-function checkSchedulingPermission(token) {
-  try {
-    const session = checkSession_(token);
-    
-    if (!session.ok || !session.user) {
-      return { ok: false, msg: '未授權或 session 已過期' };
-    }
-    
-    const userRole = session.user.dept;  // 從部門欄位取得角色
-    
-    // 允許管理員和排班人員
-    if (userRole === '管理員' || userRole === '排班人員') {
-      return { ok: true, user: session.user };
-    }
-    
-    return { ok: false, msg: '權限不足：需要管理員或排班人員權限' };
-
-  } catch (error) {
-    Logger.log(' checkSchedulingPermission 錯誤: ' + error);
-    return { ok: false, msg: error.message };
-  }
-}
-
 // ==================== QR 打卡 Handler ====================
 
 /**
@@ -2859,5 +2425,31 @@ function handleGetEmployeeWorkHours(params) {
   } catch (error) {
     Logger.log(' handleGetEmployeeWorkHours 錯誤: ' + error);
     return { ok: false, msg: error.toString() };
+  }
+}
+
+/**
+ * 檢查是否有排班權限（管理員或排班人員）
+ */
+function checkSchedulingPermission(token) {
+  try {
+    const session = checkSession_(token);
+    
+    if (!session.ok || !session.user) {
+      return { ok: false, msg: '未授權或 session 已過期' };
+    }
+    
+    const userRole = session.user.dept;  // 從部門欄位取得角色
+    
+    // 允許管理員和排班人員
+    if (userRole === '管理員' || userRole === '排班人員') {
+      return { ok: true, user: session.user };
+    }
+    
+    return { ok: false, msg: '權限不足：需要管理員或排班人員權限' };
+
+  } catch (error) {
+    Logger.log(' checkSchedulingPermission 錯誤: ' + error);
+    return { ok: false, msg: error.message };
   }
 }

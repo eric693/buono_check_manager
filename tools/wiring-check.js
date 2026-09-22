@@ -162,7 +162,19 @@ const i18nMissing = [];
 });
 report('i18n 翻譯鍵', i18nMissing);
 
-// ---------- 8. 同名函式不能重複定義 ----------
+// ---------- 8. 測試函式要集中在 Tests.gs ----------
+// 這些函式是從 Apps Script 編輯器手動執行的，不屬於任何執行路徑，
+// 但 Apps Script 每次執行都要解析專案裡全部的 .gs。
+const strayTests = [];
+gsFiles.filter(f => !f.endsWith('Tests.gs')).forEach(file => {
+  const src = read(file);
+  for (const m of src.matchAll(/^function ((?:test|debug)[A-Z]\w*)\s*\(/gm)) {
+    strayTests.push(`${m[1]}() 還留在 ${file}`);
+  }
+});
+report('測試函式集中度', strayTests);
+
+// ---------- 9. 同名函式不能重複定義 ----------
 // Apps Script 把所有 .gs 當成同一個全域範圍，同名函式後載入的會蓋掉先載入的，
 // 而檔案順序不是我們控制的 —— 兩份內容不同時，實際跑到哪一份等於不可預期。
 const gsFunctionLocations = new Map();
@@ -180,7 +192,7 @@ report('GS 同名函式重複定義',
     .map(([name, files]) => `${name}()：${files.join('、')}`)
     .sort());
 
-// ---------- 9. 月薪資記錄：表頭順序必須與 saveMonthlySalary 寫入的順序一致 ----------
+// ---------- 10. 月薪資記錄：表頭順序必須與 saveMonthlySalary 寫入的順序一致 ----------
 // saveMonthlySalary 是按「位置」寫入的，表頭跟它差一格，整排欄位的名稱就會錯位，
 // 而 getMySalary 是依名稱取值的 —— 薪資單上就會顯示到別欄的金額。
 const salarySource = read('GS/SalaryManagement.gs');
@@ -220,7 +232,7 @@ if (!headerMatch || !rowMatch) {
 
 report('月薪資記錄欄位對齊', salaryProblems);
 
-// ---------- 10. 操作說明：每個 help 模組都要有對應的容器 ----------
+// ---------- 11. 操作說明：每個 help 模組都要有對應的容器 ----------
 // help.js 是用容器 id 去掛說明區塊的，改版換了 id 就會靜靜地少一塊說明，
 // 畫面上看不出來，所以在這裡擋住。
 const helpLangs = fs.readdirSync(path.join(ROOT, 'i18n/help'))

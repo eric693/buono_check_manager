@@ -1071,49 +1071,6 @@ function getApprovedLeaveRecords(monthParam, userIdParam) {
 }
 
 /**
- *  測試函數：測試無時段限制的請假
- */
-function testUnlimitedLeave() {
-  Logger.log(' 測試無時段限制請假');
-  Logger.log('');
-  
-  const testParams = {
-    token: '16568f73-dd16-4dde-958d-1ab2e703cab5',  //  替換成有效 token
-    leaveType: 'ANNUAL_LEAVE',
-    startDateTime: '2026-02-06T18:00',  // 晚上 18:00
-    endDateTime: '2026-02-06T22:00',    // 晚上 22:00
-    reason: '測試晚上時段請假'
-  };
-  
-  Logger.log(' 測試參數:');
-  Logger.log(JSON.stringify(testParams, null, 2));
-  Logger.log('');
-  
-  const result = submitLeaveRequest(
-    testParams.token,
-    testParams.leaveType,
-    testParams.startDateTime,
-    testParams.endDateTime,
-    testParams.reason
-  );
-  
-  Logger.log('');
-  Logger.log(' 測試結果:');
-  Logger.log(JSON.stringify(result, null, 2));
-  
-  if (result.ok) {
-    Logger.log('');
-    Logger.log(' 測試成功！');
-    Logger.log('應該顯示：4 小時');
-    Logger.log('請檢查 Google Sheet 的「請假紀錄」工作表');
-  } else {
-    Logger.log('');
-    Logger.log(' 測試失敗');
-  }
-}
-
-
-/**
  *  根據勞基法計算特休天數（依年資級距）
  * 
  * 台灣勞基法規定（天數）：

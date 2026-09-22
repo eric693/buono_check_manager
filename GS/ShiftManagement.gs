@@ -176,49 +176,6 @@ function addShift(shiftData) {
 }
 
 /**
- *  統一版：檢查重複排班
- * 重複定義：同一員工 + 同一日期 + 同一班別
- * 
- * @param {string} employeeId - 員工ID
- * @param {string} date - 日期 (YYYY-MM-DD)
- * @param {string} shiftType - 班別
- * @returns {boolean} true=重複, false=不重複
- */
-function checkDuplicateShift(employeeId, date, shiftType) {
-  try {
-    const sheet = getShiftSheet();
-    const data = sheet.getDataRange().getValues();
-    
-    const targetDate = formatDateOnly(date);
-    
-    Logger.log(` 檢查重複: ${employeeId} - ${targetDate} - ${shiftType}`);
-    
-    for (let i = 1; i < data.length; i++) {
-      // 跳過已刪除的記錄
-      if (data[i][13] === '已刪除') continue;
-      
-      const shiftDate = formatDateOnly(data[i][3]);
-      
-      // ⭐⭐⭐ 比較：員工ID + 日期 + 班別
-      if (data[i][1] === employeeId && 
-          shiftDate === targetDate && 
-          data[i][4] === shiftType) {
-        Logger.log(` 發現重複: Row ${i + 1}`);
-        return true;
-      }
-    }
-    
-    Logger.log(` 無重複`);
-    return false;
-    
-  } catch (error) {
-    Logger.log(' checkDuplicateShift 錯誤: ' + error);
-    return false; // 錯誤時允許新增
-  }
-}
-
-
-/**
  *  批量新增排班（精細重複檢查版 - 已統一邏輯）
  */
 function batchAddShifts(shiftsArray) {
@@ -709,79 +666,6 @@ function getUserInfoByEmployeeId(employeeId) {
 
 // ==================== 測試函數 ====================
 
-/**
- * 測試時間格式化
- */
-function testTimeFormatting() {
-  const testCases = [
-    "08:00",
-    "08:00:00",
-    new Date("2025-10-24T00:00:00"),
-    "1899-12-30T01:00:00.000Z"
-  ];
-  
-  Logger.log("=== 時間格式化測試 ===");
-  testCases.forEach(test => {
-    Logger.log(`輸入: ${test} → 輸出: ${formatTimeOnly(test)}`);
-  });
-}
-
-/**
- * 測試排班系統
- */
-function testShiftSystem() {
-  Logger.log('===== 測試排班系統 =====');
-  
-  const testShift = {
-    employeeId: 'TEST001',
-    employeeName: '測試員工',
-    date: '2025-10-25',
-    shiftType: '早班',
-    startTime: '08:00',
-    endTime: '16:00',
-    location: '測試地點',
-    note: '測試備註'
-  };
-  
-  const addResult = addShift(testShift);
-  Logger.log('新增結果: ' + JSON.stringify(addResult));
-  
-  const queryResult = getShifts({ employeeId: 'TEST001' });
-  Logger.log('查詢結果: ' + JSON.stringify(queryResult));
-}
-
-
-function testSingleShift() {
-  const testData = {
-    employeeId: 'Ue76b65367821240ac26387d2972a5adf',
-    employeeName: '測試員工',
-    date: '2026-02-20',
-    shiftType: '廚房A班',
-    startTime: '11:00',
-    endTime: '20:00',
-    location: '總公司',
-    note: '測試'
-  };
-  
-  Logger.log('測試單筆新增');
-  const result = addShift(testData);
-  Logger.log('結果: ' + JSON.stringify(result));
-}
-
-function checkExistingShifts() {
-  const sheet = getShiftSheet();
-  const data = sheet.getDataRange().getValues();
-  
-  Logger.log('現有排班數量: ' + (data.length - 1));
-  
-  // 檢查日期格式
-  for (let i = 1; i <= Math.min(5, data.length - 1); i++) {
-    Logger.log(`Row ${i + 1}:`);
-    Logger.log(`  日期原始: ${data[i][3]}`);
-    Logger.log(`  日期類型: ${typeof data[i][3]}`);
-    Logger.log(`  格式化後: ${formatDateOnly(data[i][3])}`);
-  }
-}
 // ==================== 整月排班快取 ====================
 //
 // getEmployeeShiftForDate() 每次呼叫都會把整張排班表讀進來。算薪資時它被放在
@@ -832,4 +716,46 @@ function getEmployeeShiftMapForMonth(employeeId, yearMonth) {
   }
 
   return map;
+}
+
+/**
+ *  統一版：檢查重複排班
+ * 重複定義：同一員工 + 同一日期 + 同一班別
+ * 
+ * @param {string} employeeId - 員工ID
+ * @param {string} date - 日期 (YYYY-MM-DD)
+ * @param {string} shiftType - 班別
+ * @returns {boolean} true=重複, false=不重複
+ */
+function checkDuplicateShift(employeeId, date, shiftType) {
+  try {
+    const sheet = getShiftSheet();
+    const data = sheet.getDataRange().getValues();
+    
+    const targetDate = formatDateOnly(date);
+    
+    Logger.log(` 檢查重複: ${employeeId} - ${targetDate} - ${shiftType}`);
+    
+    for (let i = 1; i < data.length; i++) {
+      // 跳過已刪除的記錄
+      if (data[i][13] === '已刪除') continue;
+      
+      const shiftDate = formatDateOnly(data[i][3]);
+      
+      // ⭐⭐⭐ 比較：員工ID + 日期 + 班別
+      if (data[i][1] === employeeId && 
+          shiftDate === targetDate && 
+          data[i][4] === shiftType) {
+        Logger.log(` 發現重複: Row ${i + 1}`);
+        return true;
+      }
+    }
+    
+    Logger.log(` 無重複`);
+    return false;
+    
+  } catch (error) {
+    Logger.log(' checkDuplicateShift 錯誤: ' + error);
+    return false; // 錯誤時允許新增
+  }
 }

@@ -165,23 +165,6 @@ function unlockEmployeeName(userId) {
 }
 
 /**
- *  測試解除鎖定功能
- */
-function testUnlockEmployeeName() {
-  Logger.log(' 測試解除姓名鎖定');
-  Logger.log('');
-  
-  //  替換成實際的 userId
-  const testUserId = 'Ud3b574f260f5a777337158ccd4ff0ba2';
-  
-  const result = unlockEmployeeName(testUserId);
-  
-  Logger.log('');
-  Logger.log(' 結果:');
-  Logger.log(JSON.stringify(result, null, 2));
-}
-
-/**
  *  取得所有員工列表（根據實際資料表結構）
  * 
  * 資料表欄位:
@@ -343,90 +326,6 @@ function verifyOneTimeToken_(otoken) {
   return sessionToken;
 }
 
-/**
- *  檢查 Session（自動延期）- 修正版
- */
-function checkSession_(sessionToken) {
-  if (!sessionToken) return { ok: false, code: "MISSING_SESSION_TOKEN" };
-
-  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_SESSION);
-  if (!sh) return { ok: false, code: "SESSION_SHEET_NOT_FOUND" };
-
-  const values = sh.getDataRange().getValues();
-  for (let i = 1; i < values.length; i++) {
-    const [token, userId, , expiredAt] = values[i];
-    if (token === sessionToken) {
-      if (expiredAt && new Date() > new Date(expiredAt)) {
-        return { ok: false, code: "ERR_SESSION_EXPIRED" };
-      }
-      
-      // 延長 Session
-      const newExpiredAt = new Date(new Date().getTime() + SESSION_TTL_MS);
-      sh.getRange(i + 1, 4).setValue(newExpiredAt);
-      
-      // 查詢員工資料
-      const employee = findEmployeeByLineUserId_(userId);
-      if (!employee.ok) {
-        Logger.log(" Session 檢查失敗: " + JSON.stringify(employee));
-        return { ok: false, code: employee.code };
-      }
-      
-      // ⭐⭐⭐ 關鍵修正：不要返回整個 employee 物件，而是只返回純淨的 user 資料
-      return { 
-        ok: true, 
-        user: {
-          userId: employee.userId,
-          employeeId: employee.employeeId,
-          email: employee.email,
-          name: employee.name,
-          picture: employee.picture,
-          dept: employee.dept,
-          status: employee.status
-        },
-        code: "WELCOME_BACK",
-        params: { name: employee.name }
-      };
-    }
-  }
-  return { ok: false, code: "ERR_SESSION_INVALID" };
-}
-
-/**
- *  測試 checkSession_
- */
-function testCheckSession() {
-  Logger.log(' 測試 checkSession_');
-  Logger.log('');
-  
-  const token = '04fd1452-4aca-4b03-ad17-45f03144c6ff';
-  
-  Logger.log(' Token: ' + token.substring(0, 20) + '...');
-  Logger.log('');
-  
-  const result = checkSession_(token);
-  
-  Logger.log(' checkSession_ 結果:');
-  Logger.log(JSON.stringify(result, null, 2));
-  Logger.log('');
-  
-  if (result.ok && result.user) {
-    Logger.log(' Session 有效');
-    Logger.log('');
-    Logger.log(' User 資料:');
-    Logger.log('   - userId: ' + result.user.userId);
-    Logger.log('   - employeeId: ' + result.user.employeeId);
-    Logger.log('   - name: ' + result.user.name);
-    Logger.log('   - dept: ' + result.user.dept);
-    Logger.log('   - email: ' + result.user.email);
-    Logger.log('   - status: ' + result.user.status);
-    Logger.log('');
-    Logger.log(' 檢查 user 物件是否乾淨:');
-    Logger.log('   - user.ok 存在嗎? ' + (result.user.ok !== undefined ? ' 是（有問題）' : ' 否（正常）'));
-  } else {
-    Logger.log(' Session 無效');
-    Logger.log('   code: ' + result.code);
-  }
-}
 // ==================== 打卡功能 ====================
 
 /**
@@ -1017,97 +916,6 @@ function getApprovedOvertimeRecords(monthParam, userIdParam) {
   }
 }
 
-function testGetAttendanceDetailsWithOvertime() {
-  Logger.log(' 測試 getAttendanceDetails');
-  Logger.log('═══════════════════════════════════════');
-  
-  const monthParam = '2025-12';
-  const userIdParam = 'U68e0ca9d516e63ed15bf9387fad174ac';
-  
-  Logger.log(` 查詢條件: ${monthParam}, userId: ${userIdParam}`);
-  Logger.log('');
-  
-  const result = getAttendanceDetails(monthParam, userIdParam);
-  
-  Logger.log(' API 回應:');
-  Logger.log(`   ok: ${result.ok}`);
-  Logger.log(`   records 數量: ${result.records ? result.records.length : 0}`);
-  Logger.log('');
-  
-  if (result.ok && result.records) {
-    // 找出 2025-12-09 的記錄
-    const dec09 = result.records.find(r => r.date === '2025-12-09');
-    
-    if (dec09) {
-      Logger.log(' 找到 2025-12-09 的記錄:');
-      Logger.log('');
-      Logger.log(' 記錄內容:');
-      Logger.log(JSON.stringify(dec09, null, 2));
-      Logger.log('');
-      
-      Logger.log(' 加班資訊檢查:');
-      Logger.log(`   overtime 存在: ${dec09.overtime ? '是' : '否'}`);
-      
-      if (dec09.overtime) {
-        Logger.log('    加班資訊:');
-        Logger.log(`      開始時間: ${dec09.overtime.startTime}`);
-        Logger.log(`      結束時間: ${dec09.overtime.endTime}`);
-        Logger.log(`      時數: ${dec09.overtime.hours}`);
-        Logger.log(`      原因: ${dec09.overtime.reason}`);
-      } else {
-        Logger.log('    沒有加班資訊');
-      }
-    } else {
-      Logger.log(' 沒有找到 2025-12-09 的記錄');
-      Logger.log('');
-      Logger.log(' 所有記錄的日期:');
-      result.records.forEach((r, i) => {
-        Logger.log(`   ${i + 1}. ${r.date} - ${r.name}`);
-      });
-    }
-  }
-  
-  Logger.log('');
-  Logger.log('═══════════════════════════════════════');
-}
-/**
- *  測試加班記錄查詢
- */
-function testGetApprovedOvertimeRecords() {
-  Logger.log(' 測試加班記錄查詢');
-  Logger.log('═══════════════════════════════════════');
-  
-  const monthParam = '2025-12';
-  const userIdParam = 'U68e0ca9d516e63ed15bf9387fad174ac';  // 替換成您的實際 userId
-  
-  Logger.log(` 查詢條件: ${monthParam}, userId: ${userIdParam}`);
-  Logger.log('');
-  
-  const records = getApprovedOvertimeRecords(monthParam, userIdParam);
-  
-  Logger.log('');
-  Logger.log(' 查詢結果:');
-  Logger.log(`   找到 ${records.length} 筆記錄`);
-  
-  if (records.length > 0) {
-    records.forEach((rec, i) => {
-      Logger.log('');
-      Logger.log(`   記錄 ${i + 1}:`);
-      Logger.log(`      日期: ${rec.overtimeDate}`);
-      Logger.log(`      員工: ${rec.employeeName} (${rec.employeeId})`);
-      Logger.log(`      時間: ${rec.startTime} - ${rec.endTime}`);
-      Logger.log(`      時數: ${rec.hours} 小時`);
-      Logger.log(`      原因: ${rec.reason}`);
-    });
-  } else {
-    Logger.log('    沒有找到符合條件的記錄');
-  }
-  
-  Logger.log('');
-  Logger.log('═══════════════════════════════════════');
-}
-
-
 // ==================== 地點管理 ====================
 /**
  * 新增打卡地點
@@ -1576,58 +1384,6 @@ function deleteUser(userId) {
   }
 }
 
-/**
- *  測試審核通知流程
- */
-function testApproveWithNotification() {
-  Logger.log(' 測試審核 + LINE 通知');
-  Logger.log('');
-  
-  //  請先在 Google Sheet 找一筆「補打卡」且「管理員審核 = ?」的記錄
-  const testRowNumber = 20; // 替換成實際的行號
-  
-  Logger.log(' 測試核准補打卡...');
-  const approveResult = updateReviewStatus(testRowNumber, "v", "核准");
-  
-  Logger.log('');
-  Logger.log(' 審核結果:');
-  Logger.log(JSON.stringify(approveResult, null, 2));
-  
-  if (approveResult.ok) {
-    Logger.log('');
-    Logger.log(' 測試成功！');
-    Logger.log('   請檢查 LINE 是否收到通知');
-  } else {
-    Logger.log('');
-    Logger.log(' 測試失敗');
-  }
-}
-
-/**
- *  測試拒絕通知流程
- */
-function testRejectWithNotification() {
-  Logger.log(' 測試拒絕 + LINE 通知');
-  Logger.log('');
-  
-  const testRowNumber = 21; // 替換成實際的行號
-  
-  Logger.log(' 測試拒絕補打卡...');
-  const rejectResult = updateReviewStatus(testRowNumber, "x", "時間不符，請重新申請");
-  
-  Logger.log('');
-  Logger.log(' 審核結果:');
-  Logger.log(JSON.stringify(rejectResult, null, 2));
-  
-  if (rejectResult.ok) {
-    Logger.log('');
-    Logger.log(' 測試成功！');
-    Logger.log('   請檢查 LINE 是否收到拒絕通知');
-  } else {
-    Logger.log('');
-    Logger.log(' 測試失敗');
-  }
-}
 // ==================== 工具函數 ====================
 
 /**
@@ -2102,46 +1858,6 @@ function deleteEmployeeBasicInfo(employeeId) {
   }
 }
 
-/**
- *  測試員工基本資料功能
- */
-function testEmployeeBasicInfo() {
-  Logger.log(' 測試員工基本資料功能');
-  Logger.log('═══════════════════════════════════════');
-  
-  // 步驟 1: 測試直接呼叫 setEmployeeBasicInfo
-  Logger.log(' 測試 1: 直接呼叫 setEmployeeBasicInfo');
-  const testData1 = {
-    employeeId: 'TEST001',
-    employeeName: '測試員工',
-    idNumber: 'A123456789',
-    address: '台北市',
-    phone: '0912345678',
-    birthDate: '1990-01-01'
-  };
-  
-  const result1 = setEmployeeBasicInfo(testData1);
-  Logger.log('結果: ' + JSON.stringify(result1));
-  Logger.log('');
-  
-  // 步驟 2: 測試透過 Handler 呼叫
-  Logger.log(' 測試 2: 透過 Handler 呼叫');
-  const testParams = {
-    token: '61ba577e-7b52-463c-9ce9-48d8c18a3da6',  //  替換成有效的 token
-    employeeId: 'TEST002',
-    employeeName: '測試員工2',
-    idNumber: 'B123456789',
-    address: '新北市',
-    phone: '0987654321',
-    birthDate: '1995-05-05'
-  };
-  
-  const result2 = handleSetEmployeeBasicInfo(testParams);
-  Logger.log('結果: ' + JSON.stringify(result2));
-
-  Logger.log('═══════════════════════════════════════');
-}
-
 // ==================== QR 打卡系統 ====================
 
 /**
@@ -2196,4 +1912,52 @@ function qrPunch(sessionToken, qrTokenId, locationName) {
 
   Logger.log('QR打卡成功: ' + user.name + ' - ' + punchType + ' - ' + loc);
   return { ok: true, code: 'PUNCH_SUCCESS', params: { type: punchType, location: loc } };
+}
+
+/**
+ *  檢查 Session（自動延期）- 修正版
+ */
+function checkSession_(sessionToken) {
+  if (!sessionToken) return { ok: false, code: "MISSING_SESSION_TOKEN" };
+
+  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_SESSION);
+  if (!sh) return { ok: false, code: "SESSION_SHEET_NOT_FOUND" };
+
+  const values = sh.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    const [token, userId, , expiredAt] = values[i];
+    if (token === sessionToken) {
+      if (expiredAt && new Date() > new Date(expiredAt)) {
+        return { ok: false, code: "ERR_SESSION_EXPIRED" };
+      }
+      
+      // 延長 Session
+      const newExpiredAt = new Date(new Date().getTime() + SESSION_TTL_MS);
+      sh.getRange(i + 1, 4).setValue(newExpiredAt);
+      
+      // 查詢員工資料
+      const employee = findEmployeeByLineUserId_(userId);
+      if (!employee.ok) {
+        Logger.log(" Session 檢查失敗: " + JSON.stringify(employee));
+        return { ok: false, code: employee.code };
+      }
+      
+      // ⭐⭐⭐ 關鍵修正：不要返回整個 employee 物件，而是只返回純淨的 user 資料
+      return { 
+        ok: true, 
+        user: {
+          userId: employee.userId,
+          employeeId: employee.employeeId,
+          email: employee.email,
+          name: employee.name,
+          picture: employee.picture,
+          dept: employee.dept,
+          status: employee.status
+        },
+        code: "WELCOME_BACK",
+        params: { name: employee.name }
+      };
+    }
+  }
+  return { ok: false, code: "ERR_SESSION_INVALID" };
 }
