@@ -11,9 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="出勤管家">
     <title data-i18n="SALARY_PAGE_TITLE">薪資管理系統 - 出勤管家</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: {} } };
         // 在第一次繪製之前就決定亮暗，否則深色使用者會先看到一閃的白底
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.classList.add('dark');
@@ -1075,7 +1073,28 @@
                 break-inside: avoid;
             }
         }
+        /* ==================== 語意色 ====================
+           取代原本散在各處的 style="color: var(--positive)" 這類寫法 */
+        .tone-positive { color: var(--positive); }
+        .tone-negative { color: var(--negative); }
+        .tone-accent   { color: var(--accent-text); }
+        .tone-warning  { color: var(--warning); }
+        /* .salary-preview-item span:last-child 會把金額設成 --text，權重比單一 class 高 */
+        .salary-preview-item span.tone-positive { color: var(--positive); }
+        .salary-preview-item span.tone-negative { color: var(--negative); }
+
+        .info-card.is-positive { background: var(--positive-soft); border-color: transparent; }
+        .info-card.is-negative { background: var(--negative-soft); border-color: transparent; }
+        .info-card.is-accent   { background: var(--accent-soft);   border-color: transparent; }
+        .feature-box.is-warning { border-color: var(--warning); background: var(--warning-soft); }
+
+        /* 分頁開頭的說明文字，跟下面的內容隔開 */
+        .summary-hint.section-intro { margin-bottom: 18px; }
     </style>
+    <!-- 事先編好的 Tailwind（tools/build-tailwind.sh 產生）。
+         要放在上面的 <style> 之後：原本 CDN 版是執行時插到 head 最後，
+         同樣權重時 Tailwind 會蓋過頁面樣式，順序換了畫面就會跑掉。 -->
+    <link rel="stylesheet" href="tailwind.salary.css">
 </head>
 <body>
     <div class="container">
@@ -1110,7 +1129,7 @@
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
             </svg>
-            <span id="permission-text">載入中...</span>
+            <span id="permission-text" data-i18n="SALARY_LOADING">載入中...</span>
         </div>
 
         <!-- Tab 導航 -->
@@ -1143,10 +1162,10 @@
                         <div class="empty-state-icon"></div>
                         <div class="empty-state-title" data-i18n="SALARY_NO_RECORD">尚無薪資記錄</div>
                         <div class="empty-state-text">
-                            <p>此月份還沒有薪資資料</p>
+                            <p data-i18n="SALARY_NO_DATA_THIS_MONTH">此月份還沒有薪資資料</p>
                             <p style="margin-top: 0.5rem; font-size: 0.875rem;">
-                                 提示：薪資需要由管理員先設定和計算<br>
-                                請聯繫您的主管或人資部門
+                                <span data-i18n="SALARY_EMPTY_HINT_SETUP">提示：薪資需要由管理員先設定和計算</span><br>
+                                <span data-i18n="SALARY_EMPTY_HINT_CONTACT">請聯繫您的主管或人資部門</span>
                             </p>
                         </div>
                     </div>
@@ -1160,24 +1179,24 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div class="info-card" style="background: var(--positive-soft); border-color: transparent;">
+                            <div class="info-card is-positive">
                                 <div class="info-label" data-i18n="SALARY_GROSS">應發總額</div>
-                                <div id="gross-salary" class="info-value" style="color: var(--positive);">NT$ 0</div>
+                                <div id="gross-salary" class="info-value tone-positive">NT$ 0</div>
                             </div>
-                            <div class="info-card" style="background: var(--negative-soft); border-color: transparent;">
+                            <div class="info-card is-negative">
                                 <div class="info-label" data-i18n="SALARY_DEDUCTIONS">扣款總額</div>
-                                <div id="total-deductions" class="info-value" style="color: var(--negative);">NT$ 0</div>
+                                <div id="total-deductions" class="info-value tone-negative">NT$ 0</div>
                             </div>
-                            <div class="info-card" style="background: var(--accent-soft); border-color: transparent;">
+                            <div class="info-card is-accent">
                                 <div class="info-label" data-i18n="SALARY_NET">實發金額</div>
-                                <div id="net-salary" class="info-value" style="color: var(--accent-text);">NT$ 0</div>
+                                <div id="net-salary" class="info-value tone-accent">NT$ 0</div>
                             </div>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <!--  應發項目 -->
                             <div class="feature-box">
-                                <h4 class="font-semibold mb-3" style="color: var(--positive);" data-i18n="SALARY_EARNINGS_TITLE">應發項目</h4>
+                                <h4 class="font-semibold mb-3 tone-positive" data-i18n="SALARY_EARNINGS_TITLE">應發項目</h4>
                                 <div class="space-y-2 text-sm">
                                     <div class="flex justify-between">
                                         <span data-i18n="SALARY_BASE">基本薪資</span>
@@ -1220,7 +1239,7 @@
                             
                             <!--  扣款項目（只保留一個） -->
                             <div class="feature-box">
-                                <h4 class="font-semibold mb-3" style="color: var(--negative);" data-i18n="SALARY_DEDUCTIONS_TITLE">扣款項目</h4>
+                                <h4 class="font-semibold mb-3 tone-negative" data-i18n="SALARY_DEDUCTIONS_TITLE">扣款項目</h4>
                                 <div class="space-y-2 text-sm">
                                     <div class="flex justify-between">
                                         <span data-i18n="SALARY_LABOR_INS">勞保費</span>
@@ -1267,7 +1286,7 @@
                             </div>
                         </div>
                         
-                        <div class="mt-4 pt-4 border-t border-gray-700">
+                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                             <h4 class="font-semibold mb-2" data-i18n="SALARY_BANK_INFO_TITLE">銀行資訊</h4>
                             <div class="bank-info">
                                 <div>
@@ -1293,7 +1312,7 @@
                     
                     <div id="salary-history-loading" class="loading" style="display: none;">
                         <div class="loading-spinner"></div>
-                        <p>載入中...</p>
+                        <p data-i18n="SALARY_LOADING">載入中...</p>
                     </div>
                     
                     <div id="salary-history-empty" class="empty-state">
@@ -1313,63 +1332,63 @@
                 </summary>
                 <div class="collapsible-body" id="bonus-records">
             <div class="form-section">
-                <div class="feature-title">三節獎金記錄</div>
-                <p class="summary-hint" style="margin-bottom: 20px;">春節、端午節、中秋節獎金發放記錄</p>
+                <div class="feature-title" data-i18n="BONUS_RECORDS_TITLE">三節獎金記錄</div>
+                <p class="summary-hint section-intro" data-i18n="BONUS_RECORDS_DESC">春節、端午節、中秋節獎金發放記錄</p>
 
                 <!-- 年份篩選 -->
                 <div class="month-selector" style="margin-bottom: 1.5rem;">
-                    <label>查詢年度：</label>
+                    <label data-i18n="BONUS_QUERY_YEAR">查詢年度：</label>
                     <input type="number" id="bonus-year-filter" class="form-input" style="width:120px;" placeholder="2026" min="2020" max="2099">
-                    <button onclick="loadBonusRecords()">查詢</button>
+                    <button onclick="loadBonusRecords()" data-i18n="BONUS_QUERY_BTN">查詢</button>
                 </div>
 
                 <!-- 管理員：新增獎金 -->
                 <div id="admin-bonus-section" style="display:none; margin-bottom: 2rem;">
-                    <div class="feature-box" style="border-color: var(--warning); background: var(--warning-soft);">
-                        <h3 class="text-lg font-semibold mb-4" style="color: var(--warning);">發放三節獎金（管理員）</h3>
+                    <div class="feature-box is-warning">
+                        <h3 class="text-lg font-semibold mb-4 tone-warning" data-i18n="BONUS_ISSUE_TITLE">發放三節獎金（管理員）</h3>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label required">員工</label>
+                                <label class="form-label required" data-i18n="SALARY_EMPLOYEE_LABEL">員工</label>
                                 <select id="bonus-employee-select" class="form-select" required onchange="onBonusEmployeeSelect()">
-                                    <option value="">請選擇員工</option>
+                                    <option value="" data-i18n-option="SALARY_SELECT_EMPLOYEE">請選擇員工</option>
                                 </select>
                                 <input type="hidden" id="bonus-employee-id">
                                 <input type="hidden" id="bonus-employee-name">
                             </div>
                             <div class="form-group">
-                                <label class="form-label required">獎金類型</label>
+                                <label class="form-label required" data-i18n="BONUS_TYPE_LABEL">獎金類型</label>
                                 <select id="bonus-type" class="form-select" required>
-                                    <option value="">請選擇</option>
-                                    <option value="春節獎金">春節獎金</option>
-                                    <option value="端午節獎金">端午節獎金</option>
-                                    <option value="中秋節獎金">中秋節獎金</option>
+                                    <option value="" data-i18n-option="PLEASE_SELECT">請選擇</option>
+                                    <option value="春節獎金" data-i18n-option="BONUS_TYPE_SPRING">春節獎金</option>
+                                    <option value="端午節獎金" data-i18n-option="BONUS_TYPE_DRAGON_BOAT">端午節獎金</option>
+                                    <option value="中秋節獎金" data-i18n-option="BONUS_TYPE_MID_AUTUMN">中秋節獎金</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label required">年度</label>
+                                <label class="form-label required" data-i18n="BONUS_YEAR_LABEL">年度</label>
                                 <input type="number" id="bonus-year" class="form-input" placeholder="2026" min="2020" max="2099" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label required">發放金額 (NT$)</label>
+                                <label class="form-label required" data-i18n="BONUS_AMOUNT_LABEL">發放金額 (NT$)</label>
                                 <input type="number" id="bonus-amount" class="form-input" placeholder="0" min="0" step="1" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">發放日期</label>
+                                <label class="form-label" data-i18n="BONUS_DATE_LABEL">發放日期</label>
                                 <input type="date" id="bonus-pay-date" class="form-input">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">狀態</label>
+                                <label class="form-label" data-i18n="BONUS_STATUS_LABEL">狀態</label>
                                 <select id="bonus-status" class="form-select">
-                                    <option value="已發放">已發放</option>
-                                    <option value="待發放">待發放</option>
+                                    <option value="已發放" data-i18n-option="BONUS_STATUS_PAID">已發放</option>
+                                    <option value="待發放" data-i18n-option="BONUS_STATUS_PENDING">待發放</option>
                                 </select>
                             </div>
                         </div>
                         <div class="form-group" style="margin-top:1rem;">
-                            <label class="form-label">備註</label>
-                            <input type="text" id="bonus-note" class="form-input" placeholder="選填">
+                            <label class="form-label" data-i18n="NOTE_LABEL">備註</label>
+                            <input type="text" id="bonus-note" class="form-input" placeholder="選填" data-i18n="OPTIONAL">
                         </div>
-                        <button class="submit-btn" style="max-width:250px; margin-top:1rem;" onclick="submitBonusRecord()">
+                        <button class="submit-btn" style="max-width:250px; margin-top:1rem;" onclick="submitBonusRecord()" data-i18n="BTN_SAVE_BONUS">
                             儲存獎金記錄
                         </button>
                     </div>
@@ -1377,13 +1396,13 @@
 
                 <!-- 獎金記錄列表 -->
                 <div class="feature-box">
-                    <h4 class="font-semibold mb-4" style="color: var(--warning);">獎金發放紀錄</h4>
+                    <h4 class="font-semibold mb-4 tone-warning" data-i18n="BONUS_HISTORY_TITLE">獎金發放紀錄</h4>
                     <div id="bonus-loading" class="loading" style="display:none;">
                         <div class="loading-spinner"></div>
-                        <p>載入中...</p>
+                        <p data-i18n="SALARY_LOADING">載入中...</p>
                     </div>
                     <div id="bonus-empty" class="empty-state" style="display:none;">
-                        <div class="empty-state-title">尚無獎金記錄</div>
+                        <div class="empty-state-title" data-i18n="BONUS_NO_RECORDS">尚無獎金記錄</div>
                     </div>
                     <div id="bonus-list" class="space-y-3"></div>
                 </div>
@@ -1476,7 +1495,7 @@
                 <div>
             <div class="form-section">
                 <div class="feature-title" data-i18n="SALARY_SETTING_FORM_TITLE">員工薪資設定（完整版）</div>
-                <p data-i18n="SALARY_SETTING_DESC" class="summary-hint" style="margin-bottom: 20px;">
+                <p data-i18n="SALARY_SETTING_DESC" class="summary-hint section-intro">
                     設定基本薪資與所有津貼、扣款項目
                 </p>
 
@@ -1495,15 +1514,15 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label" data-i18n="SALARY_EMPLOYEE_ID_LABEL">員工ID</label>
-                                <input type="text" id="config-employee-id" class="form-input" placeholder="自動填入" readonly>
+                                <input type="text" id="config-employee-id" class="form-input" placeholder="自動填入" data-i18n="SALARY_AUTO_FILL" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" data-i18n="SALARY_EMPLOYEE_NAME_LABEL">員工姓名</label>
-                                <input type="text" id="config-employee-name" class="form-input" placeholder="自動填入" readonly>
+                                <input type="text" id="config-employee-name" class="form-input" placeholder="自動填入" data-i18n="SALARY_AUTO_FILL" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" data-i18n="SALARY_ID_NUMBER_LABEL">身分證字號</label>
-                                <input type="text" id="config-id-number" class="form-input" placeholder="選填" maxlength="10">
+                                <input type="text" id="config-id-number" class="form-input" placeholder="選填" data-i18n="OPTIONAL" maxlength="10">
                             </div>
                             <div class="form-group">
                                 <label class="form-label required" data-i18n="SALARY_EMPLOYEE_TYPE_LABEL">員工類型</label>
@@ -1517,10 +1536,10 @@
                             <div class="form-group">
                                 <label class="form-label required" data-i18n="SALARY_TYPE_LABEL">薪資類型</label>
                                 <select id="config-salary-type" class="form-select" required onchange="onSalaryTypeChange()">
-                                    <option value="">請選擇</option>
-                                    <option value="月薪">月薪</option>
-                                    <option value="時薪">時薪</option>
-                                    <option value="週薪">週薪（週領，免勞健保）</option>
+                                    <option value="" data-i18n-option="PLEASE_SELECT">請選擇</option>
+                                    <option value="月薪" data-i18n-option="SALARY_TYPE_MONTHLY">月薪</option>
+                                    <option value="時薪" data-i18n-option="SALARY_TYPE_HOURLY">時薪</option>
+                                    <option value="週薪" data-i18n-option="SALARY_TYPE_WEEKLY_OPTION">週薪（週領，免勞健保）</option>
                                 </select>
                                 <span id="salary-type-hint" class="form-hint"></span>
                             </div>
@@ -1539,7 +1558,7 @@
                     <div class="feature-box">
                         <div class="section-label" data-i18n="SALARY_ALLOWANCE_TITLE">固定津貼與補助</div>
 
-                        <p class="summary-hint" style="margin-bottom: 16px;" data-i18n="ALLOWANCE_DESC">
+                        <p class="summary-hint section-intro" data-i18n="ALLOWANCE_DESC">
                             每月固定發放的津貼項目（會計入應發總額）
                         </p>
                         
@@ -1602,12 +1621,12 @@
                             <span data-i18n="SALARY_LEGAL_DEDUCTIONS_TITLE">法定扣款項目</span>
                             <!--  移除自動計算標記 -->
                         </h3>
-                        <p class="summary-hint" style="margin-bottom: 16px;" data-i18n="LEGAL_DEDUCTIONS_DESC">
+                        <p class="summary-hint section-intro" data-i18n="LEGAL_DEDUCTIONS_DESC">
                             請手動輸入或點擊「計算扣款」按鈕自動計算以下項目
                         </p>
                         
                         <!--  新增：手動計算按鈕 -->
-                        <button type="button" class="ghost-btn" style="margin-bottom: 16px;" onclick="manualCalculateDeductions()">
+                        <button type="button" class="ghost-btn" style="margin-bottom: 16px;" onclick="manualCalculateDeductions()" data-i18n="BTN_CALC_DEDUCTIONS">
                             計算扣款
                         </button>
                         
@@ -1726,7 +1745,7 @@
                                 </div>
                                 <div class="salary-preview-item">
                                     <span data-i18n="PREVIEW_ALLOWANCES_TOTAL">固定津貼小計:</span>
-                                    <span id="preview-allowances-total" class="font-mono" style="color: var(--positive);">NT$ 0</span>
+                                    <span id="preview-allowances-total" class="font-mono tone-positive">NT$ 0</span>
                                 </div>
                             </div>
                             
@@ -1741,11 +1760,11 @@
                             <div>
                                 <div class="salary-preview-item">
                                     <span data-i18n="PREVIEW_LEGAL_DEDUCTIONS">法定扣款:</span>
-                                    <span id="preview-legal-deductions" class="font-mono" style="color: var(--negative);">NT$ 0</span>
+                                    <span id="preview-legal-deductions" class="font-mono tone-negative">NT$ 0</span>
                                 </div>
                                 <div class="salary-preview-item">
                                     <span data-i18n="PREVIEW_OTHER_DEDUCTIONS">其他扣款:</span>
-                                    <span id="preview-other-deductions-total" class="font-mono" style="color: var(--negative);">NT$ 0</span>
+                                    <span id="preview-other-deductions-total" class="font-mono tone-negative">NT$ 0</span>
                                 </div>
                             </div>
                         </div>
@@ -1852,7 +1871,7 @@
         <div id="salary-calc" class="tab-content">
             <div class="form-section">
                 <div class="feature-title" data-i18n="SALARY_CALC_TITLE">薪資試算</div>
-                <p class="summary-hint" style="margin-bottom: 18px;" data-i18n="SALARY_CALC_DESC">
+                <p class="summary-hint section-intro" data-i18n="SALARY_CALC_DESC">
                     選擇員工與月份即可試算。系統會依該員工的薪資類型自動用月薪或時薪的算法。
                 </p>
 
@@ -1880,7 +1899,7 @@
             <div id="monthly-calc" style="display: none;">
             <div class="form-section">
                 <div class="feature-title" data-i18n="MONTHLY_CALC_TITLE">月薪計算</div>
-                <p class="summary-hint" style="margin-bottom: 20px;" data-i18n="MONTHLY_CALC_DESC">
+                <p class="summary-hint section-intro" data-i18n="MONTHLY_CALC_DESC">
                     自動計算員工月薪資，包含加班費、津貼、扣款項目
                 </p>
 
@@ -1909,7 +1928,7 @@
             <div id="hourly-calc" style="display: none;">
             <div class="form-section">
                 <div class="feature-title" data-i18n="HOURLY_CALC_TITLE">時薪計算</div>
-                <p class="summary-hint" style="margin-bottom: 20px;" data-i18n="HOURLY_CALC_DESC">
+                <p class="summary-hint section-intro" data-i18n="HOURLY_CALC_DESC">
                     自動計算時薪人員的薪資，根據出勤記錄自動統計工作時數
                 </p>
 
@@ -1945,15 +1964,15 @@
                 <!--  新增：匯出工具列（只有管理員可見） -->
                 <div id="admin-export-toolbar" class="export-toolbar" style="display: none;">
                     <div style="flex: 1;">
-                        <h4 style="color: var(--accent-text); font-weight: 600; margin-bottom: 6px;">管理員功能</h4>
-                        <p class="summary-hint">匯出當月所有員工的薪資總表（Excel格式）</p>
+                        <h4 style="color: var(--accent-text); font-weight: 600; margin-bottom: 6px;" data-i18n="SALARY_ADMIN_FEATURES">管理員功能</h4>
+                        <p class="summary-hint" data-i18n="SALARY_EXPORT_DESC">匯出當月所有員工的薪資總表（Excel格式）</p>
                     </div>
-                    <button class="export-btn" onclick="exportAllSalaryExcel()">
+                    <button class="export-btn" onclick="exportAllSalaryExcel()" data-i18n="BTN_EXPORT_SALARY_SUMMARY">
                         匯出薪資總表
                     </button>
                 </div>
                 
-                <p class="summary-hint" style="margin-bottom: 20px;" data-i18n="SALARY_LIST_DESC">
+                <p class="summary-hint section-intro" data-i18n="SALARY_LIST_DESC">
                     瀏覽所有員工的薪資記錄
                 </p>
 
@@ -1975,7 +1994,7 @@
             <!-- 批次計算 -->
             <div class="form-section">
                 <div class="feature-title" data-i18n="SALARY_BATCH_TITLE">批次計算薪資</div>
-                <p class="summary-hint" style="margin-bottom: 18px;" data-i18n="SALARY_BATCH_DESC">
+                <p class="summary-hint section-intro" data-i18n="SALARY_BATCH_DESC">
                     一次計算所有在職員工的當月薪資並存檔。人數多時會分批進行，請不要關閉頁面。
                 </p>
 
@@ -1992,7 +2011,7 @@
             <!-- 簽收狀況 -->
             <div class="form-section">
                 <div class="feature-title" data-i18n="PAYSLIP_ACK_TITLE">薪資單簽收狀況</div>
-                <p class="summary-hint" style="margin-bottom: 18px;" data-i18n="PAYSLIP_ACK_DESC">
+                <p class="summary-hint section-intro" data-i18n="PAYSLIP_ACK_DESC">
                     查看某個月有哪些員工已經確認收到薪資單、哪些還沒。
                 </p>
 
@@ -2009,7 +2028,7 @@
             <!-- 薪資異動記錄 -->
             <div class="form-section">
                 <div class="feature-title" data-i18n="SALARY_AUDIT_TITLE">薪資異動記錄</div>
-                <p class="summary-hint" style="margin-bottom: 18px;" data-i18n="SALARY_AUDIT_DESC">
+                <p class="summary-hint section-intro" data-i18n="SALARY_AUDIT_DESC">
                     每次薪資單被覆寫都會留下記錄：哪一欄、從多少改成多少、誰改的。不填條件就是查全部。
                 </p>
 
@@ -2029,7 +2048,7 @@
             <!-- 複製薪資設定 -->
             <div class="form-section">
                 <div class="feature-title" data-i18n="SALARY_COPY_TITLE">複製薪資設定</div>
-                <p class="summary-hint" style="margin-bottom: 18px;" data-i18n="SALARY_COPY_DESC">
+                <p class="summary-hint section-intro" data-i18n="SALARY_COPY_DESC">
                     把一位員工的設定套用到其他人。標示「尚未設定」的員工會直接幫他建一筆（需勾選薪資類型與基本薪資）。身分證、銀行帳號、到職日這類個人資料不會被複製。
                 </p>
 
@@ -2079,14 +2098,9 @@
     <script src="utils.js"></script>
     <script src="libs.js"></script>
     <script src="i18n.js"></script>
-    <script src="holidays.js"></script>
     <script src="worktime.js"></script>
     <script src="help.js"></script>
     <script src="script.js"></script>
-    <script src="location-picker.js"></script>
-    <script src="analytics.js"></script>
-    <script src="biometric.js"></script>
-    <script src="reports.js"></script>
     <script src="payslip.js"></script>
     <script src="salary.js"></script>
     <script src="salary-admin.js"></script>
@@ -2538,23 +2552,23 @@
                     </h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div class="info-card" style="background: var(--positive-soft); border-color: transparent;">
+                        <div class="info-card is-positive">
                             <div class="info-label">應發總額</div>
-                            <div class="info-value" style="color: var(--positive);">$${data.grossSalary.toLocaleString('zh-TW')}</div>
+                            <div class="info-value tone-positive">$${data.grossSalary.toLocaleString('zh-TW')}</div>
                         </div>
-                        <div class="info-card" style="background: var(--negative-soft); border-color: transparent;">
+                        <div class="info-card is-negative">
                             <div class="info-label">扣款總額</div>
-                            <div class="info-value" style="color: var(--negative);">$${data.totalDeductions.toLocaleString('zh-TW')}</div>
+                            <div class="info-value tone-negative">$${data.totalDeductions.toLocaleString('zh-TW')}</div>
                         </div>
-                        <div class="info-card" style="background: var(--accent-soft); border-color: transparent;">
+                        <div class="info-card is-accent">
                             <div class="info-label">實發金額</div>
-                            <div class="info-value" style="color: var(--accent-text);">$${data.netSalary.toLocaleString('zh-TW')}</div>
+                            <div class="info-value tone-accent">$${data.netSalary.toLocaleString('zh-TW')}</div>
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="calculation-detail">
-                            <h4 class="font-semibold mb-3" style="color: var(--positive);">應發項目</h4>
+                            <h4 class="font-semibold mb-3 tone-positive">應發項目</h4>
                             <div class="calculation-row">
                                 <span>時薪</span>
                                 <span>NT$ ${data.hourlyRate}</span>
@@ -2582,7 +2596,7 @@
                         </div>
                         
                         <div class="calculation-detail">
-                            <h4 class="font-semibold mb-3" style="color: var(--negative);">扣款項目</h4>
+                            <h4 class="font-semibold mb-3 tone-negative">扣款項目</h4>
                             ${data.laborFee > 0 ? `
                                 <div class="calculation-row">
                                     <span>勞保費</span>
@@ -2652,13 +2666,13 @@
                 .catch(error => {
                     console.error('載入薪資列表失敗:', error);
                     loadingEl.style.display = 'none';
-                    listEl.innerHTML = '<p class="text-center py-8" style="color: var(--negative);">載入失敗</p>';
+                    listEl.innerHTML = '<p class="text-center py-8 tone-negative">載入失敗</p>';
                 });
         }
 
         function createAllSalaryItem(salary) {
             const div = document.createElement('div');
-            div.className = 'feature-box flex justify-between items-center hover:bg-white/10 transition cursor-pointer';
+            div.className = 'feature-box flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/10 transition cursor-pointer';
             
             div.innerHTML = `
                 <div>

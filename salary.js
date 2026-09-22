@@ -192,7 +192,7 @@ async function loadDailyOvertimeDetails(yearMonth) {
     if (!detailsContainer) return;
     
     try {
-        detailsContainer.innerHTML = '<p class="text-sm text-gray-400">載入中...</p>';
+        detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">載入中...</p>';
         
         //  呼叫後端 API 取得加班記錄
         const res = await callApifetch(`getEmployeeMonthlyOvertime&yearMonth=${yearMonth}`);
@@ -204,29 +204,29 @@ async function loadDailyOvertimeDetails(yearMonth) {
             
             res.records.forEach(record => {
                 const item = document.createElement('div');
-                item.className = 'flex justify-between items-center p-2 bg-orange-800/10 rounded border border-orange-700/30';
+                item.className = 'flex justify-between items-center p-2 bg-orange-50 dark:bg-orange-800/10 rounded border border-orange-200 dark:border-orange-700/30';
                 
                 const hours = parseFloat(record.hours) || 0;
                 
                 item.innerHTML = `
                     <div>
-                        <span class="font-semibold text-orange-200">${record.date}</span>
-                        <span class="text-sm text-orange-400 ml-2">已核准</span>
+                        <span class="font-semibold text-orange-700 dark:text-orange-200">${escapeHtml(record.date)}</span>
+                        <span class="text-sm text-orange-600 dark:text-orange-400 ml-2">已核准</span>
                     </div>
                     <div class="text-right">
-                        <span class="font-mono text-orange-300 font-bold">${hours.toFixed(1)}h</span>
+                        <span class="font-mono text-orange-700 dark:text-orange-300 font-bold">${hours.toFixed(1)}h</span>
                     </div>
                 `;
                 
                 detailsContainer.appendChild(item);
             });
         } else {
-            detailsContainer.innerHTML = '<p class="text-sm text-gray-400">本月無加班記錄</p>';
+            detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">本月無加班記錄</p>';
         }
         
     } catch (error) {
         console.error(' 載入加班明細失敗:', error);
-        detailsContainer.innerHTML = '<p class="text-sm text-red-400">載入失敗</p>';
+        detailsContainer.innerHTML = '<p class="text-sm text-red-600 dark:text-red-400">載入失敗</p>';
     }
 }
 
@@ -286,61 +286,61 @@ async function loadOvertimeRecordsCard(yearMonth, salaryData) {
         overtimeCard.style.display = 'block';
         
         overtimeCard.innerHTML = `
-            <h4 class="font-semibold mb-3 text-orange-400"> 本月加班統計</h4>
+            <h4 class="font-semibold mb-3 text-orange-600 dark:text-orange-400"> 本月加班統計</h4>
             
             <div class="grid grid-cols-3 gap-4 mb-4">
-                <div class="text-center p-3 bg-orange-800/20 rounded-lg">
-                    <p class="text-sm text-orange-300 mb-1">總加班時數</p>
-                    <p class="text-2xl font-bold text-orange-200">${totalOvertimeHours.toFixed(1)}h</p>
+                <div class="text-center p-3 bg-orange-50 dark:bg-orange-800/20 rounded-lg">
+                    <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">總加班時數</p>
+                    <p class="text-2xl font-bold text-orange-700 dark:text-orange-200">${totalOvertimeHours.toFixed(1)}h</p>
                 </div>
-                <div class="text-center p-3 bg-orange-800/20 rounded-lg">
-                    <p class="text-sm text-orange-300 mb-1">平日加班費</p>
-                    <p class="text-xl font-bold text-orange-200">${formatCurrency(weekdayOvertimePay)}</p>
-                    <p class="text-xs text-orange-400 mt-1">(前2h ×1.34, 後2h ×1.67)</p>
+                <div class="text-center p-3 bg-orange-50 dark:bg-orange-800/20 rounded-lg">
+                    <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">平日加班費</p>
+                    <p class="text-xl font-bold text-orange-700 dark:text-orange-200">${formatCurrency(weekdayOvertimePay)}</p>
+                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">(前2h ×1.34, 後2h ×1.67)</p>
                 </div>
-                <div class="text-center p-3 bg-orange-800/20 rounded-lg">
-                    <p class="text-sm text-orange-300 mb-1">假日加班費</p>
-                    <p class="text-xl font-bold text-orange-200">${formatCurrency(restdayOvertimePay + sundayOvertimePay + holidayOvertimePay + holidayWorkPay)}</p>
-                    <p class="text-xs text-orange-400 mt-1">(週六/日/國定 ×1.34~2.67)</p>
+                <div class="text-center p-3 bg-orange-50 dark:bg-orange-800/20 rounded-lg">
+                    <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">假日加班費</p>
+                    <p class="text-xl font-bold text-orange-700 dark:text-orange-200">${formatCurrency(restdayOvertimePay + sundayOvertimePay + holidayOvertimePay + holidayWorkPay)}</p>
+                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">(週六/日/國定 ×1.34~2.67)</p>
                 </div>
             </div>
             
             <!--  詳細分類 -->
             ${restdayOvertimePay > 0 || sundayOvertimePay > 0 || holidayOvertimePay > 0 || holidayWorkPay > 0 ? `
-                <div class="p-3 bg-orange-800/10 rounded-lg mb-3">
+                <div class="p-3 bg-orange-50 dark:bg-orange-800/10 rounded-lg mb-3">
                     <div class="text-sm space-y-1">
                         ${restdayOvertimePay > 0 ? `
                             <div class="flex justify-between">
-                                <span class="text-orange-300">休息日（週六）</span>
-                                <span class="font-mono text-orange-200">${formatCurrency(restdayOvertimePay)}</span>
+                                <span class="text-orange-700 dark:text-orange-300">休息日（週六）</span>
+                                <span class="font-mono text-orange-700 dark:text-orange-200">${formatCurrency(restdayOvertimePay)}</span>
                             </div>
                         ` : ''}
                         ${sundayOvertimePay > 0 ? `
                             <div class="flex justify-between">
-                                <span class="text-orange-300">例假日（週日）×2.0</span>
-                                <span class="font-mono text-orange-200">${formatCurrency(sundayOvertimePay)}</span>
+                                <span class="text-orange-700 dark:text-orange-300">例假日（週日）×2.0</span>
+                                <span class="font-mono text-orange-700 dark:text-orange-200">${formatCurrency(sundayOvertimePay)}</span>
                             </div>
                         ` : ''}
                         ${holidayWorkPay > 0 ? `
-                            <div class="flex justify-between border-t border-orange-700/30 pt-2">
-                                <span class="text-orange-300 font-semibold">國定假日出勤薪資</span>
-                                <span class="font-mono text-orange-200 font-bold">${formatCurrency(holidayWorkPay)}</span>
+                            <div class="flex justify-between border-t border-orange-200 dark:border-orange-700/30 pt-2">
+                                <span class="text-orange-700 dark:text-orange-300 font-semibold">國定假日出勤薪資</span>
+                                <span class="font-mono text-orange-700 dark:text-orange-200 font-bold">${formatCurrency(holidayWorkPay)}</span>
                             </div>
                         ` : ''}
                         ${holidayOvertimePay > 0 ? `
                             <div class="flex justify-between">
-                                <span class="text-orange-300 font-semibold">國定假日加班費 ×2.0</span>
-                                <span class="font-mono text-orange-200 font-bold">${formatCurrency(holidayOvertimePay)}</span>
+                                <span class="text-orange-700 dark:text-orange-300 font-semibold">國定假日加班費 ×2.0</span>
+                                <span class="font-mono text-orange-700 dark:text-orange-200 font-bold">${formatCurrency(holidayOvertimePay)}</span>
                             </div>
                         ` : ''}
                     </div>
                 </div>
             ` : ''}
             
-            <div class="p-3 bg-orange-800/20 rounded-lg">
+            <div class="p-3 bg-orange-50 dark:bg-orange-800/20 rounded-lg">
                 <div class="flex justify-between items-center">
-                    <span class="font-semibold text-orange-200">加班費合計</span>
-                    <span class="text-2xl font-bold text-orange-300">${formatCurrency(totalOvertimePay)}</span>
+                    <span class="font-semibold text-orange-700 dark:text-orange-200">加班費合計</span>
+                    <span class="text-2xl font-bold text-orange-700 dark:text-orange-300">${formatCurrency(totalOvertimePay)}</span>
                 </div>
             </div>
             
@@ -364,7 +364,7 @@ async function loadDailyWorkHours(yearMonth) {
     if (!detailsContainer) return;
     
     try {
-        detailsContainer.innerHTML = '<p class="text-sm text-gray-400">載入中...</p>';
+        detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">載入中...</p>';
         
         //  呼叫後端 API 取得打卡記錄
         const res = await callApifetch(`getEmployeeMonthlyAttendance&yearMonth=${yearMonth}`);
@@ -376,31 +376,31 @@ async function loadDailyWorkHours(yearMonth) {
             
             res.records.forEach(record => {
                 const item = document.createElement('div');
-                item.className = 'flex justify-between items-center p-2 bg-purple-800/10 rounded border border-purple-700/30';
+                item.className = 'flex justify-between items-center p-2 bg-purple-50 dark:bg-purple-800/10 rounded border border-purple-200 dark:border-purple-700/30';
                 
                 const workHours = parseFloat(record.workHours) || 0;
                 
                 item.innerHTML = `
                     <div>
-                        <span class="font-semibold text-purple-200">${record.date}</span>
-                        <span class="text-sm text-purple-400 ml-2">
-                            ${record.punchIn || '--'} ~ ${record.punchOut || '--'}
+                        <span class="font-semibold text-purple-700 dark:text-purple-200">${escapeHtml(record.date)}</span>
+                        <span class="text-sm text-purple-600 dark:text-purple-400 ml-2">
+                            ${escapeHtml(record.punchIn || '--')} ~ ${escapeHtml(record.punchOut || '--')}
                         </span>
                     </div>
                     <div class="text-right">
-                        <span class="font-mono text-purple-300 font-bold">${workHours.toFixed(1)}h</span>
+                        <span class="font-mono text-purple-700 dark:text-purple-300 font-bold">${workHours.toFixed(1)}h</span>
                     </div>
                 `;
                 
                 detailsContainer.appendChild(item);
             });
         } else {
-            detailsContainer.innerHTML = '<p class="text-sm text-gray-400">本月無打卡記錄</p>';
+            detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">本月無打卡記錄</p>';
         }
         
     } catch (error) {
         console.error(' 載入每日工時失敗:', error);
-        detailsContainer.innerHTML = '<p class="text-sm text-red-400">載入失敗</p>';
+        detailsContainer.innerHTML = '<p class="text-sm text-red-600 dark:text-red-400">載入失敗</p>';
     }
 }
 
@@ -423,7 +423,7 @@ async function loadWorkHoursCard(yearMonth, salaryData) {
     if (!workHoursCard) {
         workHoursCard = document.createElement('div');
         workHoursCard.id = 'work-hours-card';
-        workHoursCard.className = 'feature-box bg-purple-900/20 border-purple-700 mb-4';
+        workHoursCard.className = 'feature-box bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700 mb-4';
         
         const detailsSection = document.getElementById('attendance-details-section');
         const firstChild = detailsSection.firstChild;
@@ -431,21 +431,21 @@ async function loadWorkHoursCard(yearMonth, salaryData) {
     }
     
     workHoursCard.innerHTML = `
-        <h4 class="font-semibold mb-3 text-purple-400"> 本月工作時數統計</h4>
+        <h4 class="font-semibold mb-3 text-purple-600 dark:text-purple-400"> 本月工作時數統計</h4>
         
         <div class="grid grid-cols-3 gap-4 mb-4">
-            <div class="text-center p-3 bg-purple-800/20 rounded-lg">
-                <p class="text-sm text-purple-300 mb-1">時薪</p>
-                <p class="text-2xl font-bold text-purple-200">$${hourlyRate}</p>
+            <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
+                <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">時薪</p>
+                <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">$${hourlyRate}</p>
             </div>
-            <div class="text-center p-3 bg-purple-800/20 rounded-lg">
-                <p class="text-sm text-purple-300 mb-1">總工作時數</p>
-                <p class="text-2xl font-bold text-purple-200">${Math.floor(totalWorkHours)}h</p>
+            <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
+                <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">總工作時數</p>
+                <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">${Math.floor(totalWorkHours)}h</p>
             </div>
-            <div class="text-center p-3 bg-purple-800/20 rounded-lg">
-                <p class="text-sm text-purple-300 mb-1">基本薪資</p>
-                <p class="text-2xl font-bold text-purple-200">${formatCurrency(baseSalary)}</p>
-                <p class="text-xs text-purple-400 mt-1">(時薪 × 工時)</p>
+            <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
+                <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">基本薪資</p>
+                <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">${formatCurrency(baseSalary)}</p>
+                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">(時薪 × 工時)</p>
             </div>
         </div>
         
@@ -498,7 +498,7 @@ function renderCustomSalaryItems(data) {
         label.textContent = item.name + '：';
         
         const amount = document.createElement('span');
-        amount.className = 'font-mono ' + (isDeduction ? 'text-red-400' : 'text-green-400');
+        amount.className = 'font-mono ' + (isDeduction ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400');
         amount.textContent = (isDeduction ? '-' : '') + formatCurrency(item.amount || 0);
         
         row.appendChild(label);
@@ -603,7 +603,7 @@ function displayEmployeeSalary(data) {
             let info = baseSalaryEl.parentElement.querySelector('.salary-type-info');
             if (!info) {
                 info = document.createElement('div');
-                info.className = 'salary-type-info text-xs text-purple-400 mt-1';
+                info.className = 'salary-type-info text-xs text-purple-600 dark:text-purple-400 mt-1';
                 baseSalaryEl.parentElement.appendChild(info);
             }
             info.textContent = '時薪 $' + hourlyRate + ' × ' + Math.floor(totalWorkHours) + 'h';
@@ -617,7 +617,7 @@ function displayEmployeeSalary(data) {
             let info = baseSalaryEl.parentElement.querySelector('.salary-type-info');
             if (!info) {
                 info = document.createElement('div');
-                info.className = 'salary-type-info text-xs text-amber-400 mt-1';
+                info.className = 'salary-type-info text-xs text-amber-600 dark:text-amber-400 mt-1';
                 baseSalaryEl.parentElement.appendChild(info);
             }
             info.textContent = '週薪 $' + weeklyRate + ' × ' + weekCount + ' 週（不扣勞健保）';
@@ -650,15 +650,15 @@ function displayEmployeeSalary(data) {
         
         if (totalWorkHours > 0 || totalOvertimeHours > 0) {
             const workHoursSummary = document.createElement('div');
-            workHoursSummary.className = 'work-hours-summary mb-3 p-3 bg-blue-900/20 border border-blue-700/30 rounded-lg';
+            workHoursSummary.className = 'work-hours-summary mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/30 rounded-lg';
             
-            let summaryHTML = '<div class="text-sm font-semibold text-blue-300 mb-2">本月工時統計</div>';
+            let summaryHTML = '<div class="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">本月工時統計</div>';
             
             if (isHourly && totalWorkHours > 0) {
                 summaryHTML += `
                     <div class="flex justify-between text-sm mb-1">
-                        <span class="text-blue-200">打卡工作時數：</span>
-                        <span class="font-mono text-blue-100">${Math.floor(totalWorkHours)}h</span>
+                        <span class="text-blue-700 dark:text-blue-200">打卡工作時數：</span>
+                        <span class="font-mono text-blue-700 dark:text-blue-100">${Math.floor(totalWorkHours)}h</span>
                     </div>
                 `;
             }
@@ -666,8 +666,8 @@ function displayEmployeeSalary(data) {
             if (totalOvertimeHours > 0) {
                 summaryHTML += `
                     <div class="flex justify-between text-sm">
-                        <span class="text-orange-200">加班時數：</span>
-                        <span class="font-mono text-orange-100">${totalOvertimeHours.toFixed(1)}h</span>
+                        <span class="text-orange-700 dark:text-orange-200">加班時數：</span>
+                        <span class="font-mono text-orange-700 dark:text-orange-100">${totalOvertimeHours.toFixed(1)}h</span>
                     </div>
                 `;
             }
@@ -742,15 +742,15 @@ function displayEmployeeSalary(data) {
             
             if (sickLeaveHours > 0 || personalLeaveHours > 0) {  //  改名
                 const leaveDetails = document.createElement('div');
-                leaveDetails.className = 'leave-details p-2 bg-yellow-900/20 rounded-lg mt-2 mb-2 border border-yellow-700/30';
+                leaveDetails.className = 'leave-details p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg mt-2 mb-2 border border-yellow-200 dark:border-yellow-700/30';
                 
                 let detailsHTML = '<div class="text-xs space-y-1">';
                 
                 if (sickLeaveHours > 0) {  //  改名
                     detailsHTML += `
                         <div class="flex justify-between">
-                            <span class="text-yellow-300">病假 ${sickLeaveHours} 小時 (半薪)</span>
-                            <span class="font-mono text-yellow-200 font-bold">${formatCurrency(sickLeaveDeduction)}</span>
+                            <span class="text-yellow-700 dark:text-yellow-300">病假 ${sickLeaveHours} 小時 (半薪)</span>
+                            <span class="font-mono text-yellow-700 dark:text-yellow-200 font-bold">${formatCurrency(sickLeaveDeduction)}</span>
                         </div>
                     `;
                 }
@@ -758,8 +758,8 @@ function displayEmployeeSalary(data) {
                 if (personalLeaveHours > 0) {  //  改名
                     detailsHTML += `
                         <div class="flex justify-between">
-                            <span class="text-yellow-300">事假 ${personalLeaveHours} 小時 (全薪)</span>
-                            <span class="font-mono text-yellow-200 font-bold">${formatCurrency(personalLeaveDeduction)}</span>
+                            <span class="text-yellow-700 dark:text-yellow-300">事假 ${personalLeaveHours} 小時 (全薪)</span>
+                            <span class="font-mono text-yellow-700 dark:text-yellow-200 font-bold">${formatCurrency(personalLeaveDeduction)}</span>
                         </div>
                     `;
                 }
@@ -850,22 +850,22 @@ async function loadSalaryHistory() {
  */
 function createSalaryHistoryItem(salary) {
     const div = document.createElement('div');
-    div.className = 'feature-box flex justify-between items-center hover:bg-white/10 transition cursor-pointer';
+    div.className = 'feature-box flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/10 transition cursor-pointer';
     
     div.innerHTML = `
         <div>
             <div class="font-semibold text-lg">
-                ${salary['年月'] || '--'}
+                ${escapeHtml(salary['年月'] || '--')}
             </div>
-            <div class="text-sm text-gray-400 mt-1">
-                ${salary['狀態'] || '已計算'}
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                ${escapeHtml(salary['狀態'] || '已計算')}
             </div>
         </div>
         <div class="text-right">
-            <div class="text-2xl font-bold text-purple-400">
+            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 ${formatCurrency(salary['實發金額'])}
             </div>
-            <div class="text-xs text-gray-400 mt-1">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 應發 ${formatCurrency(salary['應發總額'])}
             </div>
         </div>
@@ -1195,8 +1195,8 @@ function displaySalaryCalculation(data, container) {
             </div>
             <h3 class="text-xl font-bold mb-4">
                 ${escapeHtml(data.employeeName || '--')} - ${escapeHtml(data.yearMonth || '--')} 薪資計算結果
-                <span class="ml-2 px-3 py-1 text-sm rounded-full ${isHourly ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}">
-                    ${data.salaryType || '月薪'}
+                <span class="ml-2 px-3 py-1 text-sm rounded-full ${isHourly ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'}">
+                    ${escapeHtml(data.salaryType || '月薪')}
                 </span>
             </h3>
             
@@ -1287,7 +1287,7 @@ function displaySalaryCalculation(data, container) {
                                 </div>
                                 
                                 <!--  分開顯示正常薪資與加班費 -->
-                                <div class="text-xs space-y-1 mt-2 border-t border-red-700/30 pt-2">
+                                <div class="text-xs space-y-1 mt-2 border-t border-red-200 dark:border-red-700/30 pt-2">
                                     ${holidayWorkPay > 0 ? `
                                         <div class="flex justify-between">
                                             <span class="text-red-600 dark:text-red-400">正常出勤薪資 ×1.0</span>
@@ -1311,7 +1311,7 @@ function displaySalaryCalculation(data, container) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!--  應發項目 -->
                 <div class="calculation-detail">
-                    <h4 class="font-semibold mb-3 text-green-400"> 應發項目</h4>
+                    <h4 class="font-semibold mb-3 text-green-600 dark:text-green-400"> 應發項目</h4>
                     
                     ${isHourly ? `
                         <div class="calculation-row">
@@ -1390,7 +1390,7 @@ function displaySalaryCalculation(data, container) {
                 
                 <!--  扣款項目 -->
                 <div class="calculation-detail">
-                    <h4 class="font-semibold mb-3 text-red-400"> 扣款項目</h4>
+                    <h4 class="font-semibold mb-3 text-red-600 dark:text-red-400"> 扣款項目</h4>
                     
                     <div class="calculation-row">
                         <span>勞保費</span>
@@ -1421,18 +1421,18 @@ function displaySalaryCalculation(data, container) {
 
                         <!--  病假/事假明細 -->
                         ${sickLeaveHours > 0 || personalLeaveHours > 0 ? `
-                            <div class="p-2 bg-yellow-900/20 rounded-lg mt-2 mb-2 border border-yellow-700/30">
+                            <div class="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg mt-2 mb-2 border border-yellow-200 dark:border-yellow-700/30">
                                 <div class="text-xs space-y-1">
                                     ${sickLeaveHours > 0 ? `
                                         <div class="flex justify-between">
-                                            <span class="text-yellow-300">病假 ${sickLeaveHours} 小時 (半薪)</span>
-                                            <span class="font-mono text-yellow-200">${formatCurrency(sickLeaveDeduction)}</span>
+                                            <span class="text-yellow-700 dark:text-yellow-300">病假 ${sickLeaveHours} 小時 (半薪)</span>
+                                            <span class="font-mono text-yellow-700 dark:text-yellow-200">${formatCurrency(sickLeaveDeduction)}</span>
                                         </div>
                                     ` : ''}
                                     ${personalLeaveHours > 0 ? `
                                         <div class="flex justify-between">
-                                            <span class="text-yellow-300">事假 ${personalLeaveHours} 小時 (全薪)</span>
-                                            <span class="font-mono text-yellow-200">${formatCurrency(personalLeaveDeduction)}</span>
+                                            <span class="text-yellow-700 dark:text-yellow-300">事假 ${personalLeaveHours} 小時 (全薪)</span>
+                                            <span class="font-mono text-yellow-700 dark:text-yellow-200">${formatCurrency(personalLeaveDeduction)}</span>
                                         </div>
                                     ` : ''}
                                 </div>
@@ -1586,13 +1586,13 @@ async function loadAllEmployeeSalaryFromList() {
                 listEl.appendChild(item);
             });
         } else {
-            listEl.innerHTML = '<p class="text-center text-gray-400 py-8">尚無薪資記錄</p>';
+            listEl.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">尚無薪資記錄</p>';
         }
         
     } catch (error) {
         console.error(' 載入薪資列表失敗:', error);
         loadingEl.style.display = 'none';
-        listEl.innerHTML = '<p class="text-center text-red-400 py-8">載入失敗</p>';
+        listEl.innerHTML = '<p class="text-center text-red-600 dark:text-red-400 py-8">載入失敗</p>';
     }
 }
 
@@ -1601,23 +1601,23 @@ async function loadAllEmployeeSalaryFromList() {
  */
 function createAllSalaryItem(salary) {
     const div = document.createElement('div');
-    div.className = 'feature-box flex justify-between items-center hover:bg-white/10 transition cursor-pointer';
+    div.className = 'feature-box flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/10 transition cursor-pointer';
     
     div.innerHTML = `
         <div>
             <div class="font-semibold text-lg">
-                ${salary['員工姓名'] || '--'} <span class="text-gray-400 text-sm">(${salary['員工ID'] || '--'})</span>
+                ${escapeHtml(salary['員工姓名'] || '--')} <span class="text-gray-500 dark:text-gray-400 text-sm">(${escapeHtml(salary['員工ID'] || '--')})</span>
             </div>
-            <div class="text-sm text-gray-400 mt-1">
-                ${salary['年月'] || '--'} | ${salary['狀態'] || '--'}
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                ${escapeHtml(salary['年月'] || '--')} | ${escapeHtml(salary['狀態'] || '--')}
             </div>
         </div>
         <div class="text-right">
-            <div class="text-2xl font-bold text-green-400">
+            <div class="text-2xl font-bold text-green-600 dark:text-green-400">
                 ${formatCurrency(salary['實發金額'])}
             </div>
-            <div class="text-xs text-gray-400 mt-1">
-                ${getBankName(salary['銀行代碼'])} ${salary['銀行帳號'] || '--'}
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                ${escapeHtml(getBankName(salary['銀行代碼']))} ${escapeHtml(salary['銀行帳號'] || '--')}
             </div>
         </div>
     `;
@@ -1747,7 +1747,7 @@ function displayWorkHoursFromCalculation(data) {
     
     const workHoursCard = document.createElement('div');
     workHoursCard.id = 'work-hours-card';
-    workHoursCard.className = 'feature-box bg-purple-900/20 border-purple-700 mb-4';
+    workHoursCard.className = 'feature-box bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700 mb-4';
     
     //  修正：保留小數位數
     const totalWorkHours = parseFloat(data.totalWorkHours || 0).toFixed(1);
@@ -1755,25 +1755,25 @@ function displayWorkHoursFromCalculation(data) {
     const baseSalary = data.baseSalary || 0;
     
     workHoursCard.innerHTML = `
-      <h4 class="font-semibold mb-3 text-purple-400">本月工作時數統計</h4>
+      <h4 class="font-semibold mb-3 text-purple-600 dark:text-purple-400">本月工作時數統計</h4>
       
       <div class="grid grid-cols-3 gap-4 mb-4">
-        <div class="text-center p-3 bg-purple-800/20 rounded-lg">
-          <p class="text-sm text-purple-300 mb-1">時薪</p>
-          <p class="text-2xl font-bold text-purple-200">$${hourlyRate}</p>
+        <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
+          <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">時薪</p>
+          <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">$${hourlyRate}</p>
         </div>
-        <div class="text-center p-3 bg-purple-800/20 rounded-lg">
-          <p class="text-sm text-purple-300 mb-1">總工作時數</p>
-          <p class="text-2xl font-bold text-purple-200">${totalWorkHours}h</p>
+        <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
+          <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">總工作時數</p>
+          <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">${totalWorkHours}h</p>
         </div>
-        <div class="text-center p-3 bg-purple-800/20 rounded-lg">
-          <p class="text-sm text-purple-300 mb-1">基本薪資</p>
-          <p class="text-2xl font-bold text-purple-200">${formatCurrency(baseSalary)}</p>
-          <p class="text-xs text-purple-400 mt-1">(時薪 × 工時)</p>
+        <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
+          <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">基本薪資</p>
+          <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">${formatCurrency(baseSalary)}</p>
+          <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">(時薪 × 工時)</p>
         </div>
       </div>
       
-      <div class="p-3 bg-purple-800/10 rounded-lg text-sm text-purple-300">
+      <div class="p-3 bg-purple-50 dark:bg-purple-800/10 rounded-lg text-sm text-purple-700 dark:text-purple-300">
          工作時數已包含在薪資計算中
       </div>
     `;
@@ -1791,7 +1791,7 @@ function displayWorkHoursFromCalculation(data) {
     
     const overtimeCard = document.createElement('div');
     overtimeCard.id = 'overtime-card';
-    overtimeCard.className = 'feature-box bg-orange-900/20 border-orange-700 mt-4';
+    overtimeCard.className = 'feature-box bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-700 mt-4';
     
     //  修正：正確讀取四種加班費 + 國定假日出勤薪資
     const totalOvertimeHours = Math.floor(data.totalOvertimeHours || 0);
@@ -1807,12 +1807,12 @@ function displayWorkHoursFromCalculation(data) {
     console.log('   國定假日加班費:', holidayOvertimePay);
     
     overtimeCard.innerHTML = `
-        <h4 class="font-semibold mb-3 text-orange-400"> 本月加班統計</h4>
+        <h4 class="font-semibold mb-3 text-orange-600 dark:text-orange-400"> 本月加班統計</h4>
         
         <!-- 總時數 -->
-        <div class="text-center p-3 bg-orange-800/20 rounded-lg mb-3">
-            <p class="text-sm text-orange-300 mb-1">總加班時數</p>
-            <p class="text-3xl font-bold text-orange-200">${totalOvertimeHours}h</p>
+        <div class="text-center p-3 bg-orange-50 dark:bg-orange-800/20 rounded-lg mb-3">
+            <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">總加班時數</p>
+            <p class="text-3xl font-bold text-orange-700 dark:text-orange-200">${totalOvertimeHours}h</p>
         </div>
         
         <!--  關鍵修正：使用 space-y-2 垂直排列 -->
@@ -1853,7 +1853,7 @@ function displayWorkHoursFromCalculation(data) {
                     </div>
                     
                     <!--  分開顯示正常薪資與加班費 -->
-                    <div class="text-xs space-y-1 mt-2 border-t border-red-700/30 pt-2">
+                    <div class="text-xs space-y-1 mt-2 border-t border-red-200 dark:border-red-700/30 pt-2">
                         ${holidayWorkPay > 0 ? `
                             <div class="flex justify-between">
                                 <span class="text-red-600 dark:text-red-400">正常出勤薪資 ×1.0</span>
@@ -1900,20 +1900,20 @@ async function loadPunchRecords(yearMonth) {
             
             res.records.forEach(record => {
                 const item = document.createElement('div');
-                item.className = 'flex justify-between items-center p-2 bg-white/5 rounded';
+                item.className = 'flex justify-between items-center p-2 bg-gray-50 dark:bg-white/5 rounded';
                 
                 const workHours = record.workHours || 0;
                 totalHours += workHours;
                 
                 item.innerHTML = `
                     <div>
-                        <span class="font-semibold">${record.date}</span>
-                        <span class="text-sm text-gray-400 ml-2">
-                            ${record.punchIn || '--'} ~ ${record.punchOut || '--'}
+                        <span class="font-semibold">${escapeHtml(record.date)}</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                            ${escapeHtml(record.punchIn || '--')} ~ ${escapeHtml(record.punchOut || '--')}
                         </span>
                     </div>
                     <div class="text-right">
-                        <span class="font-mono text-blue-400">${workHours.toFixed(1)}h</span>
+                        <span class="font-mono text-blue-600 dark:text-blue-400">${workHours.toFixed(1)}h</span>
                     </div>
                 `;
                 
@@ -1962,18 +1962,18 @@ async function loadOvertimeRecords(yearMonth) {
             
             res.records.forEach(record => {
                 const item = document.createElement('div');
-                item.className = 'flex justify-between items-center p-2 bg-white/5 rounded';
+                item.className = 'flex justify-between items-center p-2 bg-gray-50 dark:bg-white/5 rounded';
                 
                 const hours = record.hours || 0;
                 totalHours += hours;
                 
                 item.innerHTML = `
                     <div>
-                        <span class="font-semibold">${record.date}</span>
-                        <span class="text-sm text-gray-400 ml-2">已核准</span>
+                        <span class="font-semibold">${escapeHtml(record.date)}</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">已核准</span>
                     </div>
                     <div class="text-right">
-                        <span class="font-mono text-orange-400">${hours.toFixed(1)}h</span>
+                        <span class="font-mono text-orange-600 dark:text-orange-400">${hours.toFixed(1)}h</span>
                     </div>
                 `;
                 
@@ -2036,7 +2036,8 @@ async function exportAllSalaryExcel() {
         //  修正：正確判斷成功
         if (result.ok && result.fileUrl) {
             // 成功：開啟下載連結
-            window.open(result.fileUrl, '_blank');
+            const url = safeHttpUrl(result.fileUrl);
+            if (url) window.open(url, '_blank');
             
             showNotification(
                 ` 匯出成功！\n檔案：${result.fileName || '薪資總表'}\n記錄數：${result.recordCount || 0}`,
@@ -2064,6 +2065,19 @@ async function exportAllSalaryExcel() {
 /**
  *  顯示匯出結果（備用方案）
  */
+/**
+ * 只放行 http(s) 網址，避免後端回傳的連結是 javascript: 之類的東西
+ */
+function safeHttpUrl(url) {
+    if (!url) return '';
+    try {
+        const u = new URL(String(url || ''), location.href);
+        return (u.protocol === 'https:' || u.protocol === 'http:') ? u.href : '';
+    } catch (e) {
+        return '';
+    }
+}
+
 function displayExportResult(data) {
     // 建立結果提示區塊
     let resultDiv = document.getElementById('export-result-box');
@@ -2086,12 +2100,12 @@ function displayExportResult(data) {
                      薪資總表已生成！
                 </p>
                 <p class="text-sm text-green-700 dark:text-green-400">
-                    檔案名稱：${data.fileName}.xlsx<br>
-                    共 ${data.recordCount} 筆記錄
+                    檔案名稱：${escapeHtml(data.fileName)}.xlsx<br>
+                    共 ${escapeHtml(data.recordCount)} 筆記錄
                 </p>
             </div>
-            <a href="${data.fileUrl}" 
-               download="${data.fileName}.xlsx"
+            <a href="${escapeHtml(safeHttpUrl(data.fileUrl))}" 
+               download="${escapeHtml(data.fileName)}.xlsx"
                class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors">
                  重新下載
             </a>
@@ -2120,7 +2134,7 @@ function showExportProgress(message) {
     overlay.innerHTML = `
         <div class="export-progress">
             <div class="export-progress-spinner"></div>
-            <div class="export-progress-text">${message}</div>
+            <div class="export-progress-text">${escapeHtml(message)}</div>
             <p class="export-progress-hint" style="color: var(--text-muted, #94a3b8);">
                 請稍候，這可能需要幾秒鐘...
             </p>

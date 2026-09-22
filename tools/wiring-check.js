@@ -281,6 +281,45 @@ helpLangs.slice(1).forEach(lang => {
 
 report('操作說明模組', helpProblems);
 
+// ---------- 薪資頁 Tailwind 產出檔 ----------
+// salary.html 用事先編好的 tailwind.salary.css，不是 CDN。新增 class 後忘了重編，
+// 那個 class 就不會有樣式，畫面也不會報錯，所以在這裡把它抓出來。
+const twProblems = [];
+const twConfig = require('./tailwind.salary.config.js');
+const twCss = fs.existsSync(path.join(ROOT, 'tailwind.salary.css')) ? read('tailwind.salary.css') : null;
+if (!twCss) {
+  twProblems.push('找不到 tailwind.salary.css，請執行 bash tools/build-tailwind.sh');
+} else {
+  const TW = new RegExp('^(?:(?:sm|md|lg|xl|2xl|dark|hover|focus|active|disabled|group-hover|first|last):)*-?(?:' +
+    '(?:text|bg|border|border-[trblxy]|p[xytrbl]?|m[xytrbl]?|w|h|min-w|max-w|min-h|max-h|gap|gap-[xy]|space-[xy]|' +
+    'rounded(?:-[trbl]{1,2})?|font|shadow|grid-cols|col-span|items|justify|self|leading|tracking|opacity|z|inset|' +
+    'top|left|right|bottom|divide|ring|from|to|via|overflow|overflow-[xy]|whitespace|cursor|duration|ease|order|' +
+    'flex|basis|grow|shrink|list|align|object|translate-[xy]|scale|rotate)-[\\w./%\\[\\]#-]+' +
+    '|flex|grid|hidden|block|inline|inline-block|inline-flex|table|truncate|uppercase|lowercase|italic|underline|' +
+    'relative|absolute|fixed|sticky|transition|rounded|shadow|border|container|sr-only|grow|shrink)$');
+  // salary.html 自己 <style> 裡定義的 class 不算
+  const pageCss = (read('salary.html').match(/<style>[\s\S]*?<\/style>/g) || []).join('\n');
+  const custom = new Set([...pageCss.matchAll(/\.([a-zA-Z][\w-]*)/g)].map(m => m[1]));
+  const escapeSel = t => t.replace(/([:/.[\]%#])/g, '\\$1');
+  const seen = new Map();   // class -> 出現的檔案
+  twConfig.content.forEach(file => {
+    const src = read(file);
+    const lists = [
+      ...[...src.matchAll(/class(?:Name)?\s*=\s*["'`]([^"'`]*)/g)].map(m => m[1]),
+      ...[...src.matchAll(/classList\.(?:add|remove|toggle)\(([^)]*)\)/g)]
+        .map(m => [...m[1].matchAll(/['"]([\w:/.-]+)['"]/g)].map(x => x[1]).join(' ')),
+      ...[...src.matchAll(/\?\s*'([^']*)'\s*:\s*'([^']*)'/g)].map(m => m[1] + ' ' + m[2])
+    ];
+    lists.join(' ').split(/\s+/).forEach(tok => {
+      if (!tok || tok.includes('$') || tok.includes('{') || custom.has(tok) || !TW.test(tok)) return;
+      if (!twCss.includes('.' + escapeSel(tok))) seen.set(tok, file);
+    });
+  });
+  seen.forEach((file, tok) =>
+    twProblems.push(`${file} 用了 ${tok}，但 tailwind.salary.css 沒有，請執行 bash tools/build-tailwind.sh`));
+}
+report('薪資頁 Tailwind 產出檔', twProblems);
+
 // ---------- 總結 ----------
 console.log('\n════════════════════════════════');
 if (problems.length === 0) {

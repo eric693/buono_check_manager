@@ -1779,8 +1779,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         
     };
     
-    // 初始化拉桿
-    initRadiusSlider();
+    // 初始化拉桿（薪資頁沒有載入 location-picker.js）
+    if (typeof initRadiusSlider === 'function') initRadiusSlider();
     
     //  搜尋功能事件綁定
     const searchBtn = document.getElementById('search-location-btn');
@@ -1888,8 +1888,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 //  關鍵：UI 顯示後才載入異常記錄（不阻塞登入）
                 loadAbnormalRecordsInBackground();
 
-                // 初始化生物辨識（背景執行）
-                initBiometricPunch();
+                // 初始化生物辨識（背景執行；薪資頁沒有載入 biometric.js）
+                if (typeof initBiometricPunch === 'function') initBiometricPunch();
 
                 // 登入後處理待執行的 QR 打卡
                 if (typeof handlePendingQRPunch === 'function') await handlePendingQRPunch();
@@ -1905,7 +1905,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } else {
         const loginOk = await ensureLogin();
-        initBiometricPunch();
+        if (typeof initBiometricPunch === 'function') initBiometricPunch();
         if (loginOk) {
             if (typeof handlePendingQRPunch === 'function') await handlePendingQRPunch();
         }
