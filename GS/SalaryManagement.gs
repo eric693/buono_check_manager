@@ -8,6 +8,62 @@ const SALARY_CUSTOM_ITEMS_COLUMN = "自訂項目";
 const MONTHLY_CUSTOM_ALLOWANCE_COLUMN = "自訂津貼合計";
 const MONTHLY_CUSTOM_DEDUCTION_COLUMN = "自訂扣款合計";
 const MONTHLY_CUSTOM_DETAIL_COLUMN = "自訂項目明細";
+
+/**
+ * 「月薪資記錄」的欄位順序 —— 唯一的一份定義。
+ *
+ * 這個順序必須跟 saveMonthlySalary() 組 row 陣列的順序逐欄對齊，因為那支是
+ * 按位置寫入的。過去自動建表用的表頭跟它對不上（多了「例假日加班費」、少了
+ * 「早退扣款」），導致第 18 到 26 欄的標籤整排偏移一格：實際存的是勞保費，
+ * 標籤卻寫「國定假日出勤薪資」。資料本身是對的（寫入順序一直一致），錯的是
+ * 名稱；而 getMySalary() 是依標籤取值的，所以薪資單上的法定扣款全部顯示錯欄。
+ *
+ * 改這裡就要同步改 saveMonthlySalary()，兩邊必須一起動。
+ */
+const MONTHLY_SALARY_HEADERS = [
+  // 基本資訊（8）
+  "薪資單ID", "員工ID", "員工姓名", "年月",
+  "薪資類型", "時薪", "工作時數", "總加班時數",
+
+  // 應發項目（11）
+  "基本薪資", "職務加給", "伙食費", "交通補助", "全勤獎金", "業績獎金", "其他津貼",
+  "平日加班費", "休息日加班費", "國定假日出勤薪資", "國定假日加班費",
+
+  // 法定扣款（5）
+  "勞保費", "健保費", "就業保險費", "勞退自提", "所得稅",
+
+  // 其他扣款（6）
+  "請假扣款", "早退扣款", "福利金扣款", "宿舍費用", "團保費用", "其他扣款",
+
+  // 請假明細（4）
+  "病假時數", "病假扣款", "事假時數", "事假扣款",
+
+  // 總計（2）
+  "應發總額", "實發金額",
+
+  // 銀行資訊（2）
+  "銀行代碼", "銀行帳號",
+
+  // 系統欄位（3）
+  "狀態", "備註", "建立時間",
+
+  // 自訂項目（3）
+  MONTHLY_CUSTOM_ALLOWANCE_COLUMN, MONTHLY_CUSTOM_DEDUCTION_COLUMN, MONTHLY_CUSTOM_DETAIL_COLUMN
+];
+
+// 舊版自動建表用過的錯誤表頭，用來判斷某張表需不需要修正標籤
+const LEGACY_MONTHLY_SALARY_HEADERS = [
+  "薪資單ID", "員工ID", "員工姓名", "年月",
+  "薪資類型", "時薪", "工作時數", "總加班時數",
+  "基本薪資", "職務加給", "伙食費", "交通補助", "全勤獎金", "業績獎金", "其他津貼",
+  "平日加班費", "休息日加班費", "例假日加班費", "國定假日加班費", "國定假日出勤薪資",
+  "勞保費", "健保費", "就業保險費", "勞退自提", "所得稅",
+  "請假扣款", "福利金扣款", "宿舍費用", "團保費用", "其他扣款",
+  "病假時數", "病假扣款", "事假時數", "事假扣款",
+  "應發總額", "實發金額",
+  "銀行代碼", "銀行帳號",
+  "狀態", "備註", "建立時間"
+];
 const SHEET_MONTHLY_SALARY_ENHANCED = "月薪資記錄";
 
 // 台灣法定最低薪資（2025）
@@ -339,20 +395,6 @@ function ensureTrailingColumns_(sheet, columnNames) {
   Logger.log(` 已為「${sheet.getName()}」補上欄位: ${missing.join('、')}`);
 }
 
-function rebuildMonthlySalarySheet() {
-     // 刪除舊表（如果存在）
-     const ss = SpreadsheetApp.getActiveSpreadsheet();
-     const oldSheet = ss.getSheetByName('月薪資記錄');
-     if (oldSheet) {
-       ss.deleteSheet(oldSheet);
-     }
-     
-     // 建立新表
-     getMonthlySalarySheetEnhanced();
-     
-     Logger.log(' 月薪資記錄試算表已重建');
-   }
-
 /**
  *  取得或建立月薪資記錄試算表（完整版）
  */
@@ -363,36 +405,7 @@ function getMonthlySalarySheetEnhanced() {
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_MONTHLY_SALARY_ENHANCED);
     
-    const headers = [
-      // 基本資訊
-      "薪資單ID", "員工ID", "員工姓名", "年月",
-      "薪資類型", "時薪", "工作時數", "總加班時數", // ⭐ 新增
-      
-      // 應發項目
-      "基本薪資", "職務加給", "伙食費", "交通補助", "全勤獎金", "業績獎金", "其他津貼",
-      "平日加班費", "休息日加班費", "例假日加班費", "國定假日加班費", "國定假日出勤薪資",
-      
-      // 法定扣款
-      "勞保費", "健保費", "就業保險費", "勞退自提", "所得稅",
-      
-      // 其他扣款
-      "請假扣款", "福利金扣款", "宿舍費用", "團保費用", "其他扣款",
-
-      // ⭐⭐⭐ 新增這 4 欄
-      "病假時數", "病假扣款", "事假時數", "事假扣款",
-      
-      // 總計
-      "應發總額", "實發金額",
-      
-      // 銀行資訊
-      "銀行代碼", "銀行帳號",
-      
-      // 系統欄位
-      "狀態", "備註", "建立時間",
-      
-      // 自訂項目（合計 + 明細 JSON）
-      MONTHLY_CUSTOM_ALLOWANCE_COLUMN, MONTHLY_CUSTOM_DEDUCTION_COLUMN, MONTHLY_CUSTOM_DETAIL_COLUMN
-    ];
+    const headers = MONTHLY_SALARY_HEADERS;
     
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
@@ -403,6 +416,8 @@ function getMonthlySalarySheetEnhanced() {
     Logger.log(" 建立月薪資記錄試算表（完整版）");
   }
   
+  repairMonthlySalaryHeaders_(sheet);
+  
   ensureTrailingColumns_(sheet, [
     MONTHLY_CUSTOM_ALLOWANCE_COLUMN,
     MONTHLY_CUSTOM_DEDUCTION_COLUMN,
@@ -410,6 +425,37 @@ function getMonthlySalarySheetEnhanced() {
   ]);
   
   return sheet;
+}
+
+/**
+ * 修正舊表的欄位名稱。
+ *
+ * 只改第 1 列的標籤，一格資料都不動 —— 因為資料本來就是按 saveMonthlySalary()
+ * 的順序寫進去的，錯的只有標籤。也因此改完之後 getMySalary() 才會取到正確的欄。
+ *
+ * 為了不誤傷被人工調整過的試算表，只有在前 41 欄「完全等於」舊版錯誤表頭時才動手。
+ */
+function repairMonthlySalaryHeaders_(sheet) {
+  try {
+    const legacyLength = LEGACY_MONTHLY_SALARY_HEADERS.length;
+    if (sheet.getLastColumn() < legacyLength) return;
+
+    const current = sheet.getRange(1, 1, 1, legacyLength).getValues()[0]
+                         .map(h => String(h).trim());
+
+    for (let i = 0; i < legacyLength; i++) {
+      if (current[i] !== LEGACY_MONTHLY_SALARY_HEADERS[i]) return;  // 不是那張舊表，不要碰
+    }
+
+    const corrected = MONTHLY_SALARY_HEADERS.slice(0, legacyLength);
+    sheet.getRange(1, 1, 1, legacyLength).setValues([corrected]);
+
+    Logger.log(" 已修正「月薪資記錄」的欄位名稱（第 18-26 欄原本整排偏移一格，資料未變動）");
+
+  } catch (error) {
+    // 修不動就算了，不能讓薪資功能因為這件事整個打不開
+    Logger.log(" 修正月薪資記錄表頭失敗: " + error.message);
+  }
 }
 
 function rebuildMonthlySalarySheet() {
@@ -914,7 +960,13 @@ function saveMonthlySalary(salaryData) {
     Logger.log(`   - salaryId: ${salaryId}`);
     Logger.log(`   - 薪資類型: ${salaryType}`);
     
-    // ⭐⭐⭐ 對應 41 欄的 row 陣列（加入早退扣款）
+    // 自訂項目明細先算好，row 裡每一欄維持一行，才好跟 MONTHLY_SALARY_HEADERS 逐欄對照
+    const customItemDetail = JSON.stringify({
+      allowances: salaryData.customAllowances || [],
+      deductions: salaryData.customDeductions || []
+    });
+    
+    // row 的順序必須與 MONTHLY_SALARY_HEADERS 完全一致（依位置寫入）
     const row = [
       // === 基本資訊（8欄：A-H）===
       salaryId,                                              // A (col 1)
@@ -977,10 +1029,7 @@ function saveMonthlySalary(salaryData) {
       // 合計是為了在試算表裡直接看得到，明細存 JSON 讓薪資單可以逐項列出
       salaryData.customAllowanceTotal || 0,                              // AP (col 42)
       salaryData.customDeductionTotal || 0,                              // AQ (col 43)
-      JSON.stringify({
-        allowances: salaryData.customAllowances || [],
-        deductions: salaryData.customDeductions || []
-      })                                                                 // AR (col 44)
+      customItemDetail                                                   // AR (col 44)
     ];
     
     Logger.log(` 準備寫入的 row 長度: ${row.length}`);
@@ -3446,207 +3495,81 @@ function testGetMySalaryAPI() {
 function rebuildMonthlySalarySheetComplete() {
   try {
     Logger.log(' 開始重建月薪資記錄試算表...');
-    
+
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    
-    // 1. 刪除舊表（如果存在）
-    const oldSheet = ss.getSheetByName('月薪資記錄');
+
+    // 1. 刪除舊表（會一併刪掉所有薪資單，這是刻意的：這支是重建工具）
+    const oldSheet = ss.getSheetByName(SHEET_MONTHLY_SALARY_ENHANCED);
     if (oldSheet) {
       ss.deleteSheet(oldSheet);
       Logger.log(' 已刪除舊的月薪資記錄表');
     }
-    
-    // 2. 建立新表
-    const sheet = ss.insertSheet('月薪資記錄');
-    
-    // 3. 定義完整的標題列（39 欄）
-    const headers = [
-      // === 基本資訊（8欄：A-H）===
-      "薪資單ID",           // A (col 1)
-      "員工ID",             // B (col 2)
-      "員工姓名",           // C (col 3)
-      "年月",               // D (col 4)
-      "薪資類型",           // E (col 5)
-      "時薪",               // F (col 6)
-      "工作時數",           // G (col 7)
-      "總加班時數",         // H (col 8)
-      
-      // === 應發項目（11欄：I-S）===
-      "基本薪資",           // I (col 9)
-      "職務加給",           // J (col 10)
-      "伙食費",             // K (col 11)
-      "交通補助",           // L (col 12)
-      "全勤獎金",           // M (col 13)
-      "業績獎金",           // N (col 14)
-      "其他津貼",           // O (col 15)
-      "平日加班費",         // P (col 16)
-      "休息日加班費",       // Q (col 17)
-      "國定假日出勤薪資",   // R (col 18)
-      "國定假日加班費",     // S (col 19)
-      
-      // === 法定扣款（5欄：T-X）===
-      "勞保費",             // T (col 20)
-      "健保費",             // U (col 21)
-      "就業保險費",         // V (col 22)
-      "勞退自提",           // W (col 23)
-      "所得稅",             // X (col 24)
-      
-      // === 其他扣款（5欄：Y-AC）===
-      "請假扣款",           // Y (col 25)
-      "福利金扣款",         // Z (col 26)
-      "宿舍費用",           // AA (col 27)
-      "團保費用",           // AB (col 28)
-      "其他扣款",           // AC (col 29)
-      
-      // === 請假明細（4欄：AD-AG）===
-      "病假時數",           // AD (col 30)
-      "病假扣款",           // AE (col 31)
-      "事假時數",           // AF (col 32)
-      "事假扣款",           // AG (col 33)
-      
-      // === 總計（2欄：AH-AI）===
-      "應發總額",           // AH (col 34)
-      "實發金額",           // AI (col 35)
-      
-      // === 銀行資訊（2欄：AJ-AK）===
-      "銀行代碼",           // AJ (col 36)
-      "銀行帳號",           // AK (col 37)
-      
-      // === 系統欄位（3欄：AL-AN）===
-      "狀態",               // AL (col 38)
-      "備註",               // AM (col 39)
-      "建立時間"            // AN (col 40)
-    ];
-    
-    // 4. 寫入標題列
+
+    // 2. 建立新表並套用唯一的那份表頭定義
+    const sheet = ss.insertSheet(SHEET_MONTHLY_SALARY_ENHANCED);
+    const headers = MONTHLY_SALARY_HEADERS;
+
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    
-    // 5. 格式化標題列
+
     const headerRange = sheet.getRange(1, 1, 1, headers.length);
     headerRange.setFontWeight("bold");
-    headerRange.setBackground("#10b981");  // 綠色背景
-    headerRange.setFontColor("#ffffff");   // 白色文字
+    headerRange.setBackground("#10b981");
+    headerRange.setFontColor("#ffffff");
     headerRange.setHorizontalAlignment("center");
     headerRange.setVerticalAlignment("middle");
-    
-    // 6. 設定欄位寬度（依類別分組）
-    // 基本資訊
-    sheet.setColumnWidth(1, 200);  // 薪資單ID
-    sheet.setColumnWidth(2, 120);  // 員工ID
-    sheet.setColumnWidth(3, 100);  // 員工姓名
-    sheet.setColumnWidth(4, 80);   // 年月
-    sheet.setColumnWidth(5, 80);   // 薪資類型
-    sheet.setColumnWidth(6, 70);   // 時薪
-    sheet.setColumnWidth(7, 80);   // 工作時數
-    sheet.setColumnWidth(8, 90);   // 總加班時數
-    
-    // 應發項目
-    for (let col = 9; col <= 19; col++) {
-      sheet.setColumnWidth(col, 90);
-    }
-    
-    // 扣款項目
-    for (let col = 20; col <= 29; col++) {
-      sheet.setColumnWidth(col, 90);
-    }
-    
-    // 請假明細
-    for (let col = 30; col <= 33; col++) {
-      sheet.setColumnWidth(col, 80);
-    }
-    
-    // 總計
-    sheet.setColumnWidth(34, 100);  // 應發總額
-    sheet.setColumnWidth(35, 100);  // 實發金額
-    
-    // 銀行資訊
-    sheet.setColumnWidth(36, 90);   // 銀行代碼
-    sheet.setColumnWidth(37, 150);  // 銀行帳號
-    
-    // 系統欄位
-    sheet.setColumnWidth(38, 80);   // 狀態
-    sheet.setColumnWidth(39, 150);  // 備註
-    sheet.setColumnWidth(40, 150);  // 建立時間
-    
-    // 7. 凍結標題列
+
+    // 3. 格式與寬度全部依「欄位名稱」推導。
+    //    以前這裡是寫死的欄號（moneyColumns、狀態在第 38 欄…），表頭一改就全錯，
+    //    而表頭確實改過，所以那些數字早就對不上了。
+    const hourColumns = ['工作時數', '總加班時數', '病假時數', '事假時數'];
+    const dateColumns = ['建立時間'];
+    const textColumns = ['薪資單ID', '員工ID', '員工姓名', '年月', '薪資類型',
+                         '銀行代碼', '銀行帳號', '狀態', '備註',
+                         MONTHLY_CUSTOM_DETAIL_COLUMN];
+    const wideColumns = { '薪資單ID': 200, '銀行帳號': 150, '備註': 150, '建立時間': 150,
+                          '員工ID': 120 };
+
+    headers.forEach((name, index) => {
+      const col = index + 1;
+      sheet.setColumnWidth(col, wideColumns[name] || 95);
+
+      if (hourColumns.indexOf(name) !== -1) {
+        sheet.getRange(2, col, 1000, 1).setNumberFormat('0.0');
+      } else if (dateColumns.indexOf(name) !== -1) {
+        sheet.getRange(2, col, 1000, 1).setNumberFormat('yyyy-mm-dd hh:mm:ss');
+      } else if (textColumns.indexOf(name) === -1) {
+        // 剩下的都是金額
+        sheet.getRange(2, col, 1000, 1).setNumberFormat('#,##0');
+      }
+    });
+
     sheet.setFrozenRows(1);
-    
-    // 8. 凍結前3欄（薪資單ID、員工ID、員工姓名）
     sheet.setFrozenColumns(3);
-    
-    // 9. 設定數值格式
-    // 金額欄位：設定為貨幣格式
-    const moneyColumns = [6, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 33, 34, 35];
-    moneyColumns.forEach(col => {
-      sheet.getRange(2, col, 1000, 1).setNumberFormat('#,##0');
-    });
-    
-    // 時數欄位：設定為小數點1位
-    sheet.getRange(2, 7, 1000, 1).setNumberFormat('0.0');  // 工作時數
-    sheet.getRange(2, 8, 1000, 1).setNumberFormat('0.0');  // 總加班時數
-    
-    // 時數欄位：設定為小數點1位
-    sheet.getRange(2, 30, 1000, 1).setNumberFormat('0.0'); // 病假時數
-    sheet.getRange(2, 32, 1000, 1).setNumberFormat('0.0'); // 事假時數
-    
-    // 日期欄位：設定為日期格式
-    sheet.getRange(2, 40, 1000, 1).setNumberFormat('yyyy-mm-dd hh:mm:ss'); // 建立時間
-    
-    // 10. 設定條件格式（狀態欄位）
-    const statusRange = sheet.getRange(2, 38, 1000, 1);
-    
-    // 已計算 = 綠色
-    const rule1 = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo('已計算')
-      .setBackground('#d1fae5')
-      .setFontColor('#065f46')
-      .setRanges([statusRange])
-      .build();
-    
-    // 已發放 = 藍色
-    const rule2 = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo('已發放')
-      .setBackground('#dbeafe')
-      .setFontColor('#1e40af')
-      .setRanges([statusRange])
-      .build();
-    
-    const rules = sheet.getConditionalFormatRules();
-    rules.push(rule1);
-    rules.push(rule2);
-    sheet.setConditionalFormatRules(rules);
-    
-    // 11. 新增資料驗證（狀態欄位）
-    const statusValidation = SpreadsheetApp.newDataValidation()
-      .requireValueInList(['已計算', '已發放', '已作廢'], true)
-      .setAllowInvalid(false)
-      .build();
-    sheet.getRange(2, 38, 1000, 1).setDataValidation(statusValidation);
-    
-    Logger.log(' 月薪資記錄試算表重建完成');
-    Logger.log(`   總欄位數: ${headers.length}`);
-    Logger.log('   格式化: 標題列、欄寬、數值格式、條件格式');
-    Logger.log('   凍結: 標題列 + 前3欄');
-    
-    // 12. 顯示欄位對照表
-    Logger.log('\n 欄位索引對照表:');
-    headers.forEach((header, index) => {
-      Logger.log(`   ${String.fromCharCode(65 + Math.floor(index / 26)) + String.fromCharCode(65 + (index % 26))} (col ${index + 1}): ${header}`);
-    });
-    
-    return { 
-      success: true, 
-      message: '月薪資記錄試算表重建完成',
-      columnCount: headers.length 
-    };
-    
+
+    // 4. 狀態欄的條件格式
+    const statusIndex = headers.indexOf('狀態');
+    if (statusIndex !== -1) {
+      const statusRange = sheet.getRange(2, statusIndex + 1, 1000, 1);
+      const rules = [
+        { text: '已計算', background: '#d1fae5', font: '#065f46' },
+        { text: '已發放', background: '#dbeafe', font: '#1e40af' }
+      ].map(spec => SpreadsheetApp.newConditionalFormatRule()
+        .whenTextEqualTo(spec.text)
+        .setBackground(spec.background)
+        .setFontColor(spec.font)
+        .setRanges([statusRange])
+        .build());
+
+      sheet.setConditionalFormatRules(rules);
+    }
+
+    Logger.log(` 月薪資記錄試算表已重建（${headers.length} 欄）`);
+
+    return { success: true, message: `已重建月薪資記錄試算表（${headers.length} 欄）` };
+
   } catch (error) {
-    Logger.log(' 重建失敗: ' + error);
-    Logger.log(' 錯誤堆疊: ' + error.stack);
-    return { 
-      success: false, 
-      message: error.toString() 
-    };
+    Logger.log(' rebuildMonthlySalarySheetComplete 錯誤: ' + error);
+    return { success: false, message: error.toString() };
   }
 }
 
@@ -3988,207 +3911,12 @@ function rebuildEmployeeSalarySheet() {
 /**
  *  重建月薪資記錄試算表（完整版 - 含早退扣款）
  */
+/**
+ * 早退扣款那一欄已經併進 MONTHLY_SALARY_HEADERS，不需要另一套重建流程了。
+ * 保留這個名稱只是為了讓既有的書籤或手動執行紀錄還能跑。
+ */
 function rebuildMonthlySalarySheetWithEarlyLeave() {
-  try {
-    Logger.log(' 開始重建月薪資記錄試算表（含早退扣款）...');
-    
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    
-    // 1. 刪除舊表
-    const oldSheet = ss.getSheetByName('月薪資記錄');
-    if (oldSheet) {
-      ss.deleteSheet(oldSheet);
-      Logger.log(' 已刪除舊的月薪資記錄表');
-    }
-    
-    // 2. 建立新表
-    const sheet = ss.insertSheet('月薪資記錄');
-    
-    // 3. ⭐⭐⭐ 定義完整的標題列（41 欄 - 加入早退扣款）
-    const headers = [
-      // === 基本資訊（8欄：A-H）===
-      "薪資單ID",           // A (col 1)
-      "員工ID",             // B (col 2)
-      "員工姓名",           // C (col 3)
-      "年月",               // D (col 4)
-      "薪資類型",           // E (col 5)
-      "時薪",               // F (col 6)
-      "工作時數",           // G (col 7)
-      "總加班時數",         // H (col 8)
-      
-      // === 應發項目（11欄：I-S）===
-      "基本薪資",           // I (col 9)
-      "職務加給",           // J (col 10)
-      "伙食費",             // K (col 11)
-      "交通補助",           // L (col 12)
-      "全勤獎金",           // M (col 13)
-      "業績獎金",           // N (col 14)
-      "其他津貼",           // O (col 15)
-      "平日加班費",         // P (col 16)
-      "休息日加班費",       // Q (col 17)
-      "國定假日出勤薪資",   // R (col 18)
-      "國定假日加班費",     // S (col 19)
-      
-      // === 法定扣款（5欄：T-X）===
-      "勞保費",             // T (col 20)
-      "健保費",             // U (col 21)
-      "就業保險費",         // V (col 22)
-      "勞退自提",           // W (col 23)
-      "所得稅",             // X (col 24)
-      
-      // === 其他扣款（6欄：Y-AD）⭐ 加入早退扣款 ===
-      "請假扣款",           // Y (col 25)
-      "早退扣款",           // Z (col 26) ⭐⭐⭐ 新增
-      "福利金扣款",         // AA (col 27)
-      "宿舍費用",           // AB (col 28)
-      "團保費用",           // AC (col 29)
-      "其他扣款",           // AD (col 30)
-      
-      // === 請假明細（4欄：AE-AH）===
-      "病假時數",           // AE (col 31)
-      "病假扣款",           // AF (col 32)
-      "事假時數",           // AG (col 33)
-      "事假扣款",           // AH (col 34)
-      
-      // === 總計（2欄：AI-AJ）===
-      "應發總額",           // AI (col 35)
-      "實發金額",           // AJ (col 36)
-      
-      // === 銀行資訊（2欄：AK-AL）===
-      "銀行代碼",           // AK (col 37)
-      "銀行帳號",           // AL (col 38)
-      
-      // === 系統欄位（3欄：AM-AO）===
-      "狀態",               // AM (col 39)
-      "備註",               // AN (col 40)
-      "建立時間"            // AO (col 41)
-    ];
-    
-    // 4. 寫入標題列
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    
-    // 5. 格式化標題列
-    const headerRange = sheet.getRange(1, 1, 1, headers.length);
-    headerRange.setFontWeight("bold");
-    headerRange.setBackground("#10b981");  // 綠色背景
-    headerRange.setFontColor("#ffffff");   // 白色文字
-    headerRange.setHorizontalAlignment("center");
-    headerRange.setVerticalAlignment("middle");
-    
-    // 6. 設定欄位寬度
-    // 基本資訊
-    sheet.setColumnWidth(1, 200);  // 薪資單ID
-    sheet.setColumnWidth(2, 120);  // 員工ID
-    sheet.setColumnWidth(3, 100);  // 員工姓名
-    sheet.setColumnWidth(4, 80);   // 年月
-    sheet.setColumnWidth(5, 80);   // 薪資類型
-    sheet.setColumnWidth(6, 70);   // 時薪
-    sheet.setColumnWidth(7, 80);   // 工作時數
-    sheet.setColumnWidth(8, 90);   // 總加班時數
-    
-    // 應發項目
-    for (let col = 9; col <= 19; col++) {
-      sheet.setColumnWidth(col, 90);
-    }
-    
-    // 扣款項目（包含早退扣款）
-    for (let col = 20; col <= 30; col++) {
-      sheet.setColumnWidth(col, 90);
-    }
-    
-    // 請假明細
-    for (let col = 31; col <= 34; col++) {
-      sheet.setColumnWidth(col, 80);
-    }
-    
-    // 總計
-    sheet.setColumnWidth(35, 100);  // 應發總額
-    sheet.setColumnWidth(36, 100);  // 實發金額
-    
-    // 銀行資訊
-    sheet.setColumnWidth(37, 90);   // 銀行代碼
-    sheet.setColumnWidth(38, 150);  // 銀行帳號
-    
-    // 系統欄位
-    sheet.setColumnWidth(39, 80);   // 狀態
-    sheet.setColumnWidth(40, 150);  // 備註
-    sheet.setColumnWidth(41, 150);  // 建立時間
-    
-    // 7. 凍結標題列
-    sheet.setFrozenRows(1);
-    
-    // 8. 凍結前3欄
-    sheet.setFrozenColumns(3);
-    
-    // 9. 設定數值格式
-    // 金額欄位
-    const moneyColumns = [6, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 34, 35, 36];
-    moneyColumns.forEach(col => {
-      sheet.getRange(2, col, 1000, 1).setNumberFormat('#,##0');
-    });
-    
-    // 時數欄位：設定為小數點1位
-    sheet.getRange(2, 7, 1000, 1).setNumberFormat('0.0');  // 工作時數
-    sheet.getRange(2, 8, 1000, 1).setNumberFormat('0.0');  // 總加班時數
-    sheet.getRange(2, 31, 1000, 1).setNumberFormat('0.0'); // 病假時數
-    sheet.getRange(2, 33, 1000, 1).setNumberFormat('0.0'); // 事假時數
-    
-    // 日期欄位
-    sheet.getRange(2, 41, 1000, 1).setNumberFormat('yyyy-mm-dd hh:mm:ss');
-    
-    // 10. 設定條件格式（狀態欄位）
-    const statusRange = sheet.getRange(2, 39, 1000, 1);
-    
-    const rule1 = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo('已計算')
-      .setBackground('#d1fae5')
-      .setFontColor('#065f46')
-      .setRanges([statusRange])
-      .build();
-    
-    const rule2 = SpreadsheetApp.newConditionalFormatRule()
-      .whenTextEqualTo('已發放')
-      .setBackground('#dbeafe')
-      .setFontColor('#1e40af')
-      .setRanges([statusRange])
-      .build();
-    
-    const rules = sheet.getConditionalFormatRules();
-    rules.push(rule1);
-    rules.push(rule2);
-    sheet.setConditionalFormatRules(rules);
-    
-    // 11. 資料驗證（狀態欄位）
-    const statusValidation = SpreadsheetApp.newDataValidation()
-      .requireValueInList(['已計算', '已發放', '已作廢'], true)
-      .setAllowInvalid(false)
-      .build();
-    sheet.getRange(2, 39, 1000, 1).setDataValidation(statusValidation);
-    
-    Logger.log(' 月薪資記錄試算表重建完成（含早退扣款）');
-    Logger.log(`   總欄位數: ${headers.length}`);
-    
-    // 12. 顯示欄位對照表
-    Logger.log('\n 欄位索引對照表:');
-    headers.forEach((header, index) => {
-      const colLetter = getColumnLetter(index + 1);
-      Logger.log(`   ${colLetter} (col ${index + 1}): ${header}`);
-    });
-    
-    return { 
-      success: true, 
-      message: '月薪資記錄試算表重建完成（含早退扣款）',
-      columnCount: headers.length 
-    };
-    
-  } catch (error) {
-    Logger.log(' 重建失敗: ' + error);
-    Logger.log(' 錯誤堆疊: ' + error.stack);
-    return { 
-      success: false, 
-      message: error.toString() 
-    };
-  }
+  return rebuildMonthlySalarySheetComplete();
 }
 
 /**

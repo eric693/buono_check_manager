@@ -357,15 +357,6 @@ function reviewOvertimeRequest(sessionToken, rowNumber, action, comment) {
 }
 
 /**
- * 格式化日期
- */
-function formatDate(date) {
-  if (!date) return "";
-  if (typeof date === "string") return date;
-  return Utilities.formatDate(date, "Asia/Taipei", "yyyy-MM-dd");
-}
-
-/**
  *  升級工具：為現有工作表新增補休時數欄位（只需執行一次）
  */
 function upgradeOvertimeSheet() {
@@ -402,31 +393,3 @@ function upgradeOvertimeSheet() {
 
 // ==================== Handlers ====================
 
-function handleGetEmployeeOvertime(params) {
-  Logger.log(` 查詢員工加班記錄`);
-  return getEmployeeOvertimeRequests(params.token);
-}
-
-function handleGetPendingOvertime(params) {
-  Logger.log(` 查詢待審核加班申請`);
-  return getPendingOvertimeRequests(params.token);
-}
-
-/**
- * 審核加班申請
- */
-function handleReviewOvertime(params) {
-  const { token, rowNumber, reviewAction, comment } = params;
-  
-  Logger.log(` handleReviewOvertime 收到參數:`);
-  Logger.log(`   - rowNumber: ${rowNumber}`);
-  Logger.log(`   - reviewAction: "${reviewAction}"`);
-  Logger.log(`   - comment: "${comment}"`);
-  
-  return reviewOvertimeRequest(
-    token, 
-    parseInt(rowNumber), 
-    reviewAction,
-    comment || ""
-  );
-}

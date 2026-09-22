@@ -1631,48 +1631,6 @@ function testRejectWithNotification() {
 // ==================== 工具函數 ====================
 
 /**
- * 計算兩點之間的距離（公尺）
- */
-function getDistanceMeters_(lat1, lng1, lat2, lng2) {
-  const R = 6371e3;
-  const φ1 = lat1 * Math.PI / 180;
-  const φ2 = lat2 * Math.PI / 180;
-  const Δφ = (lat2 - lat1) * Math.PI / 180;
-  const Δλ = (lng2 - lng1) * Math.PI / 180;
-
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c;
-}
-
-/**
- * 格式化日期時間
- */
-function formatDateTime(date) {
-  if (!date) return '';
-  try {
-    return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
-  } catch (e) {
-    return String(date);
-  }
-}
-
-/**
- * 格式化日期
- */
-function formatDate(date) {
-  if (!date) return '';
-  try {
-    return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  } catch (e) {
-    return String(date);
-  }
-}
-
-/**
  * 格式化時間
  */
 function formatTime(date) {

@@ -162,7 +162,65 @@ const i18nMissing = [];
 });
 report('i18n 翻譯鍵', i18nMissing);
 
-// ---------- 8. 操作說明：每個 help 模組都要有對應的容器 ----------
+// ---------- 8. 同名函式不能重複定義 ----------
+// Apps Script 把所有 .gs 當成同一個全域範圍，同名函式後載入的會蓋掉先載入的，
+// 而檔案順序不是我們控制的 —— 兩份內容不同時，實際跑到哪一份等於不可預期。
+const gsFunctionLocations = new Map();
+gsFiles.forEach(file => {
+  const src = read(file);
+  for (const m of src.matchAll(/^function (\w+)\s*\(/gm)) {
+    if (!gsFunctionLocations.has(m[1])) gsFunctionLocations.set(m[1], []);
+    gsFunctionLocations.get(m[1]).push(file);
+  }
+});
+
+report('GS 同名函式重複定義',
+  [...gsFunctionLocations.entries()]
+    .filter(([, files]) => files.length > 1)
+    .map(([name, files]) => `${name}()：${files.join('、')}`)
+    .sort());
+
+// ---------- 9. 月薪資記錄：表頭順序必須與 saveMonthlySalary 寫入的順序一致 ----------
+// saveMonthlySalary 是按「位置」寫入的，表頭跟它差一格，整排欄位的名稱就會錯位，
+// 而 getMySalary 是依名稱取值的 —— 薪資單上就會顯示到別欄的金額。
+const salarySource = read('GS/SalaryManagement.gs');
+const salaryProblems = [];
+
+const headerMatch = salarySource.match(/const MONTHLY_SALARY_HEADERS = \[([\s\S]*?)\n\];/);
+const rowMatch = salarySource.match(/function saveMonthlySalary\(salaryData\)[\s\S]*?const row = \[([\s\S]*?)\n    \];/);
+
+if (!headerMatch || !rowMatch) {
+  salaryProblems.push('找不到 MONTHLY_SALARY_HEADERS 或 saveMonthlySalary 的 row 定義');
+} else {
+  // 表頭：字串字面值，或指向自訂項目欄名的常數
+  const headerNames = [];
+  for (const m of headerMatch[1].matchAll(/"([^"]+)"|\b(MONTHLY_CUSTOM_\w+_COLUMN)\b/g)) {
+    headerNames.push(m[1] || m[2]);
+  }
+
+  // 寫入：每一列取它引用的中文欄名（salaryData['X'] 的 X），沒有就算它一欄
+  const rowEntries = [];
+  rowMatch[1].split('\n').forEach(line => {
+    const text = line.trim();
+    if (!text || text.startsWith('//')) return;
+    const named = text.match(/salaryData\['([^']+)'\]/);
+    rowEntries.push(named ? named[1] : null);
+  });
+
+  if (headerNames.length !== rowEntries.length) {
+    salaryProblems.push(`表頭 ${headerNames.length} 欄，但 saveMonthlySalary 寫入 ${rowEntries.length} 欄`);
+  }
+
+  rowEntries.forEach((name, i) => {
+    if (name && headerNames[i] && name !== headerNames[i]) {
+      salaryProblems.push(`第 ${i + 1} 欄錯位：表頭是「${headerNames[i]}」，卻寫入「${name}」的值`);
+    }
+  });
+}
+
+report('月薪資記錄欄位對齊', salaryProblems);
+
+// ---------- 10. 操作說明：每個 help 模組都要有對應的容器 ----------
 // help.js 是用容器 id 去掛說明區塊的，改版換了 id 就會靜靜地少一塊說明，
 // 畫面上看不出來，所以在這裡擋住。
 const helpLangs = fs.readdirSync(path.join(ROOT, 'i18n/help'))

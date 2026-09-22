@@ -305,17 +305,6 @@ function isAdmin(user) {
   return user && user.dept === '管理員';
 }
 
-/**
- * 格式化日期
- */
-function formatDate(date) {
-  const d = new Date(date);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
 // ==================== 系統版本資訊 ====================
 const SYSTEM_VERSION = {
   version: '0.8.0',

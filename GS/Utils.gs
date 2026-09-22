@@ -342,3 +342,55 @@ function pick(row, objKey, idx) {
   const v = row?.[objKey];
   return (v !== undefined && v !== null) ? v : row?.[idx];
 }
+
+// ==================== 日期格式化（全專案唯一的一份） ====================
+//
+// 這兩支原本散在 Constants.gs / LeaveManagement.gs / OvertimeOperations.gs /
+// DbOperations.gs / ShiftManagement.gs，各自的行為還不一樣：有的收到 null 會回傳
+// "NaN-NaN-NaN"，有的字串原樣退回，有的寫死 Asia/Taipei。同名函式在 Apps Script
+// 裡是後載入的蓋掉先載入的，所以實際跑到哪一份取決於檔案順序——等於行為不可預期。
+//
+// 這裡合成一份涵蓋所有既有行為的版本，任何呼叫端的預期都不會被破壞。
+
+/**
+ * 格式化為 yyyy-MM-dd
+ *
+ * - null / undefined / 空字串 → 回傳空字串
+ * - 已經是 yyyy-MM-dd 的字串 → 原樣回傳（不重新解析，避免時區位移）
+ * - 其他字串或 Date → 依腳本時區格式化
+ */
+function formatDate(date) {
+  if (!date) return '';
+
+  if (typeof date === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) return date.trim();
+    const parsed = new Date(date);
+    if (isNaN(parsed.getTime())) return date;
+    date = parsed;
+  }
+
+  try {
+    return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  } catch (error) {
+    return String(date);
+  }
+}
+
+/**
+ * 格式化為 yyyy-MM-dd HH:mm:ss；空值回傳空字串
+ */
+function formatDateTime(date) {
+  if (!date) return '';
+
+  if (typeof date === 'string') {
+    const parsed = new Date(date);
+    if (isNaN(parsed.getTime())) return date;
+    date = parsed;
+  }
+
+  try {
+    return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+  } catch (error) {
+    return String(date);
+  }
+}

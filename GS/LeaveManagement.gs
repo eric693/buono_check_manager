@@ -1071,30 +1071,6 @@ function getApprovedLeaveRecords(monthParam, userIdParam) {
 }
 
 /**
- *  格式化日期時間
- */
-function formatDateTime(date) {
-  if (!date) return '';
-  try {
-    return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
-  } catch (e) {
-    return String(date);
-  }
-}
-
-/**
- *  格式化日期
- */
-function formatDate(date) {
-  if (!date) return '';
-  try {
-    return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  } catch (e) {
-    return String(date);
-  }
-}
-
-/**
  *  測試函數：測試無時段限制的請假
  */
 function testUnlimitedLeave() {

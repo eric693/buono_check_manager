@@ -66,13 +66,6 @@ function formatTimeOnly(timeValue) {
     return String(timeValue);
 }
 
-/**
- * ⭐ 格式化完整日期時間
- */
-function formatDateTime(date) {
-  return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
-}
-
 // ==================== 原有功能 ====================
 
 /**

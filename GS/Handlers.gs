@@ -828,6 +828,10 @@ function handleUpdateShift(params) {
       return permCheck;
     }
     
+    if (!params.shiftId) {
+      return { ok: false, msg: "缺少 shiftId 參數" };
+    }
+    
     Logger.log(' 更新排班: ' + params.shiftId);
     
     const updateData = {
@@ -858,6 +862,10 @@ function handleDeleteShift(params) {
     const permCheck = checkSchedulingPermission(params.token);
     if (!permCheck.ok) {
       return permCheck;
+    }
+    
+    if (!params.shiftId) {
+      return { ok: false, msg: "缺少 shiftId 參數" };
     }
     
     Logger.log(' 刪除排班: ' + params.shiftId);
@@ -1108,7 +1116,10 @@ function handleSetEmployeeSalaryTW(params) {
       otherDeductions: safeNumber(params.otherDeductions),
       
       // 備註
-      note: safeString(params.note)
+      note: safeString(params.note),
+      
+      // 自訂津貼／扣款金額（JSON 字串，setEmployeeSalaryTW 會自己解析與正規化）
+      customItems: params.customItems
     };
     
     Logger.log('');
@@ -1422,104 +1433,6 @@ function testDiagnoseSalaryParams() {
   Logger.log('═══════════════════════════════════════');
 }
 
-/**
- *  檢查 salaryData 物件是否正確組裝
- */
-function testCheckSalaryDataObject() {
-  Logger.log('═══════════════════════════════════════');
-  Logger.log(' 檢查 salaryData 物件組裝');
-  Logger.log('═══════════════════════════════════════');
-  Logger.log('');
-  
-  const params = {
-    employeeId: 'TEST123',
-    employeeName: '測試員工',
-    baseSalary: '60000',
-    positionAllowance: '10',
-    mealAllowance: '10',
-    otherAllowances: '47',
-    dormitoryFee: '67',
-    otherDeductions: '90'
-  };
-  
-  const safeString = (value) => {
-    if (value === null || value === undefined) return '';
-    return String(value).trim();
-  };
-  
-  const safeNumber = (value) => {
-    if (value === null || value === undefined) return 0;
-    const num = parseFloat(value);
-    return isNaN(num) ? 0 : num;
-  };
-  
-  const salaryData = {
-    employeeId: safeString(params.employeeId),
-    employeeName: safeString(params.employeeName),
-    baseSalary: safeNumber(params.baseSalary),
-    positionAllowance: safeNumber(params.positionAllowance),
-    mealAllowance: safeNumber(params.mealAllowance),
-    otherAllowances: safeNumber(params.otherAllowances),
-    dormitoryFee: safeNumber(params.dormitoryFee),
-    otherDeductions: safeNumber(params.otherDeductions)
-  };
-  
-  Logger.log(' salaryData 物件內容:');
-  Logger.log('   employeeId: ' + salaryData.employeeId);
-  Logger.log('   employeeName: ' + salaryData.employeeName);
-  Logger.log('   baseSalary: ' + salaryData.baseSalary + ' (型別: ' + typeof salaryData.baseSalary + ')');
-  Logger.log('   positionAllowance: ' + salaryData.positionAllowance + ' ⭐ (型別: ' + typeof salaryData.positionAllowance + ')');
-  Logger.log('   mealAllowance: ' + salaryData.mealAllowance + ' ⭐ (型別: ' + typeof salaryData.mealAllowance + ')');
-  Logger.log('   otherAllowances: ' + salaryData.otherAllowances + ' ⭐ (型別: ' + typeof salaryData.otherAllowances + ')');
-  Logger.log('   dormitoryFee: ' + salaryData.dormitoryFee + ' ⭐ (型別: ' + typeof salaryData.dormitoryFee + ')');
-  Logger.log('   otherDeductions: ' + salaryData.otherDeductions + ' ⭐ (型別: ' + typeof salaryData.otherDeductions + ')');
-  Logger.log('');
-  
-  if (salaryData.positionAllowance === 10 && 
-      salaryData.mealAllowance === 10 && 
-      salaryData.otherAllowances === 47) {
-    Logger.log(' salaryData 物件組裝正確！');
-  } else {
-    Logger.log(' salaryData 物件組裝有問題');
-  }
-  
-  Logger.log('═══════════════════════════════════════');
-}
-
-/**
- *  檢查 Sheet 欄位結構
- */
-function testCheckSheetStructure() {
-  Logger.log('═══════════════════════════════════════');
-  Logger.log(' 檢查 Sheet 欄位結構');
-  Logger.log('═══════════════════════════════════════');
-  Logger.log('');
-  
-  const sheet = getEmployeeSalarySheet();
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  
-  Logger.log(' Sheet 欄位總數: ' + headers.length);
-  Logger.log('');
-  Logger.log(' 完整欄位列表:');
-  
-  headers.forEach((header, index) => {
-    const column = String.fromCharCode(65 + index);
-    Logger.log(`   ${column} (${index + 1}): ${header}`);
-  });
-  
-  Logger.log('');
-  Logger.log(' 關鍵欄位檢查:');
-  Logger.log('   G 欄 (7):  ' + headers[6] + (headers[6] === '職務加給' ? ' ' : ' '));
-  Logger.log('   H 欄 (8):  ' + headers[7] + (headers[7] === '伙食費' ? ' ' : ' '));
-  Logger.log('   I 欄 (9):  ' + headers[8] + (headers[8] === '交通補助' ? ' ' : ' '));
-  Logger.log('   L 欄 (12): ' + headers[11] + (headers[11] === '其他津貼' ? ' ' : ' '));
-  Logger.log('   M 欄 (13): ' + headers[12] + (headers[12] === '銀行代碼' ? ' ' : ' '));
-  Logger.log('   N 欄 (14): ' + headers[13] + (headers[13] === '銀行帳號' ? ' ' : ' '));
-  Logger.log('   X 欄 (24): ' + headers[23] + (headers[23] === '宿舍費用' ? ' ' : ' '));
-  Logger.log('   Z 欄 (26): ' + headers[25] + (headers[25] === '其他扣款' ? ' ' : ' '));
-  
-  Logger.log('═══════════════════════════════════════');
-}
 /**
  *  檢查 Sheet 欄位結構
  */
@@ -2139,76 +2052,6 @@ function handleCalculateDailySalary(params) {
     
   } catch (error) {
     Logger.log(' handleCalculateDailySalary 錯誤: ' + error);
-    return { ok: false, msg: error.message };
-  }
-}
-
-/**
- *  處理設定日薪員工（保持不變）
- */
-function handleSetDailyEmployee(params) {
-  try {
-    if (!params.token || !validateSession(params.token)) {
-      return { ok: false, msg: "未授權或 session 已過期" };
-    }
-    
-    const employeeData = {
-      employeeId: params.employeeId,
-      employeeName: params.employeeName,
-      bloodType: params.bloodType,
-      phone: params.phone,
-      birthDate: params.birthDate,
-      emergencyContact: params.emergencyContact,
-      emergencyPhone: params.emergencyPhone,
-      address: params.address,
-      dailySalary: parseFloat(params.dailySalary) || 0,
-      overtimeHourlyRate: parseFloat(params.overtimeHourlyRate) || 0,
-      mealAllowancePerDay: parseFloat(params.mealAllowancePerDay) || 0,
-      drivingAllowance: parseFloat(params.drivingAllowance) || 0,
-      positionAllowance: parseFloat(params.positionAllowance) || 0,
-      housingAllowance: parseFloat(params.housingAllowance) || 0,
-      laborFee: parseFloat(params.laborFee) || 0,
-      healthFee: parseFloat(params.healthFee) || 0,
-      dependentHealthFee: parseFloat(params.dependentHealthFee) || 0,
-      bankCode: params.bankCode,
-      bankAccount: params.bankAccount,
-      note: params.note
-    };
-    
-    if (!employeeData.employeeId || !employeeData.employeeName) {
-      return { ok: false, msg: "必填欄位不完整" };
-    }
-    
-    const result = setDailyEmployee(employeeData);
-    return { 
-      ok: result.success, 
-      msg: result.message,
-      data: result 
-    };
-    
-  } catch (error) {
-    Logger.log(' handleSetDailyEmployee 錯誤: ' + error);
-    return { ok: false, msg: error.message };
-  }
-}
-
-/**
- *  處理取得日薪員工資料（保持不變）
- */
-function handleGetDailyEmployee(params) {
-  try {
-    if (!params.token || !validateSession(params.token)) {
-      return { ok: false, msg: "未授權" };
-    }
-    
-    if (!params.employeeId) {
-      return { ok: false, msg: "缺少員工ID" };
-    }
-    
-    const result = getDailyEmployee(params.employeeId);
-    return { ok: result.success, data: result.data, msg: result.message };
-    
-  } catch (error) {
     return { ok: false, msg: error.message };
   }
 }
