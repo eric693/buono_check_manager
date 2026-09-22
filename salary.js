@@ -458,6 +458,55 @@ async function loadWorkHoursCard(yearMonth, salaryData) {
     await loadDailyWorkHours(yearMonth);
 }
 
+/**
+ * 在薪資明細上列出自訂津貼與扣款。
+ *
+ * 後端可能回 camelCase（剛算完的結果）或中文欄名（從試算表讀回來的薪資單），
+ * 兩種都要接得住。
+ */
+function renderCustomSalaryItems(data) {
+    const anchor = document.getElementById('detail-performance-bonus');
+    if (!anchor || !anchor.parentElement) return;
+    
+    const container = anchor.parentElement.parentElement || anchor.parentElement;
+    
+    // 每次重畫前先清掉上一次的，不然切換月份會愈疊愈多
+    container.querySelectorAll('.custom-salary-item').forEach(el => el.remove());
+    
+    let allowances = data.customAllowances;
+    let deductions = data.customDeductions;
+    
+    if (!allowances && !deductions && data['自訂項目明細']) {
+        try {
+            const detail = JSON.parse(data['自訂項目明細']) || {};
+            allowances = detail.allowances;
+            deductions = detail.deductions;
+        } catch (error) {
+            console.warn('自訂項目明細格式錯誤:', error);
+        }
+    }
+    
+    const rows = []
+        .concat((allowances || []).map(item => ({ item: item, isDeduction: false })))
+        .concat((deductions || []).map(item => ({ item: item, isDeduction: true })));
+    
+    rows.forEach(({ item, isDeduction }) => {
+        const row = document.createElement('div');
+        row.className = 'custom-salary-item flex justify-between text-sm';
+        
+        const label = document.createElement('span');
+        label.textContent = item.name + '：';
+        
+        const amount = document.createElement('span');
+        amount.className = 'font-mono ' + (isDeduction ? 'text-red-400' : 'text-green-400');
+        amount.textContent = (isDeduction ? '-' : '') + formatCurrency(item.amount || 0);
+        
+        row.appendChild(label);
+        row.appendChild(amount);
+        container.appendChild(row);
+    });
+}
+
 function displayEmployeeSalary(data) {
     console.log(' 顯示薪資明細（完整版）:', data);
     
@@ -589,6 +638,9 @@ function displayEmployeeSalary(data) {
     safeSet('detail-transport-allowance', formatCurrency(data.transportAllowance || 0));
     safeSet('detail-attendance-bonus', formatCurrency(data.attendanceBonus || 0));
     safeSet('detail-performance-bonus', formatCurrency(data.performanceBonus || 0));
+    
+    //  自訂津貼／扣款：項目由管理員定義，所以只能動態長出來
+    renderCustomSalaryItems(data);
     
     // 加班費
     safeSet('detail-weekday-overtime', formatCurrency(data.weekdayOvertimePay || 0));
@@ -949,7 +1001,12 @@ async function handleSalaryConfigSubmit(e) {
             `&otherDeductions=${encodeURIComponent(otherDeductions)}` +
             
             // 備註
-            `&note=${encodeURIComponent(note)}`;
+            `&note=${encodeURIComponent(note)}` +
+            
+            // 自訂項目（管理員在「公司層級設定」定義，金額存成 {代碼: 金額}）
+            `&customItems=${encodeURIComponent(JSON.stringify(
+                typeof collectCustomItemValues === 'function' ? collectCustomItemValues() : {}
+            ))}`;
         
         console.log(' 送出參數:', queryString);
         

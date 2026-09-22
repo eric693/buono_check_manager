@@ -519,10 +519,6 @@ function handleGetLocation() {
   return getLocation();
 }
 
-function handleGetLocations() {
-  return getLocation();
-}
-
 // ==================== 員工管理相關 ====================
 /**
  * 處理取得所有用戶
@@ -2973,5 +2969,52 @@ function handleQRPunch(params) {
   } catch (error) {
     Logger.log('handleQRPunch 錯誤: ' + error);
     return { ok: false, msg: error.message };
+  }
+}
+/**
+ *  取得員工當月總工作時數（前端 getEmployeeWorkHours 用）
+ *
+ * 原本 Main.gs 路由指到 handleGetEmployeeWorkHours()，但這支函式從來沒被寫出來，
+ * 呼叫這個 action 會直接丟 ReferenceError。另一支 getEmployeeWorkHoursAPI() 依賴
+ * 並不存在的 getParam()，同樣不能用，所以這裡按照前端期待的格式重寫一份。
+ */
+function handleGetEmployeeWorkHours(params) {
+  try {
+    const session = checkSession_(params.token);
+    const user = session.user;
+    if (!user) return { ok: false, code: "ERR_SESSION_INVALID", msg: "未授權或 session 已過期" };
+
+    const yearMonth = params.yearMonth;
+    if (!yearMonth) {
+      return { ok: false, code: "MISSING_YEAR_MONTH", msg: "缺少年月參數" };
+    }
+
+    // 管理員可以查別人，員工只能查自己
+    const isAdmin = (user.dept === '管理員');
+    const employeeId = (isAdmin && params.employeeId) ? params.employeeId : user.userId;
+
+    const attendanceRecords = getEmployeeMonthlyAttendanceInternal(employeeId, yearMonth);
+    const result = calculateEmployeeWorkHours(employeeId, yearMonth);
+
+    if (!result.success) {
+      return { ok: false, msg: result.message || '計算工時失敗' };
+    }
+
+    // 有算出工時的日子才算一個工作天
+    const workDays = attendanceRecords.filter(record => record.workHours > 0).length;
+
+    return {
+      ok: true,
+      data: {
+        employeeId: employeeId,
+        yearMonth: yearMonth,
+        totalWorkHours: Math.round(result.totalWorkHours * 100) / 100,
+        workDays: workDays
+      }
+    };
+
+  } catch (error) {
+    Logger.log(' handleGetEmployeeWorkHours 錯誤: ' + error);
+    return { ok: false, msg: error.toString() };
   }
 }

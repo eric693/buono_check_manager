@@ -725,3 +725,104 @@ function getAllWorklogReport(yearMonth) {
     return { success: false, message: error.message };
   }
 }
+// ==================== 修改與刪除工作日誌 ====================
+//
+// 前端一直有「編輯」與「刪除」按鈕，但後端缺這兩支，呼叫 updateWorklog /
+// deleteWorklog 會落到 doGet 的預設分支。這裡補上。
+//
+// 規則：只有本人能改自己的日誌，而且必須還在待審核狀態；已核准或已退回的
+// 要改就得走審核流程，不能自己偷偷蓋掉。
+
+/**
+ * 找出某筆工作日誌所在的列，回傳 { rowIndex, row }，找不到回傳 null
+ */
+function findWorklogRow_(sheet, worklogId) {
+  const data = sheet.getDataRange().getValues();
+  const targetId = String(worklogId || '').trim();
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === targetId) {
+      return { rowIndex: i + 1, row: data[i] };
+    }
+  }
+
+  return null;
+}
+
+/**
+ *  更新工作日誌（限本人、限待審核）
+ */
+function updateWorklog(worklogId, userId, date, hours, content) {
+  try {
+    Logger.log(` 更新工作日誌: ${worklogId}`);
+
+    const hoursNum = parseFloat(hours);
+    if (!date || isNaN(hoursNum) || hoursNum <= 0 || hoursNum > 24) {
+      return { success: false, message: '工作日期或時數不正確' };
+    }
+    if (!content || String(content).trim().length < 10) {
+      return { success: false, message: '工作內容請至少填寫 10 個字' };
+    }
+
+    const sheet = getWorklogSheet();
+    const found = findWorklogRow_(sheet, worklogId);
+
+    if (!found) {
+      return { success: false, message: '找不到這筆工作日誌' };
+    }
+    if (String(found.row[1]).trim() !== String(userId).trim()) {
+      return { success: false, message: '只能修改自己的工作日誌' };
+    }
+    if (found.row[7] !== WORKLOG_STATUS.PENDING) {
+      return { success: false, message: '已審核的工作日誌不能修改' };
+    }
+
+    // 只動日期、時數、內容，審核欄位維持原狀
+    sheet.getRange(found.rowIndex, 5).setValue(date);
+    sheet.getRange(found.rowIndex, 6).setValue(hoursNum);
+    sheet.getRange(found.rowIndex, 7).setValue(String(content).trim());
+
+    Logger.log(' 工作日誌已更新');
+
+    return { success: true, message: '工作日誌更新成功' };
+
+  } catch (error) {
+    Logger.log(' updateWorklog 錯誤: ' + error);
+    return { success: false, message: error.message };
+  }
+}
+
+/**
+ *  刪除工作日誌（限本人、限待審核；管理員不受限制）
+ */
+function deleteWorklog(worklogId, userId, isAdmin) {
+  try {
+    Logger.log(` 刪除工作日誌: ${worklogId}`);
+
+    const sheet = getWorklogSheet();
+    const found = findWorklogRow_(sheet, worklogId);
+
+    if (!found) {
+      return { success: false, message: '找不到這筆工作日誌' };
+    }
+
+    if (!isAdmin) {
+      if (String(found.row[1]).trim() !== String(userId).trim()) {
+        return { success: false, message: '只能刪除自己的工作日誌' };
+      }
+      if (found.row[7] !== WORKLOG_STATUS.PENDING) {
+        return { success: false, message: '已審核的工作日誌不能刪除' };
+      }
+    }
+
+    sheet.deleteRow(found.rowIndex);
+
+    Logger.log(' 工作日誌已刪除');
+
+    return { success: true, message: '工作日誌已刪除' };
+
+  } catch (error) {
+    Logger.log(' deleteWorklog 錯誤: ' + error);
+    return { success: false, message: error.message };
+  }
+}

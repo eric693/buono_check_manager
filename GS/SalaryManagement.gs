@@ -3,6 +3,11 @@
 // ==================== 常數定義 ====================
 
 const SHEET_SALARY_CONFIG_ENHANCED = "員工薪資設定";
+// 自訂津貼／扣款的金額存在這一欄（JSON），項目定義則在「系統設定」的 salaryItems
+const SALARY_CUSTOM_ITEMS_COLUMN = "自訂項目";
+const MONTHLY_CUSTOM_ALLOWANCE_COLUMN = "自訂津貼合計";
+const MONTHLY_CUSTOM_DEDUCTION_COLUMN = "自訂扣款合計";
+const MONTHLY_CUSTOM_DETAIL_COLUMN = "自訂項目明細";
 const SHEET_MONTHLY_SALARY_ENHANCED = "月薪資記錄";
 
 // 台灣法定最低薪資（2025）
@@ -124,43 +129,121 @@ function getDateType(dateStr) {
  * @param {string} dateType - 日期類型 ('weekday' | 'restday' | 'sunday' | 'holiday')
  * @returns {Object} { firstPay, secondPay, thirdPay }
  */
+/**
+ * 解析員工薪資設定裡的自訂項目金額（存成 JSON 字串），壞掉就當作沒有
+ */
+function parseCustomItemAmounts_(raw) {
+  if (!raw) return {};
+  
+  try {
+    const parsed = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+    if (!parsed || typeof parsed !== 'object') return {};
+    
+    const amounts = {};
+    Object.keys(parsed).forEach(key => {
+      const value = parseFloat(parsed[key]);
+      if (!isNaN(value)) amounts[key] = value;
+    });
+    return amounts;
+    
+  } catch (error) {
+    Logger.log(` 自訂項目金額格式錯誤，當作沒有設定: ${error.message}`);
+    return {};
+  }
+}
+
+/**
+ * 把員工的自訂項目金額對上管理員定義的項目，算出津貼與扣款合計。
+ *
+ * 定義被刪掉的項目金額會留在員工設定裡但不計入，這樣誤刪再加回來金額就會回來。
+ */
+function resolveCustomSalaryItems_(rawAmounts) {
+  const definitions = (typeof getSalaryItems_ === 'function') ? getSalaryItems_() : [];
+  const amounts = parseCustomItemAmounts_(rawAmounts);
+  
+  const allowances = [];
+  const deductions = [];
+  let allowanceTotal = 0;
+  let deductionTotal = 0;
+  
+  definitions.forEach(item => {
+    const amount = amounts[item.id];
+    if (!amount) return;  // 0 或沒填的項目不列出來，薪資單才不會一堆 $0
+    
+    const entry = { id: item.id, name: item.name, amount: amount };
+    
+    if (item.type === 'allowance') {
+      allowances.push(entry);
+      allowanceTotal += amount;
+    } else {
+      deductions.push(entry);
+      deductionTotal += amount;
+    }
+  });
+  
+  return {
+    allowances: allowances,
+    deductions: deductions,
+    allowanceTotal: Math.round(allowanceTotal),
+    deductionTotal: Math.round(deductionTotal)
+  };
+}
+
+/**
+ * 取得加班規則。SystemSettings.gs 還沒部署時退回預設值，不讓薪資算不出來。
+ */
+function getOvertimeRules_() {
+  if (typeof getSalaryRules_ === 'function') {
+    return getSalaryRules_().overtimeRules;
+  }
+  return {
+    weekdayFirst2: 1.34, weekdayAfter2: 1.67,
+    restdayFirst2: 1.34, restday3to8: 1.67, restdayAfter8: 2.67,
+    sunday: 2.0, holiday: 2.0,
+    maxWeekdayHours: 4, maxRestdayHours: 12, maxHolidayHours: 8
+  };
+}
+
 function calculateOvertimePay(hours, hourlyRate, dateType) {
   let firstPay = 0;   // 前2小時
   let secondPay = 0;  // 3-8小時
   let thirdPay = 0;   // 9小時起
   
+  // 倍率由管理員在「薪資規則」設定，沒設定過就是勞基法的預設值
+  const rules = getOvertimeRules_();
+  
   if (dateType === 'weekday') {
-    // ⭐ 平日加班：前2h ×1.34，3h起 ×1.67
+    // 平日加班：前 2h 一個倍率，第 3h 起另一個
     const first = Math.min(hours, 2);
-    firstPay = hourlyRate * first * 1.34;
+    firstPay = hourlyRate * first * rules.weekdayFirst2;
     
     if (hours > 2) {
       const rest = Math.min(hours - 2, 2); // 最多再算2小時（總共4h）
-      secondPay = hourlyRate * rest * 1.67;
+      secondPay = hourlyRate * rest * rules.weekdayAfter2;
     }
     
   } else if (dateType === 'restday') {
-    // ⭐ 休息日（週六）：前2h ×1.34，3-8h ×1.67，9h起 ×2.67
+    // 休息日（週六）：前 2h、3-8h、9h 起 三段
     const first = Math.min(hours, 2);
-    firstPay = hourlyRate * first * 1.34;
+    firstPay = hourlyRate * first * rules.restdayFirst2;
     
     if (hours > 2) {
       const second = Math.min(hours - 2, 6); // 3-8h
-      secondPay = hourlyRate * second * 1.67;
+      secondPay = hourlyRate * second * rules.restday3to8;
     }
     
     if (hours > 8) {
       const third = hours - 8; // 9h起
-      thirdPay = hourlyRate * third * 2.67;
+      thirdPay = hourlyRate * third * rules.restdayAfter8;
     }
     
   } else if (dateType === 'sunday') {
-    // ⭐ 例假日（週日）：全天 ×2.0（僅加班費）
-    firstPay = hourlyRate * hours * 2.0;
+    // 例假日（週日）：全天同一個倍率（僅加班費）
+    firstPay = hourlyRate * hours * rules.sunday;
     
   } else if (dateType === 'holiday') {
-    // ⭐⭐⭐ 國定假日：全天 ×2.0（僅加班費，正常薪資另計）
-    firstPay = hourlyRate * hours * 2.0;
+    // 國定假日：全天同一個倍率（僅加班費，正常薪資另計）
+    firstPay = hourlyRate * hours * rules.holiday;
   }
   
   return {
@@ -216,7 +299,10 @@ function getEmployeeSalarySheet() {
       "福利金扣款", "宿舍費用", "團保費用", "其他扣款",
       
       // 系統欄位 (3欄: AA-AC)
-      "狀態", "備註", "最後更新時間"
+      "狀態", "備註", "最後更新時間",
+      
+      // 自訂項目 (1欄: AD) — 管理員自訂的津貼／扣款金額，存成 {項目代碼: 金額}
+      SALARY_CUSTOM_ITEMS_COLUMN
     ];
     
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -228,7 +314,29 @@ function getEmployeeSalarySheet() {
     Logger.log(" 建立員工薪資設定試算表（完整版）");
   }
   
+  ensureTrailingColumns_(sheet, [SALARY_CUSTOM_ITEMS_COLUMN]);
+  
   return sheet;
+}
+
+/**
+ * 舊的試算表沒有新加的欄位，補在最後面。
+ * 只往後append，既有欄位的索引不會變，所有依位置寫入的程式碼都不受影響。
+ */
+function ensureTrailingColumns_(sheet, columnNames) {
+  const lastColumn = sheet.getLastColumn();
+  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0].map(h => String(h).trim());
+  const missing = columnNames.filter(name => headers.indexOf(name) === -1);
+  
+  if (missing.length === 0) return;
+  
+  sheet.getRange(1, lastColumn + 1, 1, missing.length).setValues([missing]);
+  sheet.getRange(1, lastColumn + 1, 1, missing.length)
+       .setFontWeight("bold")
+       .setBackground("#10b981")
+       .setFontColor("#ffffff");
+  
+  Logger.log(` 已為「${sheet.getName()}」補上欄位: ${missing.join('、')}`);
 }
 
 function rebuildMonthlySalarySheet() {
@@ -280,7 +388,10 @@ function getMonthlySalarySheetEnhanced() {
       "銀行代碼", "銀行帳號",
       
       // 系統欄位
-      "狀態", "備註", "建立時間"
+      "狀態", "備註", "建立時間",
+      
+      // 自訂項目（合計 + 明細 JSON）
+      MONTHLY_CUSTOM_ALLOWANCE_COLUMN, MONTHLY_CUSTOM_DEDUCTION_COLUMN, MONTHLY_CUSTOM_DETAIL_COLUMN
     ];
     
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -291,6 +402,12 @@ function getMonthlySalarySheetEnhanced() {
     
     Logger.log(" 建立月薪資記錄試算表（完整版）");
   }
+  
+  ensureTrailingColumns_(sheet, [
+    MONTHLY_CUSTOM_ALLOWANCE_COLUMN,
+    MONTHLY_CUSTOM_DEDUCTION_COLUMN,
+    MONTHLY_CUSTOM_DETAIL_COLUMN
+  ]);
   
   return sheet;
 }
@@ -387,7 +504,10 @@ function setEmployeeSalaryTW(salaryData) {
       // AA-AC: 系統欄位 (3欄)
       "在職",                                             // AA: 狀態
       String(salaryData.note || "").trim(),              // AB: 備註
-      now                                                 // AC: 最後更新時間
+      now,                                                // AC: 最後更新時間
+      
+      // AD: 自訂項目金額（JSON）
+      JSON.stringify(parseCustomItemAmounts_(salaryData.customItems))
     ];
     
     // ⭐⭐⭐ 記錄扣款數值（用於除錯）
@@ -851,7 +971,16 @@ function saveMonthlySalary(salaryData) {
       // === 系統欄位（3欄：AM-AO）===
       salaryData.status || salaryData['狀態'] || "已計算",               // AM (col 39)
       salaryData.note || salaryData['備註'] || "",                       // AN (col 40)
-      new Date()                                                         // AO (col 41)
+      new Date(),                                                        // AO (col 41)
+      
+      // === 自訂項目（3欄：AP-AR）===
+      // 合計是為了在試算表裡直接看得到，明細存 JSON 讓薪資單可以逐項列出
+      salaryData.customAllowanceTotal || 0,                              // AP (col 42)
+      salaryData.customDeductionTotal || 0,                              // AQ (col 43)
+      JSON.stringify({
+        allowances: salaryData.customAllowances || [],
+        deductions: salaryData.customDeductions || []
+      })                                                                 // AR (col 44)
     ];
     
     Logger.log(` 準備寫入的 row 長度: ${row.length}`);
@@ -1345,6 +1474,7 @@ function calculateHourlySalary(employeeId, yearMonth) {
     });
 
     // ⭐⭐⭐ 讀取員工類型
+    const overtimeRules = getOvertimeRules_();
     const employeeType = String(config['員工類型'] || '兼職').trim();
     const isFullTime = (employeeType === '正職');
     Logger.log(` 員工類型: ${employeeType}`);
@@ -1366,10 +1496,10 @@ function calculateHourlySalary(employeeId, yearMonth) {
       
       Logger.log(`\n ${date} (${dateTypeName}): ${dailyHours.toFixed(1)}h`);
       
-      // ⭐ 根據日期類型限制加班時數
-      let maxHours = 4; // 平日最多4h
-      if (dateType === 'restday') maxHours = 12; // 休息日最多12h
-      if (dateType === 'holiday') maxHours = 8;  // 國定假日最多8h
+      // 根據日期類型限制加班時數（上限同樣可在「薪資規則」調整）
+      let maxHours = overtimeRules.maxWeekdayHours;
+      if (dateType === 'restday') maxHours = overtimeRules.maxRestdayHours;
+      if (dateType === 'holiday') maxHours = overtimeRules.maxHolidayHours;
       
       if (dailyHours > maxHours) {
         Logger.log(`    超過上限 (${dailyHours}h > ${maxHours}h)，限制為 ${maxHours}h`);
@@ -1387,7 +1517,7 @@ function calculateHourlySalary(employeeId, yearMonth) {
         } else {
           // 兼職/約聘 → ×2
           const normalPay = hourlyRate * dailyHours * 1.0;
-          const overtimePay = hourlyRate * dailyHours * 2.0;
+          const overtimePay = hourlyRate * dailyHours * overtimeRules.holiday;
           holidayWorkPay += normalPay;
           holidayOvertimePay += overtimePay;
           Logger.log(`   - 正常薪資: $${Math.round(normalPay)} (×1.0)`);
@@ -1517,6 +1647,15 @@ function calculateHourlySalary(employeeId, yearMonth) {
       Logger.log(` 無請假記錄`);
     }
     
+    // 8.5 自訂項目（管理員自行定義的津貼與扣款）
+    const customItems = resolveCustomSalaryItems_(config[SALARY_CUSTOM_ITEMS_COLUMN]);
+    
+    if (customItems.allowances.length > 0 || customItems.deductions.length > 0) {
+      Logger.log(`\n 自訂項目:`);
+      customItems.allowances.forEach(item => Logger.log(`   + ${item.name}: $${item.amount}`));
+      customItems.deductions.forEach(item => Logger.log(`   - ${item.name}: $${item.amount}`));
+    }
+    
     // 9. 應發總額
     const grossSalary = basePay + 
                        positionAllowance + 
@@ -1528,7 +1667,8 @@ function calculateHourlySalary(employeeId, yearMonth) {
                        weekdayOvertimePay + 
                        restdayOvertimePay +
                        holidayOvertimePay +
-                       holidayWorkPay;
+                       holidayWorkPay +
+                       customItems.allowanceTotal;
     
     Logger.log(` 應發總額: $${Math.round(grossSalary)}`);
     
@@ -1606,7 +1746,8 @@ function calculateHourlySalary(employeeId, yearMonth) {
     // 12. 扣款總額（加入請假扣款）
     const totalDeductions = laborFee + healthFee + employmentFee + pensionSelf + incomeTax +
                            leaveDeduction +
-                           welfareFee + dormitoryFee + groupInsurance + otherDeductions;
+                           welfareFee + dormitoryFee + groupInsurance + otherDeductions +
+                           customItems.deductionTotal;
     
     Logger.log(` 扣款總額: $${totalDeductions}`);
     
@@ -1675,6 +1816,10 @@ function calculateHourlySalary(employeeId, yearMonth) {
       dormitoryFee: dormitoryFee,
       groupInsurance: groupInsurance,
       otherDeductions: otherDeductions,
+      customAllowances: customItems.allowances,
+      customDeductions: customItems.deductions,
+      customAllowanceTotal: customItems.allowanceTotal,
+      customDeductionTotal: customItems.deductionTotal,
       grossSalary: Math.round(grossSalary),
       netSalary: Math.round(netSalary),
       bankCode: config['銀行代碼'] || "",
@@ -1995,37 +2140,24 @@ function calculateLunchBreak(startTime, endTime) {
  */
 
 function getInsuredSalary(salary) {
-  // ⭐⭐⭐ 2026 年投保薪資級距表
-  const brackets = [
-    { min: 0,      max: 29500,  insured: 29500,  labor: 738,  health: 458 },  // 級距 1
-    { min: 29501,  max: 30300,  insured: 30300,  labor: 758,  health: 470 },  // 級距 2
-    { min: 30301,  max: 31800,  insured: 31800,  labor: 795,  health: 493 },  // 級距 3
-    { min: 31801,  max: 33000,  insured: 33000,  labor: 833,  health: 516 },  // 級距 4
-    { min: 33001,  max: 34800,  insured: 34800,  labor: 870,  health: 540 },  // 級距 5
-    { min: 34801,  max: 36300,  insured: 36300,  labor: 908,  health: 563 },  // 級距 6
-    { min: 36301,  max: 38200,  insured: 38200,  labor: 955,  health: 592 },  // 級距 7
-    { min: 38201,  max: 40100,  insured: 40100,  labor: 1002, health: 622 },  // 級距 8
-    { min: 40101,  max: 42000,  insured: 42000,  labor: 1050, health: 651 },  // 級距 9
-    { min: 42001,  max: 43900,  insured: 43900,  labor: 1098, health: 681 },  // 級距 10
-    { min: 43901,  max: 45800,  insured: 45800,  labor: 1145, health: 710 },  // 級距 11
-    { min: 45801,  max: 48200,  insured: 48200,  labor: 1145, health: 748 },  // 級距 12
-    { min: 48201,  max: 50600,  insured: 50600,  labor: 1145, health: 785 },  // 級距 13
-    { min: 50601,  max: 53000,  insured: 53000,  labor: 1145, health: 822 },  // 級距 14
-    { min: 53001,  max: 55400,  insured: 55400,  labor: 1145, health: 859 },  // 級距 15
-    { min: 55401,  max: 57800,  insured: 57800,  labor: 1145, health: 896 },  // 級距 16
-    { min: 57801,  max: 60800,  insured: 60800,  labor: 1145, health: 943 },  // 級距 17
-    { min: 60801,  max: Infinity, insured: 60800, labor: 1145, health: 943 }   // 最高級距
-  ];
+  // 級距表可由管理員在「薪資規則」維護，沒設定過就用程式內建的預設級距
+  const brackets = (typeof getSalaryRules_ === 'function')
+    ? getSalaryRules_().insuranceBrackets
+    : [{ min: 0, max: null, insured: 29500, labor: 738, health: 458 }];
   
-  for (const bracket of brackets) {
-    if (salary >= bracket.min && salary <= bracket.max) {
-      Logger.log(` 月薪 $${salary} → 級距 ${brackets.indexOf(bracket) + 1} ($${bracket.insured})`);
+  for (let i = 0; i < brackets.length; i++) {
+    const bracket = brackets[i];
+    // max 為 null 代表最高級距（以上），沒有上限
+    const upper = (bracket.max === null || bracket.max === undefined) ? Infinity : bracket.max;
+    
+    if (salary >= bracket.min && salary <= upper) {
+      Logger.log(` 月薪 $${salary} → 級距 ${i + 1} ($${bracket.insured})`);
       Logger.log(`   勞保費: $${bracket.labor}, 健保費: $${bracket.health}`);
       return bracket;
     }
   }
   
-  // 預設返回最低級距
+  // 理論上不會走到這裡（最高級距沒有上限），保險起見退回最低級距
   return brackets[0];
 }
 /**
@@ -2129,6 +2261,7 @@ function calculateMonthlySalaryInternal(employeeId, yearMonth) {
     });
     
     Logger.log(` 每日加班統計: ${JSON.stringify(overtimeByDate)}`);
+    const overtimeRules = getOvertimeRules_();
     const employeeType = String(config['員工類型'] || '正職').trim();
     const isFullTime = (employeeType === '正職');
     let holidayCompHours = 0;
@@ -2148,10 +2281,10 @@ function calculateMonthlySalaryInternal(employeeId, yearMonth) {
       
       Logger.log(`\n ${date} (${dateTypeName}): ${dailyHours.toFixed(1)}h`);
       
-      // 根據日期類型限制加班時數
-      let maxHours = 4; // 平日最多4h
-      if (dateType === 'restday') maxHours = 12; // 休息日最多12h
-      if (dateType === 'holiday') maxHours = 8;  // 國定假日最多8h
+      // 根據日期類型限制加班時數（上限同樣可在「薪資規則」調整）
+      let maxHours = overtimeRules.maxWeekdayHours;
+      if (dateType === 'restday') maxHours = overtimeRules.maxRestdayHours;
+      if (dateType === 'holiday') maxHours = overtimeRules.maxHolidayHours;
       
       if (dailyHours > maxHours) {
         Logger.log(`    超過上限 (${dailyHours}h > ${maxHours}h)，限制為 ${maxHours}h`);
@@ -2169,7 +2302,7 @@ function calculateMonthlySalaryInternal(employeeId, yearMonth) {
         } else {
           // 兼職/約聘 → ×2
           const normalPay = hourlyRate * dailyHours * 1.0;
-          const overtimePay = hourlyRate * dailyHours * 2.0;
+          const overtimePay = hourlyRate * dailyHours * overtimeRules.holiday;
           holidayWorkPay += normalPay;
           holidayOvertimePay += overtimePay;
           Logger.log(`   - 正常薪資: $${Math.round(normalPay)} (×1.0)`);
@@ -2369,6 +2502,15 @@ function calculateMonthlySalaryInternal(employeeId, yearMonth) {
       if (otherDeductions > 0) Logger.log(`   - 其他扣款: $${otherDeductions}`);
     }
     
+    // 9.5 自訂項目（管理員自行定義的津貼與扣款）
+    const customItems = resolveCustomSalaryItems_(config[SALARY_CUSTOM_ITEMS_COLUMN]);
+    
+    if (customItems.allowances.length > 0 || customItems.deductions.length > 0) {
+      Logger.log(`\n 自訂項目:`);
+      customItems.allowances.forEach(item => Logger.log(`   + ${item.name}: $${item.amount}`));
+      customItems.deductions.forEach(item => Logger.log(`   - ${item.name}: $${item.amount}`));
+    }
+    
     // 10. 應發總額
     const grossSalary = baseSalary + 
                        positionAllowance + 
@@ -2381,7 +2523,8 @@ function calculateMonthlySalaryInternal(employeeId, yearMonth) {
                        restdayOvertimePay +
                        sundayOvertimePay +
                        holidayOvertimePay +
-                       holidayWorkPay;
+                       holidayWorkPay +
+                       customItems.allowanceTotal;
     
     // 11. 扣款總額
     const totalDeductions = laborFee + 
@@ -2394,7 +2537,8 @@ function calculateMonthlySalaryInternal(employeeId, yearMonth) {
                            welfareFee + 
                            dormitoryFee + 
                            groupInsurance + 
-                           otherDeductions;
+                           otherDeductions +
+                           customItems.deductionTotal;
     
     // 12. 實發金額
     const netSalary = grossSalary - totalDeductions;
@@ -2453,6 +2597,10 @@ function calculateMonthlySalaryInternal(employeeId, yearMonth) {
       dormitoryFee: dormitoryFee,
       groupInsurance: groupInsurance,
       otherDeductions: otherDeductions,
+      customAllowances: customItems.allowances,
+      customDeductions: customItems.deductions,
+      customAllowanceTotal: customItems.allowanceTotal,
+      customDeductionTotal: customItems.deductionTotal,
       grossSalary: Math.round(grossSalary),
       netSalary: Math.round(netSalary),
       bankCode: config['銀行代碼'] || "",

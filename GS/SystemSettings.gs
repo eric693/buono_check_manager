@@ -222,3 +222,393 @@ function handleResetWorkSchedule(params) {
     return { ok: false, msg: error.toString() };
   }
 }
+
+// ==================== 薪資規則（加班倍率、投保級距） ====================
+//
+// 原本這兩組數字寫死在 SalaryManagement.gs 裡，勞基法或投保級距一改就得改程式碼
+// 再重新部署。改成跟工作時段一樣放進「系統設定」，管理員自己維護。
+
+const SETTING_KEY_SALARY_RULES = 'salaryRules';
+const SALARY_RULES_CACHE_KEY = 'system_settings_salary_rules';
+
+/**
+ * 加班倍率與每日加班上限的預設值（依勞基法）
+ */
+const DEFAULT_OVERTIME_RULES = {
+  weekdayFirst2: 1.34,   // 平日前 2 小時
+  weekdayAfter2: 1.67,   // 平日第 3 小時起
+  restdayFirst2: 1.34,   // 休息日前 2 小時
+  restday3to8: 1.67,     // 休息日第 3-8 小時
+  restdayAfter8: 2.67,   // 休息日第 9 小時起
+  sunday: 2.0,           // 例假日
+  holiday: 2.0,          // 國定假日
+  maxWeekdayHours: 4,    // 平日每日加班上限
+  maxRestdayHours: 12,   // 休息日每日加班上限
+  maxHolidayHours: 8     // 國定假日每日加班上限
+};
+
+/**
+ * 投保級距預設值（2026 年）
+ * insured = 投保薪資、labor = 勞保費、health = 健保費（員工自付額）
+ */
+const DEFAULT_INSURANCE_BRACKETS = [
+  { min: 0,     max: 29500, insured: 29500, labor: 738,  health: 458 },
+  { min: 29501, max: 30300, insured: 30300, labor: 758,  health: 470 },
+  { min: 30301, max: 31800, insured: 31800, labor: 795,  health: 493 },
+  { min: 31801, max: 33000, insured: 33000, labor: 833,  health: 516 },
+  { min: 33001, max: 34800, insured: 34800, labor: 870,  health: 540 },
+  { min: 34801, max: 36300, insured: 36300, labor: 908,  health: 563 },
+  { min: 36301, max: 38200, insured: 38200, labor: 955,  health: 592 },
+  { min: 38201, max: 40100, insured: 40100, labor: 1002, health: 622 },
+  { min: 40101, max: 42000, insured: 42000, labor: 1050, health: 651 },
+  { min: 42001, max: 43900, insured: 43900, labor: 1098, health: 681 },
+  { min: 43901, max: 45800, insured: 45800, labor: 1145, health: 710 },
+  { min: 45801, max: 48200, insured: 48200, labor: 1145, health: 748 },
+  { min: 48201, max: 50600, insured: 50600, labor: 1145, health: 785 },
+  { min: 50601, max: 53000, insured: 53000, labor: 1145, health: 822 },
+  { min: 53001, max: 55400, insured: 55400, labor: 1145, health: 859 },
+  { min: 55401, max: 57800, insured: 57800, labor: 1145, health: 896 },
+  { min: 57801, max: 60800, insured: 60800, labor: 1145, health: 943 },
+  { min: 60801, max: null,  insured: 60800, labor: 1145, health: 943 }  // null = 無上限
+];
+
+/**
+ * 驗證加班倍率設定
+ */
+function validateOvertimeRules_(input) {
+  const rates = ['weekdayFirst2', 'weekdayAfter2', 'restdayFirst2', 'restday3to8',
+                 'restdayAfter8', 'sunday', 'holiday'];
+  const caps = ['maxWeekdayHours', 'maxRestdayHours', 'maxHolidayHours'];
+  const rules = {};
+
+  for (let i = 0; i < rates.length; i++) {
+    const value = parseFloat(input && input[rates[i]]);
+    if (isNaN(value) || value <= 0 || value > 10) {
+      return { ok: false, msg: `加班倍率不合理（${rates[i]}）：請輸入 0 到 10 之間的數字` };
+    }
+    rules[rates[i]] = value;
+  }
+
+  for (let i = 0; i < caps.length; i++) {
+    const value = parseFloat(input && input[caps[i]]);
+    if (isNaN(value) || value <= 0 || value > 24) {
+      return { ok: false, msg: `加班時數上限不合理（${caps[i]}）：請輸入 0 到 24 之間的數字` };
+    }
+    rules[caps[i]] = value;
+  }
+
+  return { ok: true, overtimeRules: rules };
+}
+
+/**
+ * 驗證投保級距表：每一列都要有數字，而且級距要由低到高、不重疊
+ */
+function validateInsuranceBrackets_(input) {
+  if (!Array.isArray(input) || input.length === 0) {
+    return { ok: false, msg: '投保級距表不能是空的' };
+  }
+
+  const brackets = [];
+  let previousMax = -1;
+
+  for (let i = 0; i < input.length; i++) {
+    const row = input[i] || {};
+    const isLast = (i === input.length - 1);
+
+    const min = parseFloat(row.min);
+    // 最後一級可以不填上限，代表「以上」
+    const max = (row.max === null || row.max === '' || row.max === undefined)
+      ? null
+      : parseFloat(row.max);
+    const insured = parseFloat(row.insured);
+    const labor = parseFloat(row.labor);
+    const health = parseFloat(row.health);
+
+    if ([min, insured, labor, health].some(v => isNaN(v) || v < 0)) {
+      return { ok: false, msg: `第 ${i + 1} 級的數字不完整或為負數` };
+    }
+    if (max !== null && (isNaN(max) || max < min)) {
+      return { ok: false, msg: `第 ${i + 1} 級的上限必須大於或等於下限` };
+    }
+    if (max === null && !isLast) {
+      return { ok: false, msg: `只有最後一級可以不填上限` };
+    }
+    if (min <= previousMax) {
+      return { ok: false, msg: `第 ${i + 1} 級的下限必須大於上一級的上限` };
+    }
+
+    previousMax = (max === null) ? Infinity : max;
+    brackets.push({ min: min, max: max, insured: insured, labor: labor, health: health });
+  }
+
+  return { ok: true, insuranceBrackets: brackets };
+}
+
+/**
+ * 取得目前生效的薪資規則。任何一半壞掉都只退回那一半的預設值。
+ */
+function getSalaryRules_() {
+  try {
+    const cache = CacheService.getScriptCache();
+    const cached = cache.get(SALARY_RULES_CACHE_KEY);
+    if (cached) return JSON.parse(cached);
+
+    const stored = readSystemSetting_(SETTING_KEY_SALARY_RULES);
+    let overtimeRules = DEFAULT_OVERTIME_RULES;
+    let insuranceBrackets = DEFAULT_INSURANCE_BRACKETS;
+
+    if (stored && stored.value) {
+      const parsed = JSON.parse(stored.value);
+
+      const checkedOvertime = validateOvertimeRules_(parsed.overtimeRules);
+      if (checkedOvertime.ok) {
+        overtimeRules = checkedOvertime.overtimeRules;
+      } else {
+        Logger.log(` 加班倍率設定不合法，改用預設值：${checkedOvertime.msg}`);
+      }
+
+      const checkedBrackets = validateInsuranceBrackets_(parsed.insuranceBrackets);
+      if (checkedBrackets.ok) {
+        insuranceBrackets = checkedBrackets.insuranceBrackets;
+      } else {
+        Logger.log(` 投保級距設定不合法，改用預設值：${checkedBrackets.msg}`);
+      }
+    }
+
+    const rules = { overtimeRules: overtimeRules, insuranceBrackets: insuranceBrackets };
+    cache.put(SALARY_RULES_CACHE_KEY, JSON.stringify(rules), WORK_SCHEDULE_CACHE_TTL);
+    return rules;
+
+  } catch (error) {
+    Logger.log(` 讀取薪資規則失敗，改用預設值: ${error.message}`);
+    return {
+      overtimeRules: DEFAULT_OVERTIME_RULES,
+      insuranceBrackets: DEFAULT_INSURANCE_BRACKETS
+    };
+  }
+}
+
+/**
+ * API：取得薪資規則（所有登入者都能看，薪資單要顯示倍率）
+ */
+function handleGetSalaryRules(params) {
+  try {
+    if (!params || !params.token || !validateSession(params.token)) {
+      return { ok: false, code: 'SESSION_INVALID', msg: '未授權或 session 已過期' };
+    }
+
+    const stored = readSystemSetting_(SETTING_KEY_SALARY_RULES);
+    const rules = getSalaryRules_();
+
+    return {
+      ok: true,
+      overtimeRules: rules.overtimeRules,
+      insuranceBrackets: rules.insuranceBrackets,
+      defaults: {
+        overtimeRules: DEFAULT_OVERTIME_RULES,
+        insuranceBrackets: DEFAULT_INSURANCE_BRACKETS
+      },
+      isDefault: !(stored && stored.value)
+    };
+
+  } catch (error) {
+    Logger.log(` handleGetSalaryRules 錯誤: ${error.message}`);
+    return { ok: false, msg: error.toString() };
+  }
+}
+
+/**
+ * API：更新薪資規則（僅管理員）
+ * 前端把 overtimeRules 與 insuranceBrackets 各自用 JSON 字串送上來。
+ */
+function handleUpdateSalaryRules(params) {
+  try {
+    const user = getUserByToken(params.token);
+    if (!user || user.dept !== '管理員') {
+      return { ok: false, code: 'PERMISSION_DENIED', msg: '此功能僅限管理員使用' };
+    }
+
+    const current = getSalaryRules_();
+    let overtimeRules = current.overtimeRules;
+    let insuranceBrackets = current.insuranceBrackets;
+
+    // 兩個區塊各自獨立，只送其中一個就只改那一個
+    if (params.overtimeRules) {
+      const checked = validateOvertimeRules_(JSON.parse(params.overtimeRules));
+      if (!checked.ok) return { ok: false, code: 'INVALID_OVERTIME_RULES', msg: checked.msg };
+      overtimeRules = checked.overtimeRules;
+    }
+
+    if (params.insuranceBrackets) {
+      const checked = validateInsuranceBrackets_(JSON.parse(params.insuranceBrackets));
+      if (!checked.ok) return { ok: false, code: 'INVALID_INSURANCE_BRACKETS', msg: checked.msg };
+      insuranceBrackets = checked.insuranceBrackets;
+    }
+
+    const rules = { overtimeRules: overtimeRules, insuranceBrackets: insuranceBrackets };
+    writeSystemSetting_(SETTING_KEY_SALARY_RULES, JSON.stringify(rules), user.name || '');
+    CacheService.getScriptCache().remove(SALARY_RULES_CACHE_KEY);
+
+    Logger.log(` 管理員 ${user.name} 更新薪資規則`);
+
+    return { ok: true, msg: '薪資規則已更新', overtimeRules: overtimeRules, insuranceBrackets: insuranceBrackets };
+
+  } catch (error) {
+    Logger.log(` handleUpdateSalaryRules 錯誤: ${error.message}`);
+    return { ok: false, msg: error.toString() };
+  }
+}
+
+/**
+ * API：還原薪資規則預設值（僅管理員）
+ */
+function handleResetSalaryRules(params) {
+  try {
+    const user = getUserByToken(params.token);
+    if (!user || user.dept !== '管理員') {
+      return { ok: false, code: 'PERMISSION_DENIED', msg: '此功能僅限管理員使用' };
+    }
+
+    const existing = readSystemSetting_(SETTING_KEY_SALARY_RULES);
+    if (existing) getSystemSettingsSheet_().deleteRow(existing.row);
+    CacheService.getScriptCache().remove(SALARY_RULES_CACHE_KEY);
+
+    return {
+      ok: true,
+      msg: '已還原為預設薪資規則',
+      overtimeRules: DEFAULT_OVERTIME_RULES,
+      insuranceBrackets: DEFAULT_INSURANCE_BRACKETS
+    };
+
+  } catch (error) {
+    Logger.log(` handleResetSalaryRules 錯誤: ${error.message}`);
+    return { ok: false, msg: error.toString() };
+  }
+}
+
+// ==================== 自訂薪資項目 ====================
+//
+// 原本津貼與扣款各自是固定欄位（職務加給、伙食費…），公司要加一項就得改試算表
+// 欄位與所有讀寫程式。這裡讓管理員自己定義項目，每位員工的金額存在
+// 「員工薪資設定」的「自訂項目」欄（JSON），計算時再併進應發／扣款。
+
+const SETTING_KEY_SALARY_ITEMS = 'salaryItems';
+const SALARY_ITEMS_CACHE_KEY = 'system_settings_salary_items';
+const MAX_SALARY_ITEMS = 30;
+
+/**
+ * 驗證自訂項目清單
+ */
+function validateSalaryItems_(input) {
+  if (!Array.isArray(input)) {
+    return { ok: false, msg: '自訂項目格式錯誤' };
+  }
+  if (input.length > MAX_SALARY_ITEMS) {
+    return { ok: false, msg: `自訂項目最多 ${MAX_SALARY_ITEMS} 項` };
+  }
+
+  const items = [];
+  const seenIds = {};
+
+  for (let i = 0; i < input.length; i++) {
+    const row = input[i] || {};
+    const id = String(row.id || '').trim();
+    const name = String(row.name || '').trim();
+    const type = String(row.type || '').trim();
+
+    if (!/^[A-Za-z0-9_-]{1,32}$/.test(id)) {
+      return { ok: false, msg: `第 ${i + 1} 項的代碼只能用英數字、底線與減號，長度 1-32` };
+    }
+    if (!name || name.length > 20) {
+      return { ok: false, msg: `第 ${i + 1} 項的名稱不能空白，且不超過 20 個字` };
+    }
+    if (type !== 'allowance' && type !== 'deduction') {
+      return { ok: false, msg: `第 ${i + 1} 項的類型只能是津貼或扣款` };
+    }
+    if (seenIds[id]) {
+      return { ok: false, msg: `代碼重複：${id}` };
+    }
+
+    seenIds[id] = true;
+    items.push({ id: id, name: name, type: type });
+  }
+
+  return { ok: true, items: items };
+}
+
+/**
+ * 取得自訂薪資項目定義（沒設定過就是空陣列）
+ */
+function getSalaryItems_() {
+  try {
+    const cache = CacheService.getScriptCache();
+    const cached = cache.get(SALARY_ITEMS_CACHE_KEY);
+    if (cached) return JSON.parse(cached);
+
+    const stored = readSystemSetting_(SETTING_KEY_SALARY_ITEMS);
+    let items = [];
+
+    if (stored && stored.value) {
+      const checked = validateSalaryItems_(JSON.parse(stored.value));
+      if (checked.ok) {
+        items = checked.items;
+      } else {
+        Logger.log(` 自訂薪資項目不合法，當作沒有設定：${checked.msg}`);
+      }
+    }
+
+    cache.put(SALARY_ITEMS_CACHE_KEY, JSON.stringify(items), WORK_SCHEDULE_CACHE_TTL);
+    return items;
+
+  } catch (error) {
+    Logger.log(` 讀取自訂薪資項目失敗: ${error.message}`);
+    return [];
+  }
+}
+
+/**
+ * API：取得自訂薪資項目
+ */
+function handleGetSalaryItems(params) {
+  try {
+    if (!params || !params.token || !validateSession(params.token)) {
+      return { ok: false, code: 'SESSION_INVALID', msg: '未授權或 session 已過期' };
+    }
+    return { ok: true, items: getSalaryItems_() };
+
+  } catch (error) {
+    Logger.log(` handleGetSalaryItems 錯誤: ${error.message}`);
+    return { ok: false, msg: error.toString() };
+  }
+}
+
+/**
+ * API：儲存自訂薪資項目（僅管理員）
+ *
+ * 刪掉某個項目時，員工設定裡那一項的金額會留著但不再計入薪資；
+ * 之後把同樣代碼加回來，金額就會回來。這是刻意的，避免誤刪造成資料消失。
+ */
+function handleSaveSalaryItems(params) {
+  try {
+    const user = getUserByToken(params.token);
+    if (!user || user.dept !== '管理員') {
+      return { ok: false, code: 'PERMISSION_DENIED', msg: '此功能僅限管理員使用' };
+    }
+
+    const checked = validateSalaryItems_(JSON.parse(params.items || '[]'));
+    if (!checked.ok) {
+      return { ok: false, code: 'INVALID_SALARY_ITEMS', msg: checked.msg };
+    }
+
+    writeSystemSetting_(SETTING_KEY_SALARY_ITEMS, JSON.stringify(checked.items), user.name || '');
+    CacheService.getScriptCache().remove(SALARY_ITEMS_CACHE_KEY);
+
+    Logger.log(` 管理員 ${user.name} 更新自訂薪資項目，共 ${checked.items.length} 項`);
+
+    return { ok: true, msg: '自訂項目已儲存', items: checked.items };
+
+  } catch (error) {
+    Logger.log(` handleSaveSalaryItems 錯誤: ${error.message}`);
+    return { ok: false, msg: error.toString() };
+  }
+}

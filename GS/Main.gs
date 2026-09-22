@@ -130,6 +130,10 @@ function doGet(e) {
         return respond1(handleGetWorklogReport(e.parameter));
       case "getAllWorklogReport":  
         return respond1(handleGetAllWorklogReport(e.parameter));
+      case "updateWorklog":
+        return respond1(handleUpdateWorklog(e.parameter));
+      case "deleteWorklog":
+        return respond1(handleDeleteWorklog(e.parameter));
       // ==================== 排班系統 ====================
       case "addShift":
         return respond1(handleAddShift(e.parameter));
@@ -306,6 +310,10 @@ function doGet(e) {
       // 在 doGet(e) 的 switch 區塊中新增：
       case "getEmployeeMonthlyPunchData":
         return respond1(handleGetEmployeeMonthlyPunchData(e.parameter));
+      case "getEmployeeMonthlyAttendance":
+        return respond1(handleGetEmployeeMonthlyAttendance(e.parameter));
+      case "getEmployeeMonthlyOvertime":
+        return respond1(handleGetEmployeeMonthlyOvertime(e.parameter));
       
       // ==================== QR 打卡系統 ====================
       case "qrPunch":
@@ -318,6 +326,24 @@ function doGet(e) {
         return respond1(handleUpdateWorkSchedule(e.parameter));
       case "resetWorkSchedule":
         return respond1(handleResetWorkSchedule(e.parameter));
+      case "getSalaryRules":
+        return respond1(handleGetSalaryRules(e.parameter));
+      case "updateSalaryRules":
+        return respond1(handleUpdateSalaryRules(e.parameter));
+      case "resetSalaryRules":
+        return respond1(handleResetSalaryRules(e.parameter));
+      case "getSalaryItems":
+        return respond1(handleGetSalaryItems(e.parameter));
+      case "saveSalaryItems":
+        return respond1(handleSaveSalaryItems(e.parameter));
+
+      // ==================== 薪資批次工具 ====================
+      case "batchCalculateSalary":
+        return respond1(handleBatchCalculateSalary(e.parameter));
+      case "copySalaryConfig":
+        return respond1(handleCopySalaryConfig(e.parameter));
+      case "listPayableEmployees":
+        return respond1(handleListPayableEmployees(e.parameter));
 
       case "getAnnouncements":
         return respond1(handleGetAnnouncements(e.parameter));

@@ -395,3 +395,68 @@ function handleGetAllWorklogReport(params) {
     return { ok: false, msg: error.message };
   }
 }
+/**
+ *  處理修改工作日誌
+ */
+function handleUpdateWorklog(params) {
+  try {
+    if (!params.token) {
+      return { ok: false, msg: "缺少認證 token" };
+    }
+
+    const session = checkSession_(params.token);
+    if (!session.ok || !session.user) {
+      return { ok: false, msg: "未授權或 session 已過期" };
+    }
+
+    if (!params.id) {
+      return { ok: false, msg: "缺少日誌 ID" };
+    }
+
+    const result = updateWorklog(
+      params.id,
+      session.user.userId,
+      params.date,
+      params.hours,
+      params.content
+    );
+
+    return { ok: result.success, msg: result.message };
+
+  } catch (error) {
+    Logger.log(' handleUpdateWorklog 錯誤: ' + error);
+    return { ok: false, msg: error.message };
+  }
+}
+
+/**
+ *  處理刪除工作日誌
+ */
+function handleDeleteWorklog(params) {
+  try {
+    if (!params.token) {
+      return { ok: false, msg: "缺少認證 token" };
+    }
+
+    const session = checkSession_(params.token);
+    if (!session.ok || !session.user) {
+      return { ok: false, msg: "未授權或 session 已過期" };
+    }
+
+    if (!params.id) {
+      return { ok: false, msg: "缺少日誌 ID" };
+    }
+
+    const result = deleteWorklog(
+      params.id,
+      session.user.userId,
+      session.user.dept === '管理員'
+    );
+
+    return { ok: result.success, msg: result.message };
+
+  } catch (error) {
+    Logger.log(' handleDeleteWorklog 錯誤: ' + error);
+    return { ok: false, msg: error.message };
+  }
+}
