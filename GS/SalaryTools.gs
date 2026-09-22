@@ -50,6 +50,42 @@ function listPayableEmployees_() {
 }
 
 /**
+ * 列出所有在職員工，並標記誰已經有薪資設定。
+ *
+ * 「複製薪資設定」的主要用途是新人報到，而新人本來就還沒有薪資設定，
+ * 所以目標清單不能只列已設定的人，否則最需要用的情境反而選不到人。
+ */
+function listAllEmployeesForSalary_() {
+  const configured = {};
+  listPayableEmployees_().forEach(emp => { configured[emp.employeeId] = emp; });
+
+  const result = getAllUsers();
+  if (!result || !result.ok || !Array.isArray(result.users)) {
+    // 讀不到員工名單時至少把有薪資設定的人列出來
+    return Object.keys(configured).map(id => {
+      const emp = configured[id];
+      return {
+        employeeId: emp.employeeId,
+        employeeName: emp.employeeName,
+        salaryType: emp.salaryType,
+        hasConfig: true
+      };
+    });
+  }
+
+  return result.users.map(user => {
+    const config = configured[user.userId];
+    return {
+      employeeId: user.userId,
+      // 薪資設定裡的姓名可能跟員工名單不同步，以員工名單為準
+      employeeName: user.name || (config ? config.employeeName : ''),
+      salaryType: config ? config.salaryType : '',
+      hasConfig: !!config
+    };
+  });
+}
+
+/**
  * API：批次計算薪資（僅管理員）
  *
  * 參數：yearMonth（必填）、startIndex（預設 0）、limit（預設 10，最多 30）
@@ -160,9 +196,12 @@ const SALARY_COPY_GROUPS = {
  * API：把一位員工的薪資設定複製到其他員工（僅管理員）
  *
  * 參數：
- *   sourceEmployeeId - 來源員工
- *   targetEmployeeIds - JSON 陣列，目標員工（必須已經有薪資設定）
- *   groups - JSON 陣列，要複製哪幾組：base / allowances / deductions / custom
+ *   sourceEmployeeId  - 來源員工
+ *   targetEmployeeIds - JSON 陣列，目標員工
+ *   groups            - JSON 陣列：base / allowances / deductions / custom
+ *
+ * 目標還沒有薪資設定時會直接幫他建一筆，但前提是有勾「base」，
+ * 否則建出來的會是一筆沒有薪資類型與基本薪資的空設定，之後算薪一定出錯。
  */
 function handleCopySalaryConfig(params) {
   try {
@@ -202,7 +241,7 @@ function handleCopySalaryConfig(params) {
     const data = sheet.getDataRange().getValues();
     const headers = data[0].map(h => String(h).trim());
 
-    // 把要複製的欄位名稱攤平成一份清單
+    // 要複製的欄位攤平成一份清單
     const columnsToCopy = [];
     groups.forEach(group => {
       if (group === 'custom') {
@@ -216,12 +255,26 @@ function handleCopySalaryConfig(params) {
       return { ok: false, code: 'MISSING_GROUPS', msg: '沒有可複製的欄位' };
     }
 
+    const includesBase = groups.indexOf('base') !== -1;
+
+    // 目標可能還沒有薪資設定，姓名要從員工名單補，不能留空白
+    const directory = {};
+    listAllEmployeesForSalary_().forEach(emp => { directory[emp.employeeId] = emp; });
+
     const results = [];
     let updatedCount = 0;
+    let createdCount = 0;
 
     targetIds.forEach(rawTargetId => {
       const targetId = String(rawTargetId || '').trim();
-      if (!targetId || targetId === sourceId) return;
+      if (!targetId) return;
+
+      const targetName = directory[targetId] ? directory[targetId].employeeName : targetId;
+
+      if (targetId === sourceId) {
+        results.push({ employeeId: targetId, employeeName: targetName, ok: false, msg: '來源與目標是同一個人' });
+        return;
+      }
 
       let rowIndex = -1;
       for (let i = 1; i < data.length; i++) {
@@ -231,38 +284,137 @@ function handleCopySalaryConfig(params) {
         }
       }
 
-      if (rowIndex === -1) {
-        results.push({ employeeId: targetId, ok: false, msg: '該員工尚未建立薪資設定' });
+      const isNew = (rowIndex === -1);
+
+      if (isNew && !includesBase) {
+        results.push({
+          employeeId: targetId,
+          employeeName: targetName,
+          ok: false,
+          msg: '尚未建立薪資設定，請一併勾選「薪資類型與基本薪資」'
+        });
         return;
+      }
+
+      // 整列讀出來改完再一次寫回；逐格 setValue 在人數多時會拖到執行逾時
+      const row = isNew
+        ? new Array(headers.length).fill('')
+        : sheet.getRange(rowIndex, 1, 1, headers.length).getValues()[0];
+
+      if (isNew) {
+        row[headers.indexOf('員工ID')] = targetId;
+        row[headers.indexOf('員工姓名')] = targetName;
+        const statusIndex = headers.indexOf('狀態');
+        if (statusIndex !== -1) row[statusIndex] = '在職';
       }
 
       columnsToCopy.forEach(columnName => {
         const columnIndex = headers.indexOf(columnName);
         if (columnIndex === -1) return;  // 舊試算表沒有這一欄就略過
-        sheet.getRange(rowIndex, columnIndex + 1).setValue(source[columnName]);
+        row[columnIndex] = source[columnName];
       });
 
-      // 更新時間要跟著動，不然看不出這筆被改過
       const updatedAtIndex = headers.indexOf('最後更新時間');
-      if (updatedAtIndex !== -1) {
-        sheet.getRange(rowIndex, updatedAtIndex + 1).setValue(new Date());
+      if (updatedAtIndex !== -1) row[updatedAtIndex] = new Date();
+
+      if (isNew) {
+        sheet.appendRow(row);
+        createdCount++;
+      } else {
+        sheet.getRange(rowIndex, 1, 1, headers.length).setValues([row]);
+        updatedCount++;
       }
 
-      updatedCount++;
-      results.push({ employeeId: targetId, ok: true, msg: '' });
+      results.push({
+        employeeId: targetId,
+        employeeName: targetName,
+        ok: true,
+        created: isNew,
+        msg: ''
+      });
     });
 
-    Logger.log(` 管理員 ${user.name} 從 ${sourceId} 複製薪資設定到 ${updatedCount} 位員工`);
+    Logger.log(` 管理員 ${user.name} 從 ${sourceId} 複製薪資設定：更新 ${updatedCount} 筆、新建 ${createdCount} 筆`);
+
+    const parts = [];
+    if (updatedCount > 0) parts.push(`更新 ${updatedCount} 位`);
+    if (createdCount > 0) parts.push(`新建 ${createdCount} 位`);
+    const failedCount = results.filter(r => !r.ok).length;
+    if (failedCount > 0) parts.push(`${failedCount} 位未處理`);
 
     return {
       ok: true,
-      msg: `已套用到 ${updatedCount} 位員工`,
+      msg: parts.length ? parts.join('、') : '沒有任何變更',
       updatedCount: updatedCount,
+      createdCount: createdCount,
       results: results
     };
 
   } catch (error) {
     Logger.log(` handleCopySalaryConfig 錯誤: ${error.message}`);
+    return { ok: false, msg: error.toString() };
+  }
+}
+
+/**
+ * API：預覽複製內容（僅管理員）
+ *
+ * 金額類的批次覆寫沒有預覽很危險，按下去之前要先看得到「哪些欄位、會變成什麼值」。
+ */
+function handlePreviewSalaryConfigCopy(params) {
+  try {
+    const user = getUserByToken(params.token);
+    if (!user || user.dept !== '管理員') {
+      return { ok: false, code: 'PERMISSION_DENIED', msg: '此功能僅限管理員使用' };
+    }
+
+    const sourceId = String(params.sourceEmployeeId || '').trim();
+    if (!sourceId) {
+      return { ok: false, code: 'MISSING_SOURCE', msg: '請選擇來源員工' };
+    }
+
+    let groups = [];
+    try {
+      groups = JSON.parse(params.groups || '[]');
+    } catch (error) {
+      return { ok: false, code: 'INVALID_PARAMS', msg: '參數格式錯誤' };
+    }
+
+    const sourceResult = getEmployeeSalaryTW(sourceId);
+    if (!sourceResult.success) {
+      return { ok: false, code: 'SOURCE_NOT_FOUND', msg: '找不到來源員工的薪資設定' };
+    }
+    const source = sourceResult.data;
+
+    const fields = [];
+
+    groups.forEach(group => {
+      if (group === 'custom') {
+        // 自訂項目是一整包 JSON，要拆成人看得懂的項目名稱
+        const resolved = resolveCustomSalaryItems_(source[SALARY_CUSTOM_ITEMS_COLUMN]);
+        resolved.allowances.forEach(item =>
+          fields.push({ name: item.name + '（津貼）', value: item.amount }));
+        resolved.deductions.forEach(item =>
+          fields.push({ name: item.name + '（扣款）', value: item.amount }));
+        if (resolved.allowances.length === 0 && resolved.deductions.length === 0) {
+          fields.push({ name: '自訂項目', value: '（來源員工沒有填任何金額）' });
+        }
+      } else if (SALARY_COPY_GROUPS[group]) {
+        SALARY_COPY_GROUPS[group].forEach(name => {
+          const value = source[name];
+          fields.push({ name: name, value: (value === '' || value === null || value === undefined) ? 0 : value });
+        });
+      }
+    });
+
+    return {
+      ok: true,
+      sourceEmployeeName: source['員工姓名'] || sourceId,
+      fields: fields
+    };
+
+  } catch (error) {
+    Logger.log(` handlePreviewSalaryConfigCopy 錯誤: ${error.message}`);
     return { ok: false, msg: error.toString() };
   }
 }
@@ -277,7 +429,13 @@ function handleListPayableEmployees(params) {
       return { ok: false, code: 'PERMISSION_DENIED', msg: '此功能僅限管理員使用' };
     }
 
-    return { ok: true, employees: listPayableEmployees_() };
+    return {
+      ok: true,
+      // employees：已有薪資設定的人，用在試算與批次計算
+      employees: listPayableEmployees_(),
+      // allEmployees：所有在職員工，含 hasConfig 標記，用在複製設定的目標清單
+      allEmployees: listAllEmployeesForSalary_()
+    };
 
   } catch (error) {
     Logger.log(` handleListPayableEmployees 錯誤: ${error.message}`);

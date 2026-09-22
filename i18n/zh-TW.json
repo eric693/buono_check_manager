@@ -947,7 +947,7 @@
     "SALARY_BATCH_DESC": "一次計算所有在職員工的當月薪資並存檔。人數多時會分批進行，請不要關閉頁面。",
     "BTN_BATCH_CALC": "開始批次計算",
     "SALARY_COPY_TITLE": "複製薪資設定",
-    "SALARY_COPY_DESC": "把一位員工的設定套用到其他人。身分證、銀行帳號、到職日這類個人資料不會被複製。",
+    "SALARY_COPY_DESC": "把一位員工的設定套用到其他人。標示「尚未設定」的員工會直接幫他建一筆（需勾選薪資類型與基本薪資）。身分證、銀行帳號、到職日這類個人資料不會被複製。",
     "SALARY_COPY_SOURCE": "來源員工",
     "SALARY_COPY_GROUPS": "複製哪些項目",
     "SALARY_COPY_GROUP_BASE": "薪資類型與基本薪資",
@@ -967,5 +967,14 @@
     "SHIFT_TYPE_ANNUAL_LEAVE": "年假(特休)",
     "SHIFT_TYPE_CNY_LEAVE": "過年假",
     "ALLOWANCE_DESC": "每月固定發放的津貼項目（會計入應發總額）",
+    "SALARY_NOT_CONFIGURED": "尚未設定",
+    "SALARY_COPY_PREVIEW": "將套用以下內容",
+    "SALARY_COPY_FROM": "來源",
+    "SALARY_COPY_CREATED": "已建立設定",
+    "SALARY_COPY_APPLIED": "已套用",
+    "SALARY_COPY_ROW_FAILED": "未處理",
+    "SALARY_COPY_CONFIRM_DETAIL": "將覆寫",
+    "SALARY_COPY_CONFIRM_EXISTING": "位既有設定、新建",
+    "SALARY_COPY_CONFIRM_NEW": "位新設定，確定要繼續嗎？",
     "LUNCH_BREAK_NOTE": "※ 僅計算工作時段（{start}-{end}，已扣午休 {lunchStart}-{lunchEnd}），例假日與國定假日不計"
 }

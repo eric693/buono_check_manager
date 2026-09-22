@@ -929,7 +929,7 @@
     "SALARY_BATCH_DESC": "Calculate and save that month's salary for every active employee. Large teams are processed in batches, so keep this page open.",
     "BTN_BATCH_CALC": "Start batch calculation",
     "SALARY_COPY_TITLE": "Copy salary settings",
-    "SALARY_COPY_DESC": "Apply one employee's settings to others. Personal data such as ID number, bank account and hire date is never copied.",
+    "SALARY_COPY_DESC": "Apply one employee's settings to others. Employees marked \"Not set up\" get a new record (tick salary type and base salary for that). Personal data such as ID number, bank account and hire date is never copied.",
     "SALARY_COPY_SOURCE": "Source employee",
     "SALARY_COPY_GROUPS": "What to copy",
     "SALARY_COPY_GROUP_BASE": "Salary type and base salary",
@@ -948,5 +948,14 @@
     "SHIFT_EMPLOYEE_FILTER": "Employee name",
     "SHIFT_TYPE_ANNUAL_LEAVE": "Annual leave",
     "SHIFT_TYPE_CNY_LEAVE": "Lunar New Year leave",
+    "SALARY_NOT_CONFIGURED": "Not set up",
+    "SALARY_COPY_PREVIEW": "This will be applied",
+    "SALARY_COPY_FROM": "Source",
+    "SALARY_COPY_CREATED": "Settings created",
+    "SALARY_COPY_APPLIED": "Applied",
+    "SALARY_COPY_ROW_FAILED": "Skipped",
+    "SALARY_COPY_CONFIRM_DETAIL": "Overwrite",
+    "SALARY_COPY_CONFIRM_EXISTING": "existing, create",
+    "SALARY_COPY_CONFIRM_NEW": "new. Continue?",
     "LUNCH_BREAK_NOTE": "Counts working hours only ({start}-{end}, lunch {lunchStart}-{lunchEnd} excluded); weekends and public holidays are not counted."
 }

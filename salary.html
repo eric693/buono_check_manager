@@ -1705,7 +1705,7 @@
             <div class="form-section">
                 <div class="feature-title" data-i18n="SALARY_COPY_TITLE">複製薪資設定</div>
                 <p style="color: #94a3b8; margin-bottom: 1.5rem;" data-i18n="SALARY_COPY_DESC">
-                    把一位員工的設定套用到其他人。身分證、銀行帳號、到職日這類個人資料不會被複製。
+                    把一位員工的設定套用到其他人。標示「尚未設定」的員工會直接幫他建一筆（需勾選薪資類型與基本薪資）。身分證、銀行帳號、到職日這類個人資料不會被複製。
                 </p>
 
                 <div class="form-grid" style="max-width: 800px; margin-bottom: 1rem;">
@@ -1718,7 +1718,7 @@
                     <div class="form-group">
                         <label class="form-label" data-i18n="SALARY_COPY_GROUPS">複製哪些項目</label>
                         <div class="checkbox-list" style="max-height: none;">
-                            <label><input type="checkbox" class="copy-group" value="base" checked>
+                            <label><input type="checkbox" class="copy-group" value="base">
                                 <span data-i18n="SALARY_COPY_GROUP_BASE">薪資類型與基本薪資</span></label>
                             <label><input type="checkbox" class="copy-group" value="allowances" checked>
                                 <span data-i18n="SALARY_COPY_GROUP_ALLOWANCES">固定津貼</span></label>
@@ -1734,6 +1734,8 @@
                     <label class="form-label required" data-i18n="SALARY_COPY_TARGETS">套用到</label>
                     <div id="copy-target-list" class="checkbox-list"></div>
                 </div>
+
+                <div id="copy-config-preview" style="margin-bottom: 1rem;"></div>
 
                 <button type="button" id="copy-config-btn" class="submit-btn" style="max-width: 300px;" data-i18n="BTN_COPY_CONFIG">
                     套用設定

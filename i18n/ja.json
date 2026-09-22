@@ -907,7 +907,7 @@
     "SALARY_BATCH_DESC": "在職者全員のその月の給与を計算して保存します。人数が多い場合は分割処理されるので、ページを閉じないでください。",
     "BTN_BATCH_CALC": "一括計算を開始",
     "SALARY_COPY_TITLE": "給与設定のコピー",
-    "SALARY_COPY_DESC": "ある従業員の設定を他の人に適用します。マイナンバー・口座・入社日などの個人情報はコピーされません。",
+    "SALARY_COPY_DESC": "ある社員の設定を他の人に適用します。「未設定」の社員には新規に作成します（給与形態と基本額のチェックが必要）。マイナンバー・口座・入社日などの個人情報はコピーされません。",
     "SALARY_COPY_SOURCE": "コピー元の従業員",
     "SALARY_COPY_GROUPS": "コピーする項目",
     "SALARY_COPY_GROUP_BASE": "給与形態と基本給",
@@ -927,5 +927,14 @@
     "SHIFT_TYPE_ANNUAL_LEAVE": "年次有給休暇",
     "SHIFT_TYPE_CNY_LEAVE": "旧正月休暇",
     "ALLOWANCE_DESC": "毎月固定で支給される手当（総支給額に含まれます）",
+    "SALARY_NOT_CONFIGURED": "未設定",
+    "SALARY_COPY_PREVIEW": "以下の内容を適用します",
+    "SALARY_COPY_FROM": "元",
+    "SALARY_COPY_CREATED": "設定を作成しました",
+    "SALARY_COPY_APPLIED": "適用しました",
+    "SALARY_COPY_ROW_FAILED": "未処理",
+    "SALARY_COPY_CONFIRM_DETAIL": "上書き",
+    "SALARY_COPY_CONFIRM_EXISTING": "件、新規作成",
+    "SALARY_COPY_CONFIRM_NEW": "件です。続行しますか？",
     "LUNCH_BREAK_NOTE": "※ 勤務時間帯（{start}-{end}、昼休み {lunchStart}-{lunchEnd} を除く）のみ計算し、休日と祝日は含みません。"
 }

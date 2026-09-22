@@ -963,7 +963,7 @@
     "SALARY_BATCH_DESC": "Tính và lưu lương tháng cho toàn bộ nhân viên đang làm việc. Nếu đông người sẽ xử lý theo từng đợt, xin đừng đóng trang.",
     "BTN_BATCH_CALC": "Bắt đầu tính hàng loạt",
     "SALARY_COPY_TITLE": "Sao chép thiết lập lương",
-    "SALARY_COPY_DESC": "Áp dụng thiết lập của một nhân viên cho người khác. Dữ liệu cá nhân như CCCD, tài khoản, ngày vào làm sẽ không bị sao chép.",
+    "SALARY_COPY_DESC": "Áp dụng thiết lập của một nhân viên cho người khác. Nhân viên ghi \"Chưa thiết lập\" sẽ được tạo mới (cần tích loại lương và lương cơ bản). Dữ liệu cá nhân như CCCD, tài khoản, ngày vào làm không bị sao chép.",
     "SALARY_COPY_SOURCE": "Nhân viên nguồn",
     "SALARY_COPY_GROUPS": "Sao chép những gì",
     "SALARY_COPY_GROUP_BASE": "Loại lương và lương cơ bản",
@@ -983,5 +983,14 @@
     "SHIFT_TYPE_ANNUAL_LEAVE": "Nghỉ phép năm",
     "SHIFT_TYPE_CNY_LEAVE": "Nghỉ Tết",
     "ALLOWANCE_DESC": "Các khoản phụ cấp cố định hằng tháng (tính vào tổng lương)",
+    "SALARY_NOT_CONFIGURED": "Chưa thiết lập",
+    "SALARY_COPY_PREVIEW": "Sẽ áp dụng nội dung sau",
+    "SALARY_COPY_FROM": "Nguồn",
+    "SALARY_COPY_CREATED": "Đã tạo thiết lập",
+    "SALARY_COPY_APPLIED": "Đã áp dụng",
+    "SALARY_COPY_ROW_FAILED": "Chưa xử lý",
+    "SALARY_COPY_CONFIRM_DETAIL": "Ghi đè",
+    "SALARY_COPY_CONFIRM_EXISTING": "thiết lập hiện có, tạo mới",
+    "SALARY_COPY_CONFIRM_NEW": "thiết lập. Tiếp tục?",
     "LUNCH_BREAK_NOTE": "※ Chỉ tính giờ trong ca làm ({start}-{end}, trừ nghỉ trưa {lunchStart}-{lunchEnd}); cuối tuần và ngày lễ không tính."
 }

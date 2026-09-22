@@ -907,7 +907,7 @@
     "SALARY_BATCH_DESC": "재직 중인 모든 직원의 해당 월 급여를 계산해 저장합니다. 인원이 많으면 나눠서 처리하니 페이지를 닫지 마세요.",
     "BTN_BATCH_CALC": "일괄 계산 시작",
     "SALARY_COPY_TITLE": "급여 설정 복사",
-    "SALARY_COPY_DESC": "한 직원의 설정을 다른 직원에게 적용합니다. 주민번호, 계좌, 입사일 같은 개인정보는 복사되지 않습니다.",
+    "SALARY_COPY_DESC": "한 직원의 설정을 다른 직원에게 적용합니다. '미설정' 직원은 새로 만들어 줍니다(급여 형태와 기본급을 함께 선택해야 함). 주민번호, 계좌, 입사일 같은 개인정보는 복사되지 않습니다.",
     "SALARY_COPY_SOURCE": "원본 직원",
     "SALARY_COPY_GROUPS": "복사할 항목",
     "SALARY_COPY_GROUP_BASE": "급여 형태와 기본급",
@@ -927,5 +927,14 @@
     "SHIFT_TYPE_ANNUAL_LEAVE": "연차 휴가",
     "SHIFT_TYPE_CNY_LEAVE": "설 연휴",
     "ALLOWANCE_DESC": "매월 고정 지급되는 수당 (총지급액에 포함)",
+    "SALARY_NOT_CONFIGURED": "미설정",
+    "SALARY_COPY_PREVIEW": "다음 내용이 적용됩니다",
+    "SALARY_COPY_FROM": "원본",
+    "SALARY_COPY_CREATED": "설정 생성됨",
+    "SALARY_COPY_APPLIED": "적용됨",
+    "SALARY_COPY_ROW_FAILED": "처리 안 됨",
+    "SALARY_COPY_CONFIRM_DETAIL": "덮어쓰기",
+    "SALARY_COPY_CONFIRM_EXISTING": "건, 신규 생성",
+    "SALARY_COPY_CONFIRM_NEW": "건입니다. 계속할까요?",
     "LUNCH_BREAK_NOTE": "※ 근무 시간대({start}-{end}, 점심 {lunchStart}-{lunchEnd} 제외)만 계산하며 주말과 공휴일은 포함하지 않습니다."
 }

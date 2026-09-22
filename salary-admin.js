@@ -11,7 +11,8 @@
 
 let salaryAdminIsAdmin = false;
 let salaryItemDefinitions = [];      // 管理員定義的自訂項目
-let salaryEmployeeDirectory = [];    // 有薪資設定的在職員工
+let salaryEmployeeDirectory = [];    // 有薪資設定的在職員工（試算、批次計算用）
+let salaryAllEmployees = [];         // 所有在職員工，含 hasConfig（複製設定的目標用）
 let currentConfigEmployeeId = '';    // 薪資設定分頁目前選到的人
 
 const salaryTabsInitialized = {
@@ -75,9 +76,11 @@ async function loadSalaryEmployeeDirectory(force = false) {
   try {
     const res = await callApifetch('listPayableEmployees', null);
     salaryEmployeeDirectory = (res.ok && Array.isArray(res.employees)) ? res.employees : [];
+    salaryAllEmployees = (res.ok && Array.isArray(res.allEmployees)) ? res.allEmployees : [];
   } catch (error) {
     console.error('載入員工清單失敗:', error);
     salaryEmployeeDirectory = [];
+    salaryAllEmployees = [];
   }
 
   return salaryEmployeeDirectory;
@@ -740,7 +743,9 @@ function renderCopyTargets() {
 
   container.innerHTML = '';
 
-  const targets = salaryEmployeeDirectory.filter(emp => emp.employeeId !== sourceId);
+  // 新人報到是這個功能的主要用途，所以還沒建薪資設定的人也要能選
+  const pool = salaryAllEmployees.length > 0 ? salaryAllEmployees : salaryEmployeeDirectory;
+  const targets = pool.filter(emp => emp.employeeId !== sourceId);
 
   if (targets.length === 0) {
     container.innerHTML = `<div class="employee-list-empty">${
@@ -755,14 +760,100 @@ function renderCopyTargets() {
     checkbox.type = 'checkbox';
     checkbox.className = 'copy-target';
     checkbox.value = emp.employeeId;
+    checkbox.dataset.hasConfig = (emp.hasConfig === false) ? '0' : '1';
 
     const text = document.createElement('span');
-    text.textContent = `${emp.employeeName || emp.employeeId}（${emp.salaryType || ''}）`;
+    text.textContent = emp.employeeName || emp.employeeId;
+
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = (emp.hasConfig === false)
+      ? ta('SALARY_NOT_CONFIGURED', '尚未設定')
+      : (emp.salaryType || '');
 
     label.appendChild(checkbox);
     label.appendChild(text);
+    label.appendChild(tag);
     container.appendChild(label);
   });
+}
+
+/**
+ * 預覽：按下去之前先看到「哪些欄位會被蓋成什麼值」
+ */
+async function refreshCopyPreview() {
+  const previewEl = document.getElementById('copy-config-preview');
+  const sourceSelect = document.getElementById('copy-source-employee');
+  if (!previewEl) return;
+
+  const sourceId = sourceSelect ? sourceSelect.value : '';
+  const groups = Array.from(document.querySelectorAll('.copy-group:checked')).map(el => el.value);
+
+  if (!sourceId || groups.length === 0) {
+    previewEl.innerHTML = '';
+    return;
+  }
+
+  try {
+    const query =
+      `sourceEmployeeId=${encodeURIComponent(sourceId)}` +
+      `&groups=${encodeURIComponent(JSON.stringify(groups))}`;
+    const res = await callApifetch(`previewSalaryConfigCopy&${query}`, null);
+
+    if (!res.ok || !Array.isArray(res.fields)) {
+      previewEl.innerHTML = '';
+      return;
+    }
+
+    previewEl.innerHTML = '';
+
+    const title = document.createElement('div');
+    title.className = 'help-h';
+    title.textContent = ta('SALARY_COPY_PREVIEW', '將套用以下內容') +
+      `（${ta('SALARY_COPY_FROM', '來源')}：${res.sourceEmployeeName}）`;
+    previewEl.appendChild(title);
+
+    res.fields.forEach(field => {
+      const row = document.createElement('div');
+      row.className = 'batch-result-row';
+
+      const name = document.createElement('span');
+      name.textContent = field.name;
+
+      const value = document.createElement('span');
+      value.textContent = (typeof field.value === 'number')
+        ? field.value.toLocaleString()
+        : String(field.value);
+
+      row.appendChild(name);
+      row.appendChild(value);
+      previewEl.appendChild(row);
+    });
+
+  } catch (error) {
+    console.error('載入複製預覽失敗:', error);
+    previewEl.innerHTML = '';
+  }
+}
+
+/**
+ * 複製結果專用的列；批次計算那支會印出實發金額，用在這裡並不對
+ */
+function buildCopyResultRow(row) {
+  const el = document.createElement('div');
+  el.className = 'batch-result-row' + (row.ok ? '' : ' failed');
+
+  const name = document.createElement('span');
+  name.textContent = row.employeeName || row.employeeId;
+
+  const detail = document.createElement('span');
+  detail.textContent = row.ok
+    ? (row.created ? ta('SALARY_COPY_CREATED', '已建立設定') : ta('SALARY_COPY_APPLIED', '已套用'))
+    : (row.msg || ta('SALARY_COPY_ROW_FAILED', '未處理'));
+
+  el.appendChild(name);
+  el.appendChild(detail);
+  return el;
 }
 
 async function runCopySalaryConfig() {
@@ -788,7 +879,18 @@ async function runCopySalaryConfig() {
     return;
   }
 
-  if (!confirm(ta('SALARY_COPY_CONFIRM', '將覆寫這些員工目前的設定，確定要繼續嗎？'))) return;
+  const newOnes = Array.from(document.querySelectorAll('.copy-target:checked'))
+    .filter(el => el.dataset.hasConfig === '0').length;
+  const existing = targets.length - newOnes;
+
+  let confirmText = ta('SALARY_COPY_CONFIRM', '將覆寫這些員工目前的設定，確定要繼續嗎？');
+  if (newOnes > 0) {
+    confirmText = `${ta('SALARY_COPY_CONFIRM_DETAIL', '將覆寫')} ${existing} ` +
+      `${ta('SALARY_COPY_CONFIRM_EXISTING', '位既有設定、新建')} ${newOnes} ` +
+      `${ta('SALARY_COPY_CONFIRM_NEW', '位新設定，確定要繼續嗎？')}`;
+  }
+
+  if (!confirm(confirmText)) return;
 
   if (btn) btn.disabled = true;
   if (resultsEl) resultsEl.innerHTML = '';
@@ -802,18 +904,17 @@ async function runCopySalaryConfig() {
 
     if (res.ok) {
       (res.results || []).forEach(row => {
-        if (resultsEl) {
-          resultsEl.appendChild(buildBatchResultRow({
-            employeeId: row.employeeId,
-            employeeName: row.employeeId,
-            ok: row.ok,
-            msg: row.msg,
-            netSalary: 0,
-            salaryType: row.ok ? ta('SALARY_COPY_APPLIED', '已套用') : ''
-          }));
-        }
+        if (resultsEl) resultsEl.appendChild(buildCopyResultRow(row));
       });
-      showNotification(res.msg || ta('SALARY_COPY_DONE', '設定已套用'), 'success');
+
+      // 有人沒套用成功時不要報成功，不然管理員會以為全部都好了
+      const failed = (res.results || []).filter(row => !row.ok).length;
+      showNotification(res.msg || ta('SALARY_COPY_DONE', '設定已套用'),
+                       failed > 0 ? 'info' : 'success');
+
+      // 目標可能從「尚未設定」變成已設定，清單要重抓
+      await loadSalaryEmployeeDirectory(true);
+      renderCopyTargets();
     } else {
       showNotification(res.msg || ta('SALARY_COPY_FAILED', '複製設定失敗'), 'error');
     }
@@ -901,8 +1002,15 @@ async function initSalaryReportTab() {
       option.textContent = `${emp.employeeName || emp.employeeId}（${emp.salaryType || ''}）`;
       sourceSelect.appendChild(option);
     });
-    sourceSelect.addEventListener('change', renderCopyTargets);
+    sourceSelect.addEventListener('change', () => {
+      renderCopyTargets();
+      refreshCopyPreview();
+    });
   }
+
+  document.querySelectorAll('.copy-group').forEach(el => {
+    el.addEventListener('change', refreshCopyPreview);
+  });
 
   renderCopyTargets();
 

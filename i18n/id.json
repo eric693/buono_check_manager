@@ -907,7 +907,7 @@
     "SALARY_BATCH_DESC": "Hitung dan simpan gaji bulan tersebut untuk semua karyawan aktif. Jika jumlahnya banyak akan diproses bertahap, jangan tutup halaman ini.",
     "BTN_BATCH_CALC": "Mulai hitung massal",
     "SALARY_COPY_TITLE": "Salin pengaturan gaji",
-    "SALARY_COPY_DESC": "Terapkan pengaturan satu karyawan ke karyawan lain. Data pribadi seperti nomor identitas, rekening, dan tanggal masuk tidak ikut disalin.",
+    "SALARY_COPY_DESC": "Terapkan pengaturan satu karyawan ke karyawan lain. Karyawan bertanda \"Belum diatur\" akan dibuatkan data baru (centang jenis gaji dan gaji pokok). Data pribadi seperti nomor identitas, rekening, dan tanggal masuk tidak ikut disalin.",
     "SALARY_COPY_SOURCE": "Karyawan sumber",
     "SALARY_COPY_GROUPS": "Apa yang disalin",
     "SALARY_COPY_GROUP_BASE": "Jenis gaji dan gaji pokok",
@@ -927,5 +927,14 @@
     "SHIFT_TYPE_ANNUAL_LEAVE": "Cuti tahunan",
     "SHIFT_TYPE_CNY_LEAVE": "Cuti Imlek",
     "ALLOWANCE_DESC": "Tunjangan tetap bulanan (termasuk dalam gaji kotor)",
+    "SALARY_NOT_CONFIGURED": "Belum diatur",
+    "SALARY_COPY_PREVIEW": "Berikut yang akan diterapkan",
+    "SALARY_COPY_FROM": "Sumber",
+    "SALARY_COPY_CREATED": "Pengaturan dibuat",
+    "SALARY_COPY_APPLIED": "Diterapkan",
+    "SALARY_COPY_ROW_FAILED": "Tidak diproses",
+    "SALARY_COPY_CONFIRM_DETAIL": "Timpa",
+    "SALARY_COPY_CONFIRM_EXISTING": "pengaturan yang ada, buat",
+    "SALARY_COPY_CONFIRM_NEW": "pengaturan baru. Lanjutkan?",
     "LUNCH_BREAK_NOTE": "※ Hanya menghitung jam kerja ({start}-{end}, istirahat {lunchStart}-{lunchEnd} dikurangi); akhir pekan dan hari libur tidak dihitung."
 }

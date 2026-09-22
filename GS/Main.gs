@@ -342,6 +342,8 @@ function doGet(e) {
         return respond1(handleBatchCalculateSalary(e.parameter));
       case "copySalaryConfig":
         return respond1(handleCopySalaryConfig(e.parameter));
+      case "previewSalaryConfigCopy":
+        return respond1(handlePreviewSalaryConfigCopy(e.parameter));
       case "listPayableEmployees":
         return respond1(handleListPayableEmployees(e.parameter));
 
