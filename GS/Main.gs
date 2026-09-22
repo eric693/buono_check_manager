@@ -311,6 +311,14 @@ function doGet(e) {
       case "qrPunch":
         return respond1(handleQRPunch(e.parameter));
 
+      // ==================== 系統設定 ====================
+      case "getWorkSchedule":
+        return respond1(handleGetWorkSchedule(e.parameter));
+      case "updateWorkSchedule":
+        return respond1(handleUpdateWorkSchedule(e.parameter));
+      case "resetWorkSchedule":
+        return respond1(handleResetWorkSchedule(e.parameter));
+
       case "getAnnouncements":
         return respond1(handleGetAnnouncements(e.parameter));
       case "addAnnouncement":

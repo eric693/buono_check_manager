@@ -4,6 +4,13 @@
         <meta charset="UTF-8">
         <link rel="icon" href="/buono_check_manager/0rigin.svg" type="image/x-icon">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <!-- PWA -->
+        <link rel="manifest" href="manifest.webmanifest">
+        <meta name="theme-color" content="#4169E1">
+        <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="出勤管家">
         <title data-i18n="APP_TITLE">出勤管家</title>
         
         <!-- Open Graph Meta Tags -->
@@ -116,6 +123,9 @@
                 <div class="flex flex-col items-end space-y-2">
                     
                     <div class="flex items-center space-x-3">
+                        <button id="install-app-btn" data-i18n="BTN_INSTALL_APP"
+                                class="text-sm font-medium px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300"
+                                style="display: none;">安裝</button>
                         <button id="logout-btn" data-i18n="BTN_LOGOUT" class="text-sm font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400">登出</button>
                         <button id="theme-toggle"
                             class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
@@ -853,7 +863,7 @@
                                         <span data-i18n="UNIT_HOURS">小時</span>
                                     </p>
                                     <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                        <span data-i18n="LUNCH_BREAK_NOTE">※ 僅計算工作時段（08:30-17:30，已扣午休 12:00-13:00），例假日與國定假日不計</span>
+                                        <span id="leave-work-schedule-note">※ 僅計算工作時段（08:30-17:30，已扣午休 12:00-13:00），例假日與國定假日不計</span>
                                     </p>
                                     <!-- 警告訊息 -->
                                     <div id="work-hours-warning" class="hidden mt-2 text-sm font-medium text-red-600 dark:text-red-400">
@@ -1073,6 +1083,70 @@
                 </section>
                 <!-- Admin View -->
                 <section id="admin-view" class="space-y-6" style="display: none;">
+                    <!--  工作時段設定 -->
+                    <div class="card p-6">
+                        <h2 data-i18n="WORK_SCHEDULE_TITLE"
+                            class="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                            工作時段設定
+                        </h2>
+                        <p data-i18n="WORK_SCHEDULE_DESCRIPTION"
+                           class="text-gray-500 dark:text-gray-400 mb-4">
+                            設定全公司的上下班與午休時間，請假時數只會計算落在這個區間內、且已扣掉午休的時間。
+                        </p>
+
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="work-schedule-start"
+                                       data-i18n="WORK_SCHEDULE_START"
+                                       class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    上班時間
+                                </label>
+                                <input type="time" id="work-schedule-start" value="08:30"
+                                       class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                            </div>
+                            <div>
+                                <label for="work-schedule-end"
+                                       data-i18n="WORK_SCHEDULE_END"
+                                       class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    下班時間
+                                </label>
+                                <input type="time" id="work-schedule-end" value="17:30"
+                                       class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                            </div>
+                            <div>
+                                <label for="work-schedule-lunchStart"
+                                       data-i18n="WORK_SCHEDULE_LUNCH_START"
+                                       class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    午休開始
+                                </label>
+                                <input type="time" id="work-schedule-lunchStart" value="12:00"
+                                       class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                            </div>
+                            <div>
+                                <label for="work-schedule-lunchEnd"
+                                       data-i18n="WORK_SCHEDULE_LUNCH_END"
+                                       class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    午休結束
+                                </label>
+                                <input type="time" id="work-schedule-lunchEnd" value="13:00"
+                                       class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button id="save-work-schedule-btn"
+                                    data-i18n="BTN_SAVE_WORK_SCHEDULE"
+                                    class="flex-1 py-3 px-4 rounded-lg font-bold btn-primary">
+                                儲存設定
+                            </button>
+                            <button id="reset-work-schedule-btn"
+                                    data-i18n="BTN_RESET_WORK_SCHEDULE"
+                                    class="py-3 px-4 rounded-lg font-bold border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                                還原預設
+                            </button>
+                        </div>
+                    </div>
+
                     <!--  公告管理 -->
                     <div class="card p-6">
                         <h2 data-i18n="ADMIN_ANNOUNCEMENT_MANAGEMENT" 
@@ -1700,6 +1774,7 @@
         <script src="libs.js"></script>
         <script src="i18n.js"></script>
         <script src="holidays.js"></script>
+        <script src="worktime.js"></script>
         <script src="help.js"></script>
         <script src="script.js"></script>
         <script src="location-picker.js"></script>
@@ -1712,6 +1787,7 @@
         <script src="payslip.js"></script>
         <script src="salary.js"></script>
         <script src="worklog.js"></script>
+        <script src="pwa.js"></script>
         
     </body>
 </html>

@@ -90,8 +90,9 @@ async function refreshLeaveData() {
  * 舊版是用牆上時鐘的時間差再扣午休，所以 9/9 08:30 到 9/11 17:30 會算成 54 小時
  * （把兩個晚上也算進去），實際上三天事假應該是 3 × 8 = 24 小時。
  *
- * 工作時段設定在 config.js 的 API_CONFIG.workSchedule，
- * 後端 GS/LeaveManagement.gs 有一份相同的設定，兩邊要一起改。
+ * 工作時段由管理員在網頁版的「工作時段設定」調整，實際值存在後端「系統設定」
+ * 工作表；worktime.js 會把它寫進 API_CONFIG.workSchedule，這裡每次計算都即時讀取，
+ * 所以前端預覽會跟後端實扣一致。config.js 的值只是還沒取得設定前的預設值。
  */
 function toMinutesOfDay(hhmm) {
     const [h, m] = String(hhmm).split(':').map(Number);

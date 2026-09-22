@@ -242,9 +242,10 @@ function submitLeaveRequest(sessionToken, leaveType, startDateTime, endDateTime,
  * 只計算落在「工作時段」內的時間，並跳過非工作日（週六日與國定假日）。
  * 舊版是用牆上時鐘的時間差再扣午休，9/9 08:30 到 9/11 17:30 會算成 54 小時，
  * 把兩個晚上也算進去；三天事假應該是 3 × 8 = 24 小時。
- * 這裡的設定要與前端 config.js 的 API_CONFIG.workSchedule 一致。
+ * 工作時段改由「系統設定」工作表控制，管理員可在網頁版調整（見 SystemSettings.gs）。
+ * 下面這組只是還沒設定過、或設定值不合法時的預設值。
  */
-const WORK_SCHEDULE = {
+const DEFAULT_WORK_SCHEDULE = {
   start: '08:30',       // 上班
   end: '17:30',         // 下班
   lunchStart: '12:00',  // 午休開始
@@ -270,11 +271,14 @@ function calculateWorkHoursAndDays_Unlimited(start, end) {
       return { workHours: 0, days: 0 };
     }
 
+    const workSchedule = (typeof getWorkSchedule_ === 'function')
+      ? getWorkSchedule_()
+      : DEFAULT_WORK_SCHEDULE;
     const cfg = {
-      start: toMinutesOfDay_(WORK_SCHEDULE.start),
-      end: toMinutesOfDay_(WORK_SCHEDULE.end),
-      lunchStart: toMinutesOfDay_(WORK_SCHEDULE.lunchStart),
-      lunchEnd: toMinutesOfDay_(WORK_SCHEDULE.lunchEnd)
+      start: toMinutesOfDay_(workSchedule.start),
+      end: toMinutesOfDay_(workSchedule.end),
+      lunchStart: toMinutesOfDay_(workSchedule.lunchStart),
+      lunchEnd: toMinutesOfDay_(workSchedule.lunchEnd)
     };
 
     let totalMinutes = 0;

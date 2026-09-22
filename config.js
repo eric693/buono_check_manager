@@ -13,9 +13,12 @@ const API_CONFIG = {
   // 部署完成、確認打卡與查詢都正常之後，再把這個值改成 true。
   useHttpPost: false,
   
-  // 標準工作時段，用來計算請假時數。
-  // 請假只計算落在工作時段內的時間，跨夜與例假日不計；改動這裡要同步
-  // GS/LeaveManagement.gs 的 WORK_SCHEDULE，否則前端預覽與後端實扣會對不起來。
+  // 標準工作時段的「預設值」，用來計算請假時數。
+  // 請假只計算落在工作時段內的時間，跨夜與例假日不計。
+  // 實際生效的值由管理員在網頁版的「工作時段設定」調整，存在後端「系統設定」
+  // 工作表；登入後 worktime.js 會把後端的值覆寫到這裡。這組只在還沒跟後端
+  // 要到設定之前使用，要改預設值請同步 GS/LeaveManagement.gs 的
+  // DEFAULT_WORK_SCHEDULE。
   workSchedule: {
     start: '08:30',      // 上班
     end: '17:30',        // 下班

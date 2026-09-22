@@ -776,17 +776,21 @@ async function updateMonthlyStats(records) {
  *  修改：根據薪資類型決定午休時間
  */
 function calculateLunchBreak(inTime, outTime, salaryType) {
+    // 午休區間取自管理員設定的工作時段（worktime.js），預設 12:00-13:00
+    const schedule = (typeof getWorkSchedule === 'function')
+        ? getWorkSchedule()
+        : { lunchStart: '12:00', lunchEnd: '13:00' };
+    const [startHour, startMin] = schedule.lunchStart.split(':').map(Number);
+    const [endHour, endMin] = schedule.lunchEnd.split(':').map(Number);
+    
     const lunchStart = new Date(inTime);
-    lunchStart.setHours(12, 0, 0, 0);
+    lunchStart.setHours(startHour, startMin, 0, 0);
     
-    const lunchEnd = new Date(inTime);
+    const fullLunchHours = ((endHour * 60 + endMin) - (startHour * 60 + startMin)) / 60;
+    //  月薪扣整段午休，時薪只扣一半（預設就是 1 小時 vs 0.5 小時）
+    const deductHours = salaryType === '月薪' ? fullLunchHours : fullLunchHours / 2;
     
-    //  關鍵修改：月薪扣 1 小時，時薪扣 0.5 小時
-    if (salaryType === '月薪') {
-        lunchEnd.setHours(13, 0, 0, 0); // 12:00-13:00 = 1 小時
-    } else {
-        lunchEnd.setHours(12, 30, 0, 0); // 12:00-12:30 = 0.5 小時
-    }
+    const lunchEnd = new Date(lunchStart.getTime() + deductHours * 60 * 60 * 1000);
     
     // 如果工作時段完全不涵蓋午休時間，不扣除
     if (outTime <= lunchStart || inTime >= lunchEnd) {
@@ -795,7 +799,7 @@ function calculateLunchBreak(inTime, outTime, salaryType) {
     
     // 如果涵蓋完整午休時間
     if (inTime < lunchStart && outTime > lunchEnd) {
-        return salaryType === '月薪' ? 1 : 0.5;
+        return deductHours;
     }
     
     // 部分涵蓋午休時間
@@ -1829,12 +1833,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadPendingWorklogs();  // 
             loadPendingLeaveRequests();
             displayAdminAnnouncements();
+            initWorkScheduleAdmin();
             initAdminAnalysis();
             loadAllUsers();
             refreshLocationPicker();
         } else if (tabId === 'overtime-view') {
             initOvertimeTab();
         } else if (tabId === 'leave-view') {
+            loadWorkSchedule();
             initLeaveTab();
         } else if (tabId === 'salary-view') { //  新增
             initSalaryTab();
@@ -1892,6 +1898,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const langSwitcher = document.getElementById('language-switcher');
     if (langSwitcher) langSwitcher.value = pageLang;
     await loadTranslations(pageLang);
+    if (typeof renderWorkScheduleNote === 'function') renderWorkScheduleNote();
     
     
     
@@ -2322,7 +2329,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 語系切換事件
     document.getElementById('language-switcher')?.addEventListener('change', (e) => {
         const newLang = e.target.value;
-        loadTranslations(newLang);
+        loadTranslations(newLang).then(() => {
+            if (typeof renderWorkScheduleNote === 'function') renderWorkScheduleNote();
+        });
         // 取得當前顯示的標籤頁ID
         const currentTab = document.querySelector('.active');
         const currentTabId = currentTab ? currentTab.id : null;
