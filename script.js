@@ -25,86 +25,15 @@ let locationCircles = null;
  * @param {string} [loadingId="loading"] - 顯示 loading 狀態的 DOM 元素 ID。
  * @returns {Promise<object>} - 回傳一個包含 API 回應資料的 Promise。
  */
-const API_TIMEOUT_MS = 20000; // 後端沒回應時的等待上限
+// 實際的 HTTP 呼叫與 GET/POST 切換都在 api.js，這裡只負責 loading 狀態與錯誤提示。
+// 抽出去的原因見 api.js：shift.html 不載入 script.js，以前那幾支永遠繞過這裡。
 
 async function callApifetch(action, loadingId = "loading") {
-    const token = localStorage.getItem("sessionToken");
-    const url = `${API_CONFIG.apiUrl}?action=${action}&token=${token}`;
-    
-    // action 的格式是 "punch&type=上班&lat=..."，POST 時要拆成表單欄位。
-    // 用 x-www-form-urlencoded 才不會觸發預檢請求，Apps Script 也能從 e.parameter 讀到。
-    const buildPostBody = () => {
-        const [name, ...rest] = action.split('&');
-        const body = new URLSearchParams(rest.join('&'));
-        body.set('action', name);
-        body.set('token', token || '');
-        return body;
-    };
-    const fetchOptions = API_CONFIG.useHttpPost
-        ? { method: 'POST', body: buildPostBody() }
-        : {};
-    const requestUrl = API_CONFIG.useHttpPost ? API_CONFIG.apiUrl : url;
-    
     const loadingEl = document.getElementById(loadingId);
     if (loadingEl) loadingEl.style.display = "block";
     
-    // 只讀的查詢（getXxx）失敗時可以安全重試；打卡、送單這類會寫資料的不能重試，
-    // 否則一次逾時就變成兩筆記錄。
-    const isReadOnly = /^(get|list|check|query)/i.test(action);
-    const attempts = isReadOnly ? 2 : 1;
-    
     try {
-        let response = null;
-        let lastError = null;
-        
-        for (let i = 0; i < attempts; i++) {
-            // Apps Script 偶爾會很久不回應，沒有逾時的話畫面會一直卡在「載入中」
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
-            try {
-                response = await fetch(requestUrl, { ...fetchOptions, signal: controller.signal });
-                lastError = null;
-                break;
-            } catch (err) {
-                lastError = err.name === 'AbortError'
-                    ? new Error(`連線逾時（${API_TIMEOUT_MS / 1000} 秒）`)
-                    : err;
-                if (i < attempts - 1) console.warn('API 重試中:', action, lastError.message);
-            } finally {
-                clearTimeout(timer);
-            }
-        }
-        
-        if (lastError) throw lastError;
-        
-        if (!response.ok) {
-            throw new Error(`HTTP 錯誤: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        //  雙向格式統一（關鍵修正）
-        // 1. 如果後端回傳 success，轉換為 ok
-        if (data.success !== undefined && data.ok === undefined) {
-            data.ok = data.success;
-        }
-        
-        // 2. 如果後端回傳 ok，轉換為 success
-        if (data.ok !== undefined && data.success === undefined) {
-            data.success = data.ok;
-        }
-        
-        // 3. 如果後端回傳 data，轉換為 records
-        if (data.data !== undefined && data.records === undefined) {
-            data.records = data.data;
-        }
-        
-        // 4. 如果後端回傳 records，轉換為 data
-        if (data.records !== undefined && data.data === undefined) {
-            data.data = data.records;
-        }
-        
-        return data;
+        return await apiRequestJson(action);
     } catch (error) {
         showNotification(t("CONNECTION_FAILED"), "error");
         console.error("API 呼叫失敗:", error);

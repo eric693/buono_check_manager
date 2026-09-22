@@ -7,11 +7,11 @@ const API_CONFIG = {
   // 新增回呼網址
   redirectUrl: "https://eric693.github.io/buono_check_manager/",
   
-  // 是否改用 POST 呼叫後端。
+  // 用 POST 呼叫後端。
   // GET 會把 sessionToken 留在網址列、瀏覽器歷史與各層存取紀錄裡；POST 放在請求主體就不會。
-  // 開啟之前必須先重新部署 Apps Script（Main.gs 的 doPost 已經會把表單請求轉給 doGet 路由），
-  // 部署完成、確認打卡與查詢都正常之後，再把這個值改成 true。
-  useHttpPost: false,
+  // 後端 Main.gs 的 doPost 會把表單請求轉給 doGet 的路由，所以行為完全一樣。
+  // 若後端還沒重新部署、POST 打不通，api.js 會自動退回 GET 並記住，不會讓系統壞掉。
+  useHttpPost: true,
   
   // 標準工作時段的「預設值」，用來計算請假時數。
   // 請假只計算落在工作時段內的時間，跨夜與例假日不計。

@@ -1975,21 +1975,9 @@ async function exportAllSalaryExcel() {
         // 顯示進度
         showExportProgress('正在生成薪資總表 Excel...');
         
-        //  修正：使用正確的 API URL 格式
-        const apiUrl = `${API_CONFIG.apiUrl}?action=exportAllSalaryExcel&token=${encodeURIComponent(token)}&yearMonth=${encodeURIComponent(yearMonth)}`;
-        
-        console.log(' API URL:', apiUrl);
-        
-        // 呼叫 API
-        const response = await fetch(apiUrl, {
-            method: 'GET'
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
+        // 走 api.js，token 才不會被串在網址上（見 config.js 的 useHttpPost）
+        const result = await apiRequestJson(
+            `exportAllSalaryExcel&yearMonth=${encodeURIComponent(yearMonth)}`);
         
         console.log(' 收到回應:', result);
         

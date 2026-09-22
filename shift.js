@@ -121,8 +121,7 @@ async function loadUserPermissions() {
             return;
         }
 
-        const response = await fetch(`${apiUrl}?action=checkSession&token=${token}`);
-        const data = await response.json();
+        const data = await apiRequestJson('checkSession');
 
         console.log(' checkSession 回應:', data);
 
@@ -275,21 +274,8 @@ async function loadEmployees() {
         console.log('');
         
         //  步驟 2: 呼叫 API
-        const url = `${apiUrl}?action=getAllUsers&token=${token}`;
-        console.log(' 完整 URL:', url);
         console.log(' 開始呼叫 API...');
-        
-        const response = await fetch(url);
-        
-        //  步驟 3: 檢查 HTTP 狀態
-        console.log(' HTTP 狀態:', response.status, response.statusText);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP 錯誤: ${response.status} ${response.statusText}`);
-        }
-        
-        //  步驟 4: 解析 JSON
-        const data = await response.json();
+        const data = await apiRequestJson('getAllUsers');
         
         console.log('');
         console.log(' API 回應:');
@@ -524,8 +510,7 @@ async function testLoadEmployees() {
 async function loadLocations() {
     try {
         const token = localStorage.getItem('sessionToken');
-        const response = await fetch(`${apiUrl}?action=getLocations&token=${token}`);
-        const data = await response.json();
+        const data = await apiRequestJson('getLocations');
         
         console.log(' 地點列表回應:', data);
         
@@ -589,7 +574,7 @@ async function loadShifts(filters = {}) {
         if (filters.shiftType) queryParams.append('shiftType', filters.shiftType);
         if (filters.location) queryParams.append('location', filters.location);
         
-        const response = await fetch(`${apiUrl}?${queryParams}`);
+        const response = await apiRequestParams(queryParams);
         const data = await response.json();
         
         console.log(' 排班回應:', data);
@@ -750,7 +735,7 @@ async function addShift() {
     
     try {
         const queryParams = new URLSearchParams(shiftData);
-        const response = await fetch(`${apiUrl}?${queryParams}`);
+        const response = await apiRequestParams(queryParams);
         const data = await response.json();
         
         console.log(' 新增回應:', data);
@@ -828,7 +813,7 @@ async function updateShift(shiftId) {
     
     try {
         const queryParams = new URLSearchParams(shiftData);
-        const response = await fetch(`${apiUrl}?${queryParams}`);
+        const response = await apiRequestParams(queryParams);
         const data = await response.json();
         
         if (data.ok) {
@@ -850,11 +835,7 @@ async function deleteShift(shiftId) {
     if (!confirm(t('SHIFT_DELETE_CONFIRM'))) return;
     
     try {
-        const token = localStorage.getItem('sessionToken');
-        const url = `${apiUrl}?action=deleteShift&token=${token}&shiftId=${shiftId}`;
-        
-        const response = await fetch(url);
-        const data = await response.json();
+        const data = await apiRequestJson(`deleteShift&shiftId=${encodeURIComponent(shiftId)}`);
         
         if (data.ok) {
             showMessage(t('SHIFT_DELETE_SUCCESS'), 'success');
@@ -1054,7 +1035,7 @@ async function loadShiftsWithMultipleEmployees(filters = {}) {
                 if (filters.shiftType) queryParams.append('shiftType', filters.shiftType);
                 if (filters.location) queryParams.append('location', filters.location);
                 
-                const response = await fetch(`${apiUrl}?${queryParams}`);
+                const response = await apiRequestParams(queryParams);
                 const data = await response.json();
                 
                 if (data.ok && data.data) {
@@ -1076,7 +1057,7 @@ async function loadShiftsWithMultipleEmployees(filters = {}) {
             if (filters.shiftType) queryParams.append('shiftType', filters.shiftType);
             if (filters.location) queryParams.append('location', filters.location);
             
-            const response = await fetch(`${apiUrl}?${queryParams}`);
+            const response = await apiRequestParams(queryParams);
             const data = await response.json();
             
             if (data.ok) {
@@ -1511,7 +1492,7 @@ async function loadMonthlyStats() {
             endDate: formatDateYMD(endDate)
         });
         
-        const response = await fetch(`${apiUrl}?${queryParams}`);
+        const response = await apiRequestParams(queryParams);
         const data = await response.json();
         
         console.log(' 月度統計:', data);

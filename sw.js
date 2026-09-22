@@ -19,6 +19,7 @@ const PRECACHE_URLS = [
   './manual.js',
   './style.css',
   './config.js',
+  './api.js',
   './utils.js',
   './libs.js',
   './i18n.js',
