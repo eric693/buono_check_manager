@@ -952,5 +952,11 @@
     "SALARY_TAX_AUTO_MONTHLY": "Hitung otomatis juga untuk gaji bulanan",
     "SALARY_TAX_AUTO_HINT": "Bila tidak dicentang, gaji bulanan memakai angka pajak yang diisi manual di pengaturan gaji.",
     "BTN_ADD_TAX_BRACKET": "Tambah tingkat pajak",
+    "SALARY_AUDIT_TITLE": "Riwayat perubahan gaji",
+    "SALARY_AUDIT_DESC": "Setiap kali slip gaji ditimpa akan dicatat: kolom mana, dari berapa menjadi berapa, dan oleh siapa. Kosongkan filter untuk melihat semuanya.",
+    "SALARY_AUDIT_EMPLOYEE": "Karyawan",
+    "SALARY_AUDIT_MONTH": "Bulan",
+    "SALARY_AUDIT_ALL": "Semua",
+    "BTN_LOAD_AUDIT": "Muat riwayat",
     "LUNCH_BREAK_NOTE": "※ Hanya menghitung jam kerja ({start}-{end}, istirahat {lunchStart}-{lunchEnd} dikurangi); akhir pekan dan hari libur tidak dihitung."
 }

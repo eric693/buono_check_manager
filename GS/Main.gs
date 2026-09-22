@@ -7,6 +7,10 @@ function doGet(e) {
   const sessionToken = e.parameter.token;
   const code         = e.parameter.otoken;
 
+  // 讓深層的函式（例如薪資稽核記錄）能知道是誰發的請求，
+  // 不必把 token 一路當參數傳下去。原本只有匯出 Excel 那一支會設。
+  globalThis.currentRequest = e;
+
   function respond(obj) {
     return ContentService.createTextOutput(
       `${callback}(${JSON.stringify(obj)})`
@@ -261,8 +265,6 @@ function doGet(e) {
           
           Logger.log(` 管理員 ${user.name} 請求匯出 ${yearMonth} 薪資總表`);
           
-          // ⭐⭐⭐ 關鍵修正：設定 globalThis.currentRequest
-          globalThis.currentRequest = e;
           
           // ⭐⭐⭐ 呼叫匯出函数（不傳參數）
           const result = exportAllSalaryExcel();
@@ -346,6 +348,8 @@ function doGet(e) {
         return respond1(handlePreviewSalaryConfigCopy(e.parameter));
       case "listPayableEmployees":
         return respond1(handleListPayableEmployees(e.parameter));
+      case "getSalaryAuditLog":
+        return respond1(handleGetSalaryAuditLog(e.parameter));
 
       case "getAnnouncements":
         return respond1(handleGetAnnouncements(e.parameter));

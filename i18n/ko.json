@@ -952,5 +952,11 @@
     "SALARY_TAX_AUTO_MONTHLY": "월급도 자동 계산",
     "SALARY_TAX_AUTO_HINT": "선택하지 않으면 월급은 급여 설정에 직접 입력한 소득세 금액을 사용합니다.",
     "BTN_ADD_TAX_BRACKET": "세율 구간 추가",
+    "SALARY_AUDIT_TITLE": "급여 변경 이력",
+    "SALARY_AUDIT_DESC": "급여 명세가 덮어써질 때마다 기록합니다: 어느 항목을, 얼마에서 얼마로, 누가 바꿨는지. 조건을 비우면 전체를 봅니다.",
+    "SALARY_AUDIT_EMPLOYEE": "직원",
+    "SALARY_AUDIT_MONTH": "연월",
+    "SALARY_AUDIT_ALL": "전체",
+    "BTN_LOAD_AUDIT": "변경 이력 조회",
     "LUNCH_BREAK_NOTE": "※ 근무 시간대({start}-{end}, 점심 {lunchStart}-{lunchEnd} 제외)만 계산하며 주말과 공휴일은 포함하지 않습니다."
 }

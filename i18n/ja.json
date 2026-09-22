@@ -952,5 +952,11 @@
     "SALARY_TAX_AUTO_MONTHLY": "月給も自動計算する",
     "SALARY_TAX_AUTO_HINT": "チェックしない場合、月給は給与設定に手入力した所得税額をそのまま使います。",
     "BTN_ADD_TAX_BRACKET": "税率等級を追加",
+    "SALARY_AUDIT_TITLE": "給与変更履歴",
+    "SALARY_AUDIT_DESC": "給与明細が上書きされるたびに記録します：どの項目を、いくらからいくらに、誰が変更したか。条件を空にすると全件表示します。",
+    "SALARY_AUDIT_EMPLOYEE": "社員",
+    "SALARY_AUDIT_MONTH": "年月",
+    "SALARY_AUDIT_ALL": "すべて",
+    "BTN_LOAD_AUDIT": "変更履歴を表示",
     "LUNCH_BREAK_NOTE": "※ 勤務時間帯（{start}-{end}、昼休み {lunchStart}-{lunchEnd} を除く）のみ計算し、休日と祝日は含みません。"
 }

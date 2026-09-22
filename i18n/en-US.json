@@ -973,5 +973,11 @@
     "SALARY_TAX_AUTO_MONTHLY": "Also calculate for monthly pay",
     "SALARY_TAX_AUTO_HINT": "When unchecked, monthly pay uses the income tax figure entered by hand in the salary settings.",
     "BTN_ADD_TAX_BRACKET": "Add tax bracket",
+    "SALARY_AUDIT_TITLE": "Payroll change log",
+    "SALARY_AUDIT_DESC": "Every time a payslip is overwritten it is recorded: which field, from what to what, and by whom. Leave the filters empty to see everything.",
+    "SALARY_AUDIT_EMPLOYEE": "Employee",
+    "SALARY_AUDIT_MONTH": "Month",
+    "SALARY_AUDIT_ALL": "All",
+    "BTN_LOAD_AUDIT": "Load change log",
     "LUNCH_BREAK_NOTE": "Counts working hours only ({start}-{end}, lunch {lunchStart}-{lunchEnd} excluded); weekends and public holidays are not counted."
 }

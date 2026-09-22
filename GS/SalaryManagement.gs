@@ -1034,10 +1034,14 @@ function saveMonthlySalary(salaryData) {
     
     // 檢查是否已存在
     const data = sheet.getDataRange().getValues();
+    const headers = data.length > 0 ? data[0] : MONTHLY_SALARY_HEADERS;
     let found = false;
+    let beforeRow = null;
     
     for (let i = 1; i < data.length; i++) {
       if (data[i][0] === salaryId) {
+        // 覆寫之前先留一份，稽核記錄才知道原本是多少
+        beforeRow = data[i].slice();
         sheet.getRange(i + 1, 1, 1, row.length).setValues([row]);
         found = true;
         Logger.log(` 更新薪資單: ${salaryId}`);
@@ -1048,6 +1052,19 @@ function saveMonthlySalary(salaryData) {
     if (!found) {
       sheet.appendRow(row);
       Logger.log(` 新增薪資單: ${salaryId}`);
+    }
+    
+    // 薪資單是會被勞檢的資料，每次寫入都要留下「誰、什麼時候、把哪一欄從多少改成多少」
+    if (typeof logSalaryChange_ === 'function') {
+      logSalaryChange_({
+        salaryId: salaryId,
+        headers: headers,
+        beforeRow: beforeRow,
+        afterRow: row,
+        token: salaryData.token || (globalThis.currentRequest &&
+                                    globalThis.currentRequest.parameter &&
+                                    globalThis.currentRequest.parameter.token)
+      });
     }
     
     return { success: true, salaryId: salaryId, message: "薪資單儲存成功" };

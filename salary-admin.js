@@ -1008,6 +1008,82 @@ async function runCopySalaryConfig() {
   }
 }
 
+// ==================== 薪資異動記錄 ====================
+
+async function loadSalaryAuditLog() {
+  const resultsEl = document.getElementById('audit-log-results');
+  const btn = document.getElementById('load-audit-btn');
+  if (!resultsEl) return;
+
+  const employeeId = document.getElementById('audit-employee')?.value || '';
+  const yearMonth = document.getElementById('audit-month')?.value || '';
+
+  if (btn) btn.disabled = true;
+  resultsEl.innerHTML = '';
+
+  try {
+    const query = [];
+    if (employeeId) query.push(`employeeId=${encodeURIComponent(employeeId)}`);
+    if (yearMonth) query.push(`yearMonth=${encodeURIComponent(yearMonth)}`);
+
+    const res = await callApifetch(
+      `getSalaryAuditLog${query.length ? '&' + query.join('&') : ''}`, null);
+
+    if (!res.ok) {
+      showNotification(res.msg || ta('SALARY_AUDIT_FAILED', '查詢異動記錄失敗'), 'error');
+      return;
+    }
+
+    const entries = res.entries || [];
+
+    if (entries.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'employee-list-empty';
+      empty.textContent = ta('SALARY_AUDIT_EMPTY', '沒有異動記錄');
+      resultsEl.appendChild(empty);
+      return;
+    }
+
+    entries.forEach(entry => resultsEl.appendChild(buildAuditRow(entry)));
+
+  } catch (error) {
+    console.error('查詢薪資異動記錄失敗:', error);
+    showNotification(ta('SALARY_AUDIT_FAILED', '查詢異動記錄失敗'), 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function buildAuditRow(entry) {
+  const el = document.createElement('div');
+  el.className = 'batch-result-row';
+  el.style.display = 'grid';
+  el.style.gridTemplateColumns = '150px 1fr 1fr 100px';
+  el.style.gap = '0.75rem';
+
+  const when = document.createElement('span');
+  when.className = 'summary-hint';
+  when.textContent = entry.at;
+
+  const what = document.createElement('span');
+  what.textContent = `${entry.employeeName || entry.employeeId}・${entry.yearMonth}` +
+    (entry.column ? `・${entry.column}` : `・${entry.action}`);
+
+  const change = document.createElement('span');
+  change.className = 'font-mono';
+  change.textContent = entry.column ? `${entry.before} → ${entry.after}` : '';
+
+  const who = document.createElement('span');
+  who.className = 'summary-hint';
+  who.textContent = entry.actor;
+
+  el.appendChild(when);
+  el.appendChild(what);
+  el.appendChild(change);
+  el.appendChild(who);
+  return el;
+}
+
 // ==================== 各分頁初始化 ====================
 
 async function initSalarySettingTab() {
@@ -1106,6 +1182,18 @@ async function initSalaryReportTab() {
     batchMonth.value = new Date().toISOString().slice(0, 7);
   }
 
+  // 異動記錄的員工下拉：只列有薪資設定的人，因為只有他們才會有薪資單
+  const auditSelect = document.getElementById('audit-employee');
+  if (auditSelect) {
+    salaryEmployeeDirectory.forEach(emp => {
+      const option = document.createElement('option');
+      option.value = emp.employeeId;
+      option.textContent = emp.employeeName || emp.employeeId;
+      auditSelect.appendChild(option);
+    });
+  }
+
+  document.getElementById('load-audit-btn')?.addEventListener('click', loadSalaryAuditLog);
   document.getElementById('batch-calc-btn')?.addEventListener('click', runBatchCalculation);
   document.getElementById('copy-config-btn')?.addEventListener('click', runCopySalaryConfig);
 }

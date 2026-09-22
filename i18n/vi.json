@@ -1008,5 +1008,11 @@
     "SALARY_TAX_AUTO_MONTHLY": "Tính tự động cả cho lương tháng",
     "SALARY_TAX_AUTO_HINT": "Nếu không tích, lương tháng dùng số thuế thu nhập nhập tay trong thiết lập lương.",
     "BTN_ADD_TAX_BRACKET": "Thêm bậc thuế",
+    "SALARY_AUDIT_TITLE": "Nhật ký thay đổi lương",
+    "SALARY_AUDIT_DESC": "Mỗi lần bảng lương bị ghi đè đều được ghi lại: trường nào, từ bao nhiêu thành bao nhiêu, do ai. Để trống bộ lọc để xem tất cả.",
+    "SALARY_AUDIT_EMPLOYEE": "Nhân viên",
+    "SALARY_AUDIT_MONTH": "Tháng",
+    "SALARY_AUDIT_ALL": "Tất cả",
+    "BTN_LOAD_AUDIT": "Xem nhật ký",
     "LUNCH_BREAK_NOTE": "※ Chỉ tính giờ trong ca làm ({start}-{end}, trừ nghỉ trưa {lunchStart}-{lunchEnd}); cuối tuần và ngày lễ không tính."
 }

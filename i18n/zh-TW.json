@@ -992,5 +992,11 @@
     "SALARY_TAX_AUTO_MONTHLY": "月薪也自動計算",
     "SALARY_TAX_AUTO_HINT": "不勾選時，月薪沿用薪資設定裡手填的所得稅金額",
     "BTN_ADD_TAX_BRACKET": "新增稅率級距",
+    "SALARY_AUDIT_TITLE": "薪資異動記錄",
+    "SALARY_AUDIT_DESC": "每次薪資單被覆寫都會留下記錄：哪一欄、從多少改成多少、誰改的。不填條件就是查全部。",
+    "SALARY_AUDIT_EMPLOYEE": "員工",
+    "SALARY_AUDIT_MONTH": "年月",
+    "SALARY_AUDIT_ALL": "全部",
+    "BTN_LOAD_AUDIT": "查詢異動記錄",
     "LUNCH_BREAK_NOTE": "※ 僅計算工作時段（{start}-{end}，已扣午休 {lunchStart}-{lunchEnd}），例假日與國定假日不計"
 }

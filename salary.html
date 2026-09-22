@@ -1729,6 +1729,33 @@
                 <div id="batch-calc-results" style="margin-top: 1rem;"></div>
             </div>
 
+            <!-- 薪資異動記錄 -->
+            <div class="form-section">
+                <div class="feature-title" data-i18n="SALARY_AUDIT_TITLE">薪資異動記錄</div>
+                <p style="color: #94a3b8; margin-bottom: 1.5rem;" data-i18n="SALARY_AUDIT_DESC">
+                    每次薪資單被覆寫都會留下記錄：哪一欄、從多少改成多少、誰改的。不填條件就是查全部。
+                </p>
+
+                <div class="form-grid" style="max-width: 800px; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="SALARY_AUDIT_EMPLOYEE">員工</label>
+                        <select id="audit-employee" class="form-select">
+                            <option value="" data-i18n-option="SALARY_AUDIT_ALL">全部</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="SALARY_AUDIT_MONTH">年月</label>
+                        <input type="month" id="audit-month" class="form-input">
+                    </div>
+                </div>
+
+                <button type="button" id="load-audit-btn" class="submit-btn" style="max-width: 300px;" data-i18n="BTN_LOAD_AUDIT">
+                    查詢異動記錄
+                </button>
+
+                <div id="audit-log-results" style="margin-top: 1rem;"></div>
+            </div>
+
             <!-- 複製薪資設定 -->
             <div class="form-section">
                 <div class="feature-title" data-i18n="SALARY_COPY_TITLE">複製薪資設定</div>
