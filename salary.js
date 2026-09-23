@@ -192,7 +192,7 @@ async function loadDailyOvertimeDetails(yearMonth) {
     if (!detailsContainer) return;
     
     try {
-        detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">載入中...</p>';
+        detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">' + tHtml('SALARY_LOADING') + '</p>';
         
         //  呼叫後端 API 取得加班記錄
         const res = await callApifetch(`getEmployeeMonthlyOvertime&yearMonth=${yearMonth}`);
@@ -211,7 +211,7 @@ async function loadDailyOvertimeDetails(yearMonth) {
                 item.innerHTML = `
                     <div>
                         <span class="font-semibold text-orange-700 dark:text-orange-200">${escapeHtml(record.date)}</span>
-                        <span class="text-sm text-orange-600 dark:text-orange-400 ml-2">已核准</span>
+                        <span class="text-sm text-orange-600 dark:text-orange-400 ml-2">${tHtml('STATUS_APPROVED')}</span>
                     </div>
                     <div class="text-right">
                         <span class="font-mono text-orange-700 dark:text-orange-300 font-bold">${hours.toFixed(1)}h</span>
@@ -221,12 +221,12 @@ async function loadDailyOvertimeDetails(yearMonth) {
                 detailsContainer.appendChild(item);
             });
         } else {
-            detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">本月無加班記錄</p>';
+            detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">' + tHtml('SALARY_OT_NO_RECORDS') + '</p>';
         }
         
     } catch (error) {
         console.error(' 載入加班明細失敗:', error);
-        detailsContainer.innerHTML = '<p class="text-sm text-red-600 dark:text-red-400">載入失敗</p>';
+        detailsContainer.innerHTML = '<p class="text-sm text-red-600 dark:text-red-400">' + tHtml('LOAD_FAILED') + '</p>';
     }
 }
 
@@ -286,22 +286,22 @@ async function loadOvertimeRecordsCard(yearMonth, salaryData) {
         overtimeCard.style.display = 'block';
         
         overtimeCard.innerHTML = `
-            <h4 class="font-semibold mb-3 text-orange-600 dark:text-orange-400"> 本月加班統計</h4>
+            <h4 class="font-semibold mb-3 text-orange-600 dark:text-orange-400"> ${tHtml('SALARY_OT_MONTH_TITLE')}</h4>
             
             <div class="grid grid-cols-3 gap-4 mb-4">
                 <div class="text-center p-3 bg-orange-50 dark:bg-orange-800/20 rounded-lg">
-                    <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">總加班時數</p>
+                    <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">${tHtml('SALARY_OT_TOTAL_HOURS')}</p>
                     <p class="text-2xl font-bold text-orange-700 dark:text-orange-200">${totalOvertimeHours.toFixed(1)}h</p>
                 </div>
                 <div class="text-center p-3 bg-orange-50 dark:bg-orange-800/20 rounded-lg">
-                    <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">平日加班費</p>
+                    <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">${tHtml('SALARY_WEEKDAY_OT')}</p>
                     <p class="text-xl font-bold text-orange-700 dark:text-orange-200">${formatCurrency(weekdayOvertimePay)}</p>
-                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">(前2h ×1.34, 後2h ×1.67)</p>
+                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">${tHtml('SALARY_OT_WEEKDAY_RULE_SHORT')}</p>
                 </div>
                 <div class="text-center p-3 bg-orange-50 dark:bg-orange-800/20 rounded-lg">
-                    <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">假日加班費</p>
+                    <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">${tHtml('SALARY_OT_HOLIDAY_PAY')}</p>
                     <p class="text-xl font-bold text-orange-700 dark:text-orange-200">${formatCurrency(restdayOvertimePay + sundayOvertimePay + holidayOvertimePay + holidayWorkPay)}</p>
-                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">(週六/日/國定 ×1.34~2.67)</p>
+                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">${tHtml('SALARY_OT_HOLIDAY_RULE_SHORT')}</p>
                 </div>
             </div>
             
@@ -311,25 +311,25 @@ async function loadOvertimeRecordsCard(yearMonth, salaryData) {
                     <div class="text-sm space-y-1">
                         ${restdayOvertimePay > 0 ? `
                             <div class="flex justify-between">
-                                <span class="text-orange-700 dark:text-orange-300">休息日（週六）</span>
+                                <span class="text-orange-700 dark:text-orange-300">${tHtml('SALARY_OT_RESTDAY_SAT')}</span>
                                 <span class="font-mono text-orange-700 dark:text-orange-200">${formatCurrency(restdayOvertimePay)}</span>
                             </div>
                         ` : ''}
                         ${sundayOvertimePay > 0 ? `
                             <div class="flex justify-between">
-                                <span class="text-orange-700 dark:text-orange-300">例假日（週日）×2.0</span>
+                                <span class="text-orange-700 dark:text-orange-300">${tHtml('SALARY_OT_SUNDAY')}</span>
                                 <span class="font-mono text-orange-700 dark:text-orange-200">${formatCurrency(sundayOvertimePay)}</span>
                             </div>
                         ` : ''}
                         ${holidayWorkPay > 0 ? `
                             <div class="flex justify-between border-t border-orange-200 dark:border-orange-700/30 pt-2">
-                                <span class="text-orange-700 dark:text-orange-300 font-semibold">國定假日出勤薪資</span>
+                                <span class="text-orange-700 dark:text-orange-300 font-semibold">${tHtml('SALARY_HOLIDAY_WORK_PAY')}</span>
                                 <span class="font-mono text-orange-700 dark:text-orange-200 font-bold">${formatCurrency(holidayWorkPay)}</span>
                             </div>
                         ` : ''}
                         ${holidayOvertimePay > 0 ? `
                             <div class="flex justify-between">
-                                <span class="text-orange-700 dark:text-orange-300 font-semibold">國定假日加班費 ×2.0</span>
+                                <span class="text-orange-700 dark:text-orange-300 font-semibold">${tHtml('SALARY_OT_HOLIDAY_X2')}</span>
                                 <span class="font-mono text-orange-700 dark:text-orange-200 font-bold">${formatCurrency(holidayOvertimePay)}</span>
                             </div>
                         ` : ''}
@@ -339,7 +339,7 @@ async function loadOvertimeRecordsCard(yearMonth, salaryData) {
             
             <div class="p-3 bg-orange-50 dark:bg-orange-800/20 rounded-lg">
                 <div class="flex justify-between items-center">
-                    <span class="font-semibold text-orange-700 dark:text-orange-200">加班費合計</span>
+                    <span class="font-semibold text-orange-700 dark:text-orange-200">${tHtml('SALARY_OT_TOTAL_PAY')}</span>
                     <span class="text-2xl font-bold text-orange-700 dark:text-orange-300">${formatCurrency(totalOvertimePay)}</span>
                 </div>
             </div>
@@ -364,7 +364,7 @@ async function loadDailyWorkHours(yearMonth) {
     if (!detailsContainer) return;
     
     try {
-        detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">載入中...</p>';
+        detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">' + tHtml('SALARY_LOADING') + '</p>';
         
         //  呼叫後端 API 取得打卡記錄
         const res = await callApifetch(`getEmployeeMonthlyAttendance&yearMonth=${yearMonth}`);
@@ -395,12 +395,12 @@ async function loadDailyWorkHours(yearMonth) {
                 detailsContainer.appendChild(item);
             });
         } else {
-            detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">本月無打卡記錄</p>';
+            detailsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">' + tHtml('SALARY_ATT_NO_RECORDS') + '</p>';
         }
         
     } catch (error) {
         console.error(' 載入每日工時失敗:', error);
-        detailsContainer.innerHTML = '<p class="text-sm text-red-600 dark:text-red-400">載入失敗</p>';
+        detailsContainer.innerHTML = '<p class="text-sm text-red-600 dark:text-red-400">' + tHtml('LOAD_FAILED') + '</p>';
     }
 }
 
@@ -431,21 +431,21 @@ async function loadWorkHoursCard(yearMonth, salaryData) {
     }
     
     workHoursCard.innerHTML = `
-        <h4 class="font-semibold mb-3 text-purple-600 dark:text-purple-400"> 本月工作時數統計</h4>
+        <h4 class="font-semibold mb-3 text-purple-600 dark:text-purple-400"> ${tHtml('SALARY_WH_MONTH_TITLE')}</h4>
         
         <div class="grid grid-cols-3 gap-4 mb-4">
             <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
-                <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">時薪</p>
+                <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">${tHtml('HOURLY_RATE_LABEL')}</p>
                 <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">$${hourlyRate}</p>
             </div>
             <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
-                <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">總工作時數</p>
+                <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">${tHtml('SALARY_WH_TOTAL')}</p>
                 <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">${Math.floor(totalWorkHours)}h</p>
             </div>
             <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
-                <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">基本薪資</p>
+                <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">${tHtml('SALARY_BASE')}</p>
                 <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">${formatCurrency(baseSalary)}</p>
-                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">(時薪 × 工時)</p>
+                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">${tHtml('SALARY_WH_BASE_FORMULA')}</p>
             </div>
         </div>
         
@@ -606,7 +606,7 @@ function displayEmployeeSalary(data) {
                 info.className = 'salary-type-info text-xs text-purple-600 dark:text-purple-400 mt-1';
                 baseSalaryEl.parentElement.appendChild(info);
             }
-            info.textContent = '時薪 $' + hourlyRate + ' × ' + Math.floor(totalWorkHours) + 'h';
+            info.textContent = t('SALARY_HOURLY_INFO', { rate: hourlyRate, hours: Math.floor(totalWorkHours) });
         }
     } else if (isWeekly) {
         const weeklyRate = parseFloat(data.weeklyRate) || parseFloat(data.baseSalary) || 0;
@@ -620,7 +620,7 @@ function displayEmployeeSalary(data) {
                 info.className = 'salary-type-info text-xs text-amber-600 dark:text-amber-400 mt-1';
                 baseSalaryEl.parentElement.appendChild(info);
             }
-            info.textContent = '週薪 $' + weeklyRate + ' × ' + weekCount + ' 週（不扣勞健保）';
+            info.textContent = t('SALARY_WEEKLY_INFO', { rate: weeklyRate, weeks: weekCount });
         }
     } else {
         safeSet('detail-base-salary', formatCurrency(data.baseSalary));
@@ -652,12 +652,12 @@ function displayEmployeeSalary(data) {
             const workHoursSummary = document.createElement('div');
             workHoursSummary.className = 'work-hours-summary mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/30 rounded-lg';
             
-            let summaryHTML = '<div class="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">本月工時統計</div>';
+            let summaryHTML = '<div class="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">' + tHtml('SALARY_WH_SUMMARY_TITLE') + '</div>';
             
             if (isHourly && totalWorkHours > 0) {
                 summaryHTML += `
                     <div class="flex justify-between text-sm mb-1">
-                        <span class="text-blue-700 dark:text-blue-200">打卡工作時數：</span>
+                        <span class="text-blue-700 dark:text-blue-200">${tHtml('SALARY_WH_PUNCHED')}</span>
                         <span class="font-mono text-blue-700 dark:text-blue-100">${Math.floor(totalWorkHours)}h</span>
                     </div>
                 `;
@@ -666,7 +666,7 @@ function displayEmployeeSalary(data) {
             if (totalOvertimeHours > 0) {
                 summaryHTML += `
                     <div class="flex justify-between text-sm">
-                        <span class="text-orange-700 dark:text-orange-200">加班時數：</span>
+                        <span class="text-orange-700 dark:text-orange-200">${tHtml('OVERTIME_HOURS_LABEL')}</span>
                         <span class="font-mono text-orange-700 dark:text-orange-100">${totalOvertimeHours.toFixed(1)}h</span>
                     </div>
                 `;
@@ -749,7 +749,7 @@ function displayEmployeeSalary(data) {
                 if (sickLeaveHours > 0) {  //  改名
                     detailsHTML += `
                         <div class="flex justify-between">
-                            <span class="text-yellow-700 dark:text-yellow-300">病假 ${sickLeaveHours} 小時 (半薪)</span>
+                            <span class="text-yellow-700 dark:text-yellow-300">${tHtml('SALARY_SICK_LEAVE_LINE', { hours: sickLeaveHours })}</span>
                             <span class="font-mono text-yellow-700 dark:text-yellow-200 font-bold">${formatCurrency(sickLeaveDeduction)}</span>
                         </div>
                     `;
@@ -758,7 +758,7 @@ function displayEmployeeSalary(data) {
                 if (personalLeaveHours > 0) {  //  改名
                     detailsHTML += `
                         <div class="flex justify-between">
-                            <span class="text-yellow-700 dark:text-yellow-300">事假 ${personalLeaveHours} 小時 (全薪)</span>
+                            <span class="text-yellow-700 dark:text-yellow-300">${tHtml('SALARY_PERSONAL_LEAVE_LINE', { hours: personalLeaveHours })}</span>
                             <span class="font-mono text-yellow-700 dark:text-yellow-200 font-bold">${formatCurrency(personalLeaveDeduction)}</span>
                         </div>
                     `;
@@ -858,7 +858,7 @@ function createSalaryHistoryItem(salary) {
                 ${escapeHtml(salary['年月'] || '--')}
             </div>
             <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                ${escapeHtml(salary['狀態'] || '已計算')}
+                ${escapeHtml(salaryValueLabel(salary['狀態'] || '已計算'))}
             </div>
         </div>
         <div class="text-right">
@@ -866,7 +866,7 @@ function createSalaryHistoryItem(salary) {
                 ${formatCurrency(salary['實發金額'])}
             </div>
             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                應發 ${formatCurrency(salary['應發總額'])}
+                ${tHtml('SALARY_GROSS_SHORT', { amount: formatCurrency(salary['應發總額']) })}
             </div>
         </div>
     `;
@@ -882,12 +882,12 @@ function showNoSalaryMessage(month) {
     if (emptyEl) {
         emptyEl.innerHTML = `
             <div class="empty-state-icon"></div>
-            <div class="empty-state-title">尚無薪資記錄</div>
+            <div class="empty-state-title">${tHtml('SALARY_NO_RECORD')}</div>
             <div class="empty-state-text">
-                <p>${month} 還沒有薪資資料</p>
+                <p>${tHtml('SALARY_NO_DATA_FOR_MONTH', { month })}</p>
                 <p style="margin-top: 0.5rem; font-size: 0.875rem;">
-                     提示：薪資需要由管理員先設定和計算<br>
-                    請聯繫您的主管或人資部門
+                    ${tHtml('SALARY_EMPTY_HINT_SETUP')}<br>
+                    ${tHtml('SALARY_EMPTY_HINT_CONTACT')}
                 </p>
             </div>
         `;
@@ -1194,24 +1194,24 @@ function displaySalaryCalculation(data, container) {
                 </button>
             </div>
             <h3 class="text-xl font-bold mb-4">
-                ${escapeHtml(data.employeeName || '--')} - ${escapeHtml(data.yearMonth || '--')} 薪資計算結果
+                ${tHtml('SALARY_CALC_RESULT_TITLE', { name: data.employeeName || '--', month: data.yearMonth || '--' })}
                 <span class="ml-2 px-3 py-1 text-sm rounded-full ${isHourly ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'}">
-                    ${escapeHtml(data.salaryType || '月薪')}
+                    ${escapeHtml(salaryValueLabel(data.salaryType || '月薪'))}
                 </span>
             </h3>
             
             <!-- 三大金額卡片 -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="info-card" style="background: var(--positive-soft, rgba(34, 197, 94, 0.1)); border-color: transparent;">
-                    <div class="info-label">應發總額</div>
+                    <div class="info-label">${tHtml('SALARY_GROSS')}</div>
                     <div class="info-value" style="color: var(--positive, #22c55e);">${formatCurrency(data.grossSalary)}</div>
                 </div>
                 <div class="info-card" style="background: var(--negative-soft, rgba(239, 68, 68, 0.1)); border-color: transparent;">
-                    <div class="info-label">扣款總額</div>
+                    <div class="info-label">${tHtml('SALARY_DEDUCTIONS')}</div>
                     <div class="info-value" style="color: var(--negative, #ef4444);">${formatCurrency(totalDeductions)}</div>
                 </div>
                 <div class="info-card" style="background: var(--accent-soft, rgba(168, 85, 247, 0.1)); border-color: transparent;">
-                    <div class="info-label">實發金額</div>
+                    <div class="info-label">${tHtml('SALARY_NET')}</div>
                     <div class="info-value" style="color: var(--accent-text, #a855f7);">${formatCurrency(data.netSalary)}</div>
                 </div>
             </div>
@@ -1219,20 +1219,20 @@ function displaySalaryCalculation(data, container) {
             <!--  時薪工時統計區塊 -->
             ${isHourly ? `
                 <div class="bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-6">
-                    <h4 class="font-semibold text-purple-800 dark:text-purple-300 mb-3"> 時薪工時統計</h4>
+                    <h4 class="font-semibold text-purple-800 dark:text-purple-300 mb-3"> ${tHtml('SALARY_HOURLY_STATS_TITLE')}</h4>
                     <div class="grid grid-cols-3 gap-4 text-center">
                         <div>
-                            <p class="text-sm text-purple-600 dark:text-purple-400">時薪</p>
+                            <p class="text-sm text-purple-600 dark:text-purple-400">${tHtml('HOURLY_RATE_LABEL')}</p>
                             <p class="text-2xl font-bold text-purple-800 dark:text-purple-200">$${data.hourlyRate || 0}</p>
                         </div>
                         <div>
-                            <p class="text-sm text-purple-600 dark:text-purple-400">工作時數</p>
+                            <p class="text-sm text-purple-600 dark:text-purple-400">${tHtml('WORK_HOURS')}</p>
                             <p class="text-2xl font-bold text-purple-800 dark:text-purple-200">${Math.floor(data.totalWorkHours || 0)}h</p>
                         </div>
                         <div>
-                            <p class="text-sm text-purple-600 dark:text-purple-400">基本薪資</p>
+                            <p class="text-sm text-purple-600 dark:text-purple-400">${tHtml('SALARY_BASE')}</p>
                             <p class="text-xl font-bold text-purple-800 dark:text-purple-200">${formatCurrency(data.baseSalary)}</p>
-                            <p class="text-xs text-purple-500">(時薪 × 工時)</p>
+                            <p class="text-xs text-purple-500">${tHtml('SALARY_WH_BASE_FORMULA')}</p>
                         </div>
                     </div>
                 </div>
@@ -1241,11 +1241,11 @@ function displaySalaryCalculation(data, container) {
             <!--  加班統計區塊（完整版：含國定假日） -->
             ${totalOvertimeHours > 0 ? `
                 <div class="bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-200 dark:border-orange-700 rounded-lg p-4 mb-6">
-                    <h4 class="font-semibold text-orange-800 dark:text-orange-300 mb-3"> 本月加班統計</h4>
+                    <h4 class="font-semibold text-orange-800 dark:text-orange-300 mb-3"> ${tHtml('SALARY_OT_MONTH_TITLE')}</h4>
                     
                     <!-- 總時數 -->
                     <div class="text-center p-3 bg-orange-100 dark:bg-orange-800/30 rounded-lg mb-3">
-                        <p class="text-sm text-orange-600 dark:text-orange-400">總加班時數</p>
+                        <p class="text-sm text-orange-600 dark:text-orange-400">${tHtml('SALARY_OT_TOTAL_HOURS')}</p>
                         <p class="text-3xl font-bold text-orange-800 dark:text-orange-200">${totalOvertimeHours.toFixed(1)}h</p>
                     </div>
                     
@@ -1255,12 +1255,12 @@ function displaySalaryCalculation(data, container) {
                             <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg border border-blue-300 dark:border-blue-700">
                                 <div class="flex justify-between items-center">
                                     <div>
-                                        <span class="font-semibold text-blue-800 dark:text-blue-300">平日加班</span>
-                                        <span class="text-xs text-blue-600 dark:text-blue-400 ml-2">（週一～五）</span>
+                                        <span class="font-semibold text-blue-800 dark:text-blue-300">${tHtml('SALARY_OT_WEEKDAY')}</span>
+                                        <span class="text-xs text-blue-600 dark:text-blue-400 ml-2">${tHtml('SALARY_OT_WEEKDAY_DAYS')}</span>
                                     </div>
                                     <span class="text-lg font-bold text-blue-800 dark:text-blue-200">${formatCurrency(weekdayOvertimePay)}</span>
                                 </div>
-                                <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">前2h ×1.34 | 第3h起 ×1.67</p>
+                                <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">${tHtml('SALARY_OT_WEEKDAY_RULE')}</p>
                             </div>
                         ` : ''}
                         
@@ -1268,12 +1268,12 @@ function displaySalaryCalculation(data, container) {
                             <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg border border-purple-300 dark:border-purple-700">
                                 <div class="flex justify-between items-center">
                                     <div>
-                                        <span class="font-semibold text-purple-800 dark:text-purple-300">休息日加班</span>
-                                        <span class="text-xs text-purple-600 dark:text-purple-400 ml-2">（週六）</span>
+                                        <span class="font-semibold text-purple-800 dark:text-purple-300">${tHtml('SALARY_OT_RESTDAY')}</span>
+                                        <span class="text-xs text-purple-600 dark:text-purple-400 ml-2">${tHtml('SALARY_OT_RESTDAY_DAYS')}</span>
                                     </div>
                                     <span class="text-lg font-bold text-purple-800 dark:text-purple-200">${formatCurrency(restdayOvertimePay)}</span>
                                 </div>
-                                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">前2h ×1.34 | 3-8h ×1.67 | 9h起 ×2.67</p>
+                                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">${tHtml('SALARY_OT_RESTDAY_RULE')}</p>
                             </div>
                         ` : ''}
                         
@@ -1281,7 +1281,7 @@ function displaySalaryCalculation(data, container) {
                             <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg border border-red-300 dark:border-red-700">
                                 <div class="flex justify-between items-center mb-2">
                                     <div>
-                                        <span class="font-semibold text-red-800 dark:text-red-300"> 國定假日出勤</span>
+                                        <span class="font-semibold text-red-800 dark:text-red-300"> ${tHtml('SALARY_OT_HOLIDAY_WORK')}</span>
                                     </div>
                                     <span class="text-lg font-bold text-red-800 dark:text-red-200">${formatCurrency(holidayWorkPay + holidayOvertimePay)}</span>
                                 </div>
@@ -1290,13 +1290,13 @@ function displaySalaryCalculation(data, container) {
                                 <div class="text-xs space-y-1 mt-2 border-t border-red-200 dark:border-red-700/30 pt-2">
                                     ${holidayWorkPay > 0 ? `
                                         <div class="flex justify-between">
-                                            <span class="text-red-600 dark:text-red-400">正常出勤薪資 ×1.0</span>
+                                            <span class="text-red-600 dark:text-red-400">${tHtml('SALARY_OT_HOLIDAY_NORMAL_PAY')}</span>
                                             <span class="font-mono text-red-700 dark:text-red-300">${formatCurrency(holidayWorkPay)}</span>
                                         </div>
                                     ` : ''}
                                     ${holidayOvertimePay > 0 ? `
                                         <div class="flex justify-between">
-                                            <span class="text-red-600 dark:text-red-400">加班費 ×2.0</span>
+                                            <span class="text-red-600 dark:text-red-400">${tHtml('SALARY_OT_HOLIDAY_OT_PAY')}</span>
                                             <span class="font-mono text-red-700 dark:text-red-300">${formatCurrency(holidayOvertimePay)}</span>
                                         </div>
                                     ` : ''}
@@ -1311,111 +1311,111 @@ function displaySalaryCalculation(data, container) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!--  應發項目 -->
                 <div class="calculation-detail">
-                    <h4 class="font-semibold mb-3 text-green-600 dark:text-green-400"> 應發項目</h4>
+                    <h4 class="font-semibold mb-3 text-green-600 dark:text-green-400"> ${tHtml('SALARY_EARNINGS_TITLE')}</h4>
                     
                     ${isHourly ? `
                         <div class="calculation-row">
-                            <span>時薪</span>
+                            <span>${tHtml('HOURLY_RATE_LABEL')}</span>
                             <span class="font-mono">$${data.hourlyRate || 0}</span>
                         </div>
                         <div class="calculation-row">
-                            <span>工作時數</span>
+                            <span>${tHtml('WORK_HOURS')}</span>
                             <span class="font-mono">${(data.totalWorkHours || 0).toFixed(1)}h</span>
                         </div>
                         <div class="calculation-row">
-                            <span>基本薪資 (時薪×工時)</span>
+                            <span>${tHtml('SALARY_BASE_HOURLY_FORMULA')}</span>
                             <span class="font-mono">${formatCurrency(data.baseSalary)}</span>
                         </div>
                     ` : `
                         <div class="calculation-row">
-                            <span>基本薪資</span>
+                            <span>${tHtml('SALARY_BASE')}</span>
                             <span class="font-mono">${formatCurrency(data.baseSalary)}</span>
                         </div>
                     `}
                     
                     <div class="calculation-row">
-                        <span>職務加給</span>
+                        <span>${tHtml('SALARY_POSITION_ALLOWANCE')}</span>
                         <span class="font-mono">${formatCurrency(data.positionAllowance || 0)}</span>
                     </div>
                     <div class="calculation-row">
-                        <span>伙食費</span>
+                        <span>${tHtml('SALARY_MEAL_ALLOWANCE')}</span>
                         <span class="font-mono">${formatCurrency(data.mealAllowance || 0)}</span>
                     </div>
                     <div class="calculation-row">
-                        <span>交通補助</span>
+                        <span>${tHtml('SALARY_TRANSPORT_ALLOWANCE')}</span>
                         <span class="font-mono">${formatCurrency(data.transportAllowance || 0)}</span>
                     </div>
                     <div class="calculation-row">
-                        <span>全勤獎金</span>
+                        <span>${tHtml('SALARY_ATTENDANCE_BONUS')}</span>
                         <span class="font-mono">${formatCurrency(data.attendanceBonus || 0)}</span>
                     </div>
                     <div class="calculation-row">
-                        <span>業績獎金</span>
+                        <span>${tHtml('SALARY_PERFORMANCE_BONUS')}</span>
                         <span class="font-mono">${formatCurrency(data.performanceBonus || 0)}</span>
                     </div>
                     
                     ${weekdayOvertimePay > 0 ? `
                         <div class="calculation-row">
-                            <span>平日加班費</span>
+                            <span>${tHtml('SALARY_WEEKDAY_OT')}</span>
                             <span class="font-mono">${formatCurrency(weekdayOvertimePay)}</span>
                         </div>
                     ` : ''}
                     
                     ${restdayOvertimePay > 0 ? `
                         <div class="calculation-row">
-                            <span>休息日加班費</span>
+                            <span>${tHtml('SALARY_REST_OT')}</span>
                             <span class="font-mono">${formatCurrency(restdayOvertimePay)}</span>
                         </div>
                     ` : ''}
                     
                     ${holidayWorkPay > 0 ? `
                         <div class="calculation-row">
-                            <span>國定假日出勤薪資</span>
+                            <span>${tHtml('SALARY_HOLIDAY_WORK_PAY')}</span>
                             <span class="font-mono">${formatCurrency(holidayWorkPay)}</span>
                         </div>
                     ` : ''}
                     
                     ${holidayOvertimePay > 0 ? `
                         <div class="calculation-row">
-                            <span>國定假日加班費</span>
+                            <span>${tHtml('SALARY_HOLIDAY_OT')}</span>
                             <span class="font-mono">${formatCurrency(holidayOvertimePay)}</span>
                         </div>
                     ` : ''}
                     
                     <div class="calculation-row total">
-                        <span>應發總額</span>
+                        <span>${tHtml('SALARY_GROSS')}</span>
                         <span>${formatCurrency(data.grossSalary)}</span>
                     </div>
                 </div>
                 
                 <!--  扣款項目 -->
                 <div class="calculation-detail">
-                    <h4 class="font-semibold mb-3 text-red-600 dark:text-red-400"> 扣款項目</h4>
+                    <h4 class="font-semibold mb-3 text-red-600 dark:text-red-400"> ${tHtml('SALARY_DEDUCTIONS_TITLE')}</h4>
                     
                     <div class="calculation-row">
-                        <span>勞保費</span>
+                        <span>${tHtml('SALARY_LABOR_INS')}</span>
                         <span class="font-mono">${formatCurrency(data.laborFee)}</span>
                     </div>
                     <div class="calculation-row">
-                        <span>健保費</span>
+                        <span>${tHtml('SALARY_HEALTH_INS')}</span>
                         <span class="font-mono">${formatCurrency(data.healthFee)}</span>
                     </div>
                     <div class="calculation-row">
-                        <span>就業保險費</span>
+                        <span>${tHtml('SALARY_EMPLOYMENT_INS')}</span>
                         <span class="font-mono">${formatCurrency(data.employmentFee)}</span>
                     </div>
                     <div class="calculation-row">
-                        <span>勞退自提 (${data.pensionSelfRate || 0}%)</span>
+                        <span>${tHtml('SALARY_PENSION_WITH_RATE', { rate: data.pensionSelfRate || 0 })}</span>
                         <span class="font-mono">${formatCurrency(data.pensionSelf)}</span>
                     </div>
                     <div class="calculation-row">
-                        <span>所得稅</span>
+                        <span>${tHtml('SALARY_TAX')}</span>
                         <span class="font-mono">${formatCurrency(data.incomeTax)}</span>
                     </div>
                     
                     ${!isHourly && data.leaveDeduction > 0 ? `
                         <div class="calculation-row">
-                            <span>請假扣款</span>
+                            <span>${tHtml('SALARY_LEAVE_DEDUCT')}</span>
                             <span class="font-mono">${formatCurrency(data.leaveDeduction)}</span>
                         </div>
 
@@ -1425,13 +1425,13 @@ function displaySalaryCalculation(data, container) {
                                 <div class="text-xs space-y-1">
                                     ${sickLeaveHours > 0 ? `
                                         <div class="flex justify-between">
-                                            <span class="text-yellow-700 dark:text-yellow-300">病假 ${sickLeaveHours} 小時 (半薪)</span>
+                                            <span class="text-yellow-700 dark:text-yellow-300">${tHtml('SALARY_SICK_LEAVE_LINE', { hours: sickLeaveHours })}</span>
                                             <span class="font-mono text-yellow-700 dark:text-yellow-200">${formatCurrency(sickLeaveDeduction)}</span>
                                         </div>
                                     ` : ''}
                                     ${personalLeaveHours > 0 ? `
                                         <div class="flex justify-between">
-                                            <span class="text-yellow-700 dark:text-yellow-300">事假 ${personalLeaveHours} 小時 (全薪)</span>
+                                            <span class="text-yellow-700 dark:text-yellow-300">${tHtml('SALARY_PERSONAL_LEAVE_LINE', { hours: personalLeaveHours })}</span>
                                             <span class="font-mono text-yellow-700 dark:text-yellow-200">${formatCurrency(personalLeaveDeduction)}</span>
                                         </div>
                                     ` : ''}
@@ -1443,29 +1443,29 @@ function displaySalaryCalculation(data, container) {
                     <!--  新增：早退扣款 -->
                     ${!isHourly && earlyLeaveDeduction > 0 ? `
                         <div class="calculation-row">
-                            <span>早退扣款</span>
+                            <span>${tHtml('SALARY_EARLY_LEAVE_DEDUCT')}</span>
                             <span class="font-mono">${formatCurrency(earlyLeaveDeduction)}</span>
                         </div>
                     ` : ''}
                     <div class="calculation-row">
-                        <span>福利金</span>
+                        <span>${tHtml('SALARY_WELFARE_FEE_LABEL')}</span>
                         <span class="font-mono">${formatCurrency(data.welfareFee || 0)}</span>
                     </div>
                     <div class="calculation-row">
-                        <span>宿舍費用</span>
+                        <span>${tHtml('SALARY_DORMITORY_FEE_LABEL')}</span>
                         <span class="font-mono">${formatCurrency(data.dormitoryFee || 0)}</span>
                     </div>
                     <div class="calculation-row">
-                        <span>團保費用</span>
+                        <span>${tHtml('SALARY_GROUP_INSURANCE_LABEL')}</span>
                         <span class="font-mono">${formatCurrency(data.groupInsurance || 0)}</span>
                     </div>
                     <div class="calculation-row">
-                        <span>其他扣款</span>
+                        <span>${tHtml('SALARY_OTHER_DEDUCT')}</span>
                         <span class="font-mono">${formatCurrency(data.otherDeductions || 0)}</span>
                     </div>
                     
                     <div class="calculation-row total">
-                        <span>實發金額</span>
+                        <span>${tHtml('SALARY_NET')}</span>
                         <span>${formatCurrency(data.netSalary)}</span>
                     </div>
                 </div>
@@ -1586,13 +1586,13 @@ async function loadAllEmployeeSalaryFromList() {
                 listEl.appendChild(item);
             });
         } else {
-            listEl.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">尚無薪資記錄</p>';
+            listEl.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">' + tHtml('SALARY_NO_RECORD') + '</p>';
         }
         
     } catch (error) {
         console.error(' 載入薪資列表失敗:', error);
         loadingEl.style.display = 'none';
-        listEl.innerHTML = '<p class="text-center text-red-600 dark:text-red-400 py-8">載入失敗</p>';
+        listEl.innerHTML = '<p class="text-center text-red-600 dark:text-red-400 py-8">' + tHtml('LOAD_FAILED') + '</p>';
     }
 }
 
@@ -1609,7 +1609,7 @@ function createAllSalaryItem(salary) {
                 ${escapeHtml(salary['員工姓名'] || '--')} <span class="text-gray-500 dark:text-gray-400 text-sm">(${escapeHtml(salary['員工ID'] || '--')})</span>
             </div>
             <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                ${escapeHtml(salary['年月'] || '--')} | ${escapeHtml(salary['狀態'] || '--')}
+                ${escapeHtml(salary['年月'] || '--')} | ${escapeHtml(salaryValueLabel(salary['狀態'] || '--'))}
             </div>
         </div>
         <div class="text-right">
@@ -1630,6 +1630,34 @@ function createAllSalaryItem(salary) {
 /**
  * 格式化貨幣
  */
+/**
+ * 翻譯後要放進 innerHTML 用：翻譯字串與帶入的參數一起跳脫，參數請傳原始值
+ */
+function tHtml(key, params) {
+    return escapeHtml(t(key, params));
+}
+
+/**
+ * 後端存的是中文值（薪資類型、狀態、獎金類型）。
+ * 程式比對要用原值，只有顯示時才換成目前語系的文字。
+ */
+const SALARY_VALUE_KEYS = {
+    '月薪': 'SALARY_TYPE_MONTHLY',
+    '時薪': 'SALARY_TYPE_HOURLY',
+    '週薪': 'SALARY_TYPE_WEEKLY',
+    '已計算': 'SALARY_STATUS_CALCULATED',
+    '已發放': 'BONUS_STATUS_PAID',
+    '待發放': 'BONUS_STATUS_PENDING',
+    '春節獎金': 'BONUS_TYPE_SPRING',
+    '端午節獎金': 'BONUS_TYPE_DRAGON_BOAT',
+    '中秋節獎金': 'BONUS_TYPE_MID_AUTUMN'
+};
+
+function salaryValueLabel(value) {
+    const key = SALARY_VALUE_KEYS[value];
+    return key ? t(key) : value;
+}
+
 function formatCurrency(amount) {
     if (amount === null || amount === undefined || isNaN(amount)) return '$0';
     const num = parseFloat(amount);
@@ -1685,7 +1713,7 @@ function getBankName(code) {
         "700": "中華郵政"
     };
     
-    return banks[code] || "未知銀行";
+    return banks[code] || t('SALARY_UNKNOWN_BANK');
 }
 
 //  新方法：直接用 calculateMonthlySalary（跟時薪計算一樣）
@@ -1755,26 +1783,26 @@ function displayWorkHoursFromCalculation(data) {
     const baseSalary = data.baseSalary || 0;
     
     workHoursCard.innerHTML = `
-      <h4 class="font-semibold mb-3 text-purple-600 dark:text-purple-400">本月工作時數統計</h4>
+      <h4 class="font-semibold mb-3 text-purple-600 dark:text-purple-400">${tHtml('SALARY_WH_MONTH_TITLE')}</h4>
       
       <div class="grid grid-cols-3 gap-4 mb-4">
         <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
-          <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">時薪</p>
+          <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">${tHtml('HOURLY_RATE_LABEL')}</p>
           <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">$${hourlyRate}</p>
         </div>
         <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
-          <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">總工作時數</p>
+          <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">${tHtml('SALARY_WH_TOTAL')}</p>
           <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">${totalWorkHours}h</p>
         </div>
         <div class="text-center p-3 bg-purple-50 dark:bg-purple-800/20 rounded-lg">
-          <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">基本薪資</p>
+          <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">${tHtml('SALARY_BASE')}</p>
           <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">${formatCurrency(baseSalary)}</p>
-          <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">(時薪 × 工時)</p>
+          <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">${tHtml('SALARY_WH_BASE_FORMULA')}</p>
         </div>
       </div>
       
       <div class="p-3 bg-purple-50 dark:bg-purple-800/10 rounded-lg text-sm text-purple-700 dark:text-purple-300">
-         工作時數已包含在薪資計算中
+         ${tHtml('SALARY_WH_INCLUDED')}
       </div>
     `;
     
@@ -1807,11 +1835,11 @@ function displayWorkHoursFromCalculation(data) {
     console.log('   國定假日加班費:', holidayOvertimePay);
     
     overtimeCard.innerHTML = `
-        <h4 class="font-semibold mb-3 text-orange-600 dark:text-orange-400"> 本月加班統計</h4>
+        <h4 class="font-semibold mb-3 text-orange-600 dark:text-orange-400"> ${tHtml('SALARY_OT_MONTH_TITLE')}</h4>
         
         <!-- 總時數 -->
         <div class="text-center p-3 bg-orange-50 dark:bg-orange-800/20 rounded-lg mb-3">
-            <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">總加班時數</p>
+            <p class="text-sm text-orange-700 dark:text-orange-300 mb-1">${tHtml('SALARY_OT_TOTAL_HOURS')}</p>
             <p class="text-3xl font-bold text-orange-700 dark:text-orange-200">${totalOvertimeHours}h</p>
         </div>
         
@@ -1821,12 +1849,12 @@ function displayWorkHoursFromCalculation(data) {
                 <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg border border-blue-300 dark:border-blue-700">
                     <div class="flex justify-between items-center">
                         <div>
-                            <span class="font-semibold text-blue-800 dark:text-blue-300">平日加班</span>
-                            <span class="text-xs text-blue-600 dark:text-blue-400 ml-2">（週一～五）</span>
+                            <span class="font-semibold text-blue-800 dark:text-blue-300">${tHtml('SALARY_OT_WEEKDAY')}</span>
+                            <span class="text-xs text-blue-600 dark:text-blue-400 ml-2">${tHtml('SALARY_OT_WEEKDAY_DAYS')}</span>
                         </div>
                         <span class="text-lg font-bold text-blue-800 dark:text-blue-200">${formatCurrency(weekdayOvertimePay)}</span>
                     </div>
-                    <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">前2h ×1.34 | 第3h起 ×1.67</p>
+                    <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">${tHtml('SALARY_OT_WEEKDAY_RULE')}</p>
                 </div>
             ` : ''}
             
@@ -1834,12 +1862,12 @@ function displayWorkHoursFromCalculation(data) {
                 <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg border border-purple-300 dark:border-purple-700">
                     <div class="flex justify-between items-center">
                         <div>
-                            <span class="font-semibold text-purple-800 dark:text-purple-300">休息日加班</span>
-                            <span class="text-xs text-purple-600 dark:text-purple-400 ml-2">（週六）</span>
+                            <span class="font-semibold text-purple-800 dark:text-purple-300">${tHtml('SALARY_OT_RESTDAY')}</span>
+                            <span class="text-xs text-purple-600 dark:text-purple-400 ml-2">${tHtml('SALARY_OT_RESTDAY_DAYS')}</span>
                         </div>
                         <span class="text-lg font-bold text-purple-800 dark:text-purple-200">${formatCurrency(restdayOvertimePay)}</span>
                     </div>
-                    <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">前2h ×1.34 | 3-8h ×1.67 | 9h起 ×2.67</p>
+                    <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">${tHtml('SALARY_OT_RESTDAY_RULE')}</p>
                 </div>
             ` : ''}
             
@@ -1847,7 +1875,7 @@ function displayWorkHoursFromCalculation(data) {
                 <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg border border-red-300 dark:border-red-700">
                     <div class="flex justify-between items-center mb-2">
                         <div>
-                            <span class="font-semibold text-red-800 dark:text-red-300">國定假日出勤</span>
+                            <span class="font-semibold text-red-800 dark:text-red-300">${tHtml('SALARY_OT_HOLIDAY_WORK')}</span>
                         </div>
                         <span class="text-lg font-bold text-red-800 dark:text-red-200">${formatCurrency(holidayWorkPay + holidayOvertimePay)}</span>
                     </div>
@@ -1856,13 +1884,13 @@ function displayWorkHoursFromCalculation(data) {
                     <div class="text-xs space-y-1 mt-2 border-t border-red-200 dark:border-red-700/30 pt-2">
                         ${holidayWorkPay > 0 ? `
                             <div class="flex justify-between">
-                                <span class="text-red-600 dark:text-red-400">正常出勤薪資 ×1.0</span>
+                                <span class="text-red-600 dark:text-red-400">${tHtml('SALARY_OT_HOLIDAY_NORMAL_PAY')}</span>
                                 <span class="font-mono text-red-700 dark:text-red-300">${formatCurrency(holidayWorkPay)}</span>
                             </div>
                         ` : ''}
                         ${holidayOvertimePay > 0 ? `
                             <div class="flex justify-between">
-                                <span class="text-red-600 dark:text-red-400">加班費 ×2.0</span>
+                                <span class="text-red-600 dark:text-red-400">${tHtml('SALARY_OT_HOLIDAY_OT_PAY')}</span>
                                 <span class="font-mono text-red-700 dark:text-red-300">${formatCurrency(holidayOvertimePay)}</span>
                             </div>
                         ` : ''}
@@ -1921,12 +1949,12 @@ async function loadPunchRecords(yearMonth) {
             });
             
             if (totalEl) {
-                totalEl.textContent = `${totalHours.toFixed(1)} 小時`;
+                totalEl.textContent = t('SALARY_HOURS_VALUE', { hours: totalHours.toFixed(1) });
             }
             
         } else {
             emptyEl.style.display = 'block';
-            if (totalEl) totalEl.textContent = '0.0 小時';
+            if (totalEl) totalEl.textContent = t('SALARY_HOURS_VALUE', { hours: '0.0' });
         }
         
     } catch (error) {
@@ -1970,7 +1998,7 @@ async function loadOvertimeRecords(yearMonth) {
                 item.innerHTML = `
                     <div>
                         <span class="font-semibold">${escapeHtml(record.date)}</span>
-                        <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">已核准</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">${tHtml('STATUS_APPROVED')}</span>
                     </div>
                     <div class="text-right">
                         <span class="font-mono text-orange-600 dark:text-orange-400">${hours.toFixed(1)}h</span>
@@ -1981,12 +2009,12 @@ async function loadOvertimeRecords(yearMonth) {
             });
             
             if (totalEl) {
-                totalEl.textContent = `${totalHours.toFixed(1)} 小時`;
+                totalEl.textContent = t('SALARY_HOURS_VALUE', { hours: totalHours.toFixed(1) });
             }
             
         } else {
             emptyEl.style.display = 'block';
-            if (totalEl) totalEl.textContent = '0.0 小時';
+            if (totalEl) totalEl.textContent = t('SALARY_HOURS_VALUE', { hours: '0.0' });
         }
         
     } catch (error) {
@@ -2023,7 +2051,7 @@ async function exportAllSalaryExcel() {
         console.log(' 準備匯出:', { yearMonth, token: token ? '存在' : '不存在' });
         
         // 顯示進度
-        showExportProgress('正在生成薪資總表 Excel...');
+        showExportProgress(t('SALARY_EXPORT_PROGRESS'));
         
         // 走 api.js，token 才不會被串在網址上（見 config.js 的 useHttpPost）
         const result = await apiRequestJson(
@@ -2040,7 +2068,10 @@ async function exportAllSalaryExcel() {
             if (url) window.open(url, '_blank');
             
             showNotification(
-                ` 匯出成功！\n檔案：${result.fileName || '薪資總表'}\n記錄數：${result.recordCount || 0}`,
+                t('SALARY_EXPORT_SUCCESS_MSG', {
+                    file: result.fileName || t('SALARY_EXPORT_DEFAULT_NAME'),
+                    count: result.recordCount || 0
+                }),
                 'success'
             );
             
@@ -2052,7 +2083,7 @@ async function exportAllSalaryExcel() {
             });
             
         } else {
-            throw new Error(result.msg || result.message || '匯出失敗');
+            throw new Error(result.msg || result.message || t('SALARY_EXPORT_FAILED'));
         }
         
     } catch (error) {
@@ -2097,17 +2128,17 @@ function displayExportResult(data) {
         <div class="flex items-center justify-between">
             <div>
                 <p class="font-semibold text-green-800 dark:text-green-300">
-                     薪資總表已生成！
+                     ${tHtml('SALARY_EXPORT_READY')}
                 </p>
                 <p class="text-sm text-green-700 dark:text-green-400">
-                    檔案名稱：${escapeHtml(data.fileName)}.xlsx<br>
-                    共 ${escapeHtml(data.recordCount)} 筆記錄
+                    ${tHtml('SALARY_EXPORT_FILE_NAME', { name: data.fileName })}<br>
+                    ${tHtml('SALARY_EXPORT_RECORD_COUNT', { count: data.recordCount })}
                 </p>
             </div>
             <a href="${escapeHtml(safeHttpUrl(data.fileUrl))}" 
                download="${escapeHtml(data.fileName)}.xlsx"
                class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors">
-                 重新下載
+                 ${tHtml('SALARY_EXPORT_REDOWNLOAD')}
             </a>
         </div>
     `;
@@ -2136,7 +2167,7 @@ function showExportProgress(message) {
             <div class="export-progress-spinner"></div>
             <div class="export-progress-text">${escapeHtml(message)}</div>
             <p class="export-progress-hint" style="color: var(--text-muted, #94a3b8);">
-                請稍候，這可能需要幾秒鐘...
+                ${tHtml('SALARY_EXPORT_WAIT')}
             </p>
         </div>
     `;
@@ -2196,14 +2227,14 @@ function onSalaryTypeChange() {
     if (!type) return;
 
     const hintMap = {
-        '月薪': '每月固定薪資，依勞基法扣除勞健保',
-        '時薪': '依實際工作時數計算，2026年最低時薪 196 元',
-        '週薪': '每週領薪，不扣勞保、健保、就業保險等法定費用'
+        '月薪': t('SALARY_TYPE_HINT_MONTHLY'),
+        '時薪': t('SALARY_TYPE_HINT_HOURLY'),
+        '週薪': t('SALARY_TYPE_HINT_WEEKLY')
     };
     const baseHintMap = {
-        '月薪': '2026年最低月薪 29,500 元',
-        '時薪': '請輸入時薪金額（2026最低 196 元）',
-        '週薪': '請輸入每週薪資金額（系統自動乘以本月週數）'
+        '月薪': t('SALARY_BASE_HINT_MONTHLY'),
+        '時薪': t('SALARY_BASE_HINT_HOURLY'),
+        '週薪': t('SALARY_BASE_HINT_WEEKLY')
     };
 
     if (hint) hint.textContent = hintMap[type] || '';
@@ -2217,13 +2248,13 @@ function onSalaryTypeChange() {
     if (type === '週薪') {
         insuranceIds.forEach(id => {
             const el = document.getElementById(id);
-            if (el) { el.value = '0'; el.setAttribute('placeholder', '週薪不適用'); }
+            if (el) { el.value = '0'; el.setAttribute('placeholder', t('SALARY_WEEKLY_NOT_APPLICABLE')); }
         });
         if (legalSection && !legalSection.querySelector('.weekly-notice')) {
             const notice = document.createElement('div');
             notice.className = 'weekly-notice mt-2 p-3 rounded-lg text-sm';
             notice.style.cssText = 'background:var(--warning-soft, rgba(245,158,11,0.15));border:1px solid var(--warning, rgba(245,158,11,0.4));color:var(--warning, #f59e0b);';
-            notice.textContent = '週薪制員工不適用勞健保及所得稅扣繳，以上欄位已自動清零。';
+            notice.textContent = t('SALARY_WEEKLY_NOTICE');
             legalSection.prepend(notice);
         }
     } else {
@@ -2248,7 +2279,7 @@ async function initBonusTab() {
     try {
         const res = await callApifetch('getAllUsers');
         if (res.ok && res.data) {
-            select.innerHTML = '<option value="">請選擇員工</option>';
+            select.innerHTML = '<option value="">' + tHtml('SALARY_SELECT_EMPLOYEE') + '</option>';
             res.data.forEach(emp => {
                 const opt = document.createElement('option');
                 opt.value = emp.userId || emp.lineUserId;
@@ -2308,17 +2339,17 @@ function createBonusItem(bonus) {
     const statusColor = bonus['狀態'] === '已發放' ? 'var(--positive, #22c55e)' : 'var(--warning, #f59e0b)';
     div.innerHTML =
         '<div>' +
-            '<div class="font-semibold text-lg">' + escapeHtml(bonus['獎金類型'] || '--') + '</div>' +
+            '<div class="font-semibold text-lg">' + escapeHtml(salaryValueLabel(bonus['獎金類型'] || '--')) + '</div>' +
             '<div class="text-sm" style="color:var(--text-muted, #94a3b8); margin-top:0.25rem;">' +
-                escapeHtml(bonus['年度'] || '--') + ' 年度' +
+                tHtml('BONUS_YEAR_SUFFIX', { year: bonus['年度'] || '--' }) +
                 (bonus['員工姓名'] ? ' · ' + escapeHtml(bonus['員工姓名']) : '') +
-                (bonus['發放日期'] ? ' · 發放日：' + escapeHtml(bonus['發放日期']) : '') +
+                (bonus['發放日期'] ? ' · ' + tHtml('BONUS_PAY_DATE', { date: bonus['發放日期'] }) : '') +
             '</div>' +
             (bonus['備註'] ? '<div class="text-xs" style="color:var(--text-subtle, #64748b); margin-top:0.25rem;">' + escapeHtml(bonus['備註']) + '</div>' : '') +
         '</div>' +
         '<div class="text-right">' +
             '<div class="text-2xl font-bold" style="color:var(--warning, #f59e0b);">' + formatCurrency(bonus['發放金額']) + '</div>' +
-            '<div class="text-sm mt-1" style="color:' + statusColor + ';">' + escapeHtml(bonus['狀態'] || '--') + '</div>' +
+            '<div class="text-sm mt-1" style="color:' + statusColor + ';">' + escapeHtml(salaryValueLabel(bonus['狀態'] || '--')) + '</div>' +
         '</div>';
     return div;
 }
@@ -2358,7 +2389,7 @@ async function submitBonusRecord() {
             showNotification(t('NOTIF_BONUS_SAVED'), 'success');
             loadBonusRecords();
         } else {
-            showNotification(t('NOTIF_SAVE_FAILED_MSG') + (res.msg || '未知錯誤'), 'error');
+            showNotification(t('NOTIF_SAVE_FAILED_MSG') + (res.msg || t('UNKNOWN_ERROR')), 'error');
         }
     } catch (e) {
         console.error('submitBonusRecord 錯誤:', e);

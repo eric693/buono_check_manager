@@ -39,7 +39,8 @@ function t(code, params = {}) {
         if (paramValue in translations) {
             paramValue = translations[paramValue];
         }
-        text = text.replace(`{${key}}`, paramValue);
+        // 用 split/join：參數裡的 $ 不會被當成 replace 的特殊符號，同一佔位符出現多次也都換掉
+        text = text.split(`{${key}}`).join(String(paramValue));
     }
     return text;
 }
