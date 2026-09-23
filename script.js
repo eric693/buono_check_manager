@@ -225,7 +225,10 @@ function renderAbnormalRecords(records) {
     const abnormalList = document.getElementById("abnormal-list");
     const recordsEmpty = document.getElementById("abnormal-records-empty");
     
-    if (!recordsLoading || !abnormalRecordsSection || !abnormalList || !recordsEmpty) {
+    // 薪資頁等其他頁面沒有異常記錄區塊，直接略過
+    if (!abnormalRecordsSection) return;
+    
+    if (!recordsLoading || !abnormalList || !recordsEmpty) {
         console.error(' 找不到必要的 DOM 元素');
         return;
     }
@@ -398,7 +401,10 @@ async function checkAbnormal() {
     const abnormalList = document.getElementById("abnormal-list");
     const recordsEmpty = document.getElementById("abnormal-records-empty");
     
-    if (!recordsLoading || !abnormalRecordsSection || !abnormalList || !recordsEmpty) {
+    // 薪資頁等其他頁面沒有異常記錄區塊，直接略過
+    if (!abnormalRecordsSection) return;
+    
+    if (!recordsLoading || !abnormalList || !recordsEmpty) {
         console.error(' 找不到必要的 DOM 元素');
         return;
     }

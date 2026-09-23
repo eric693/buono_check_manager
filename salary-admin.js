@@ -129,7 +129,7 @@ function renderEmployeeList(keyword = '') {
 
     const tag = document.createElement('span');
     tag.className = 'tag';
-    tag.textContent = emp.salaryType || '';
+    tag.textContent = salaryValueLabel(emp.salaryType || '');
 
     button.appendChild(name);
     button.appendChild(tag);

@@ -2766,6 +2766,15 @@
                 
                 const res = await callApifetch('getAllUsers');
                 
+                if (res.ok && Array.isArray(res.users) && res.users.length === 0) {
+                    // 還沒有任何員工不是錯誤，不用重試
+                    ['config-employee-select', 'calc-employee-select', 'hourly-employee-select'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.innerHTML = '<option value="">' + tHtml('SALARY_EMPLOYEE_LIST_EMPTY') + '</option>';
+                    });
+                    return;
+                }
+
                 if (res.ok && res.users && res.users.length > 0) {
                     // 所有需要員工下拉選單的元素ID
                     const selectIds = [
@@ -2785,7 +2794,7 @@
                         }
                         
                         // 清空並重建選項
-                        selectEl.innerHTML = '<option value="">請選擇員工</option>';
+                        selectEl.innerHTML = '<option value="">' + tHtml('SALARY_SELECT_EMPLOYEE') + '</option>';
                         
                         res.users.forEach(user => {
                             const option = document.createElement('option');
@@ -2795,7 +2804,7 @@
                                 email: user.email,
                                 dept: user.dept
                             });
-                            option.textContent = `${user.name} (${user.dept || '未分配部門'})`;
+                            option.textContent = `${user.name} (${user.dept || t('SALARY_DEPT_UNASSIGNED')})`;
                             selectEl.appendChild(option);
                         });
                         
@@ -2831,7 +2840,7 @@
                     // 所有下拉選單顯示載入失敗
                     ['config-employee-select', 'calc-employee-select', 'hourly-employee-select'].forEach(id => {
                         const el = document.getElementById(id);
-                        if (el) el.innerHTML = '<option value="">載入失敗，請重新整理頁面</option>';
+                        if (el) el.innerHTML = '<option value="">' + tHtml('SALARY_EMPLOYEE_LIST_FAILED') + '</option>';
                     });
                 }
             }
