@@ -1231,6 +1231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tabLeaveBtn = document.getElementById('tab-leave-btn'); //  新增請假按鈕
     const tabSalaryBtn = document.getElementById('tab-salary-btn'); //  新增
     const tabWorklogBtn = document.getElementById('tab-worklog-btn');
+    const tabExpenseBtn = document.getElementById('tab-expense-btn');
     const abnormalList = document.getElementById('abnormal-list');
     const adjustmentFormContainer = document.getElementById('adjustment-form-container');
     const calendarGrid = document.getElementById('calendar-grid');
@@ -1265,6 +1266,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // switchTab 內部已經會呼叫 initWorklogTab()，這裡不能再呼叫一次
         tabWorklogBtn?.addEventListener('click', () => switchTab('worklog-view'));
     }
+
+    // switchTab 內部會呼叫 initExpenseTab()
+    tabExpenseBtn?.addEventListener('click', () => switchTab('expense-view'));
     let pendingRequests = []; // 新增：用於快取待審核的請求
     
     // 地圖狀態改宣告在檔案最上方（見 mapInstance 等）：
@@ -1713,10 +1717,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const switchTab = (tabId) => {
         // 修改這一行，加入 'shift-view'
-        const tabs = ['dashboard-view', 'monthly-view', 'location-view', 'shift-view', 'admin-view', 'overtime-view', 'leave-view', 'salary-view', 'worklog-view'];
+        const tabs = ['dashboard-view', 'monthly-view', 'location-view', 'shift-view', 'admin-view', 'overtime-view', 'leave-view', 'salary-view', 'worklog-view', 'expense-view'];
         
         // 修改這一行，加入 'tab-shift-btn'
-        const btns = ['tab-dashboard-btn', 'tab-monthly-btn', 'tab-location-btn', 'tab-shift-btn', 'tab-admin-btn', 'tab-overtime-btn', 'tab-leave-btn', 'tab-salary-btn', 'tab-worklog-btn'];
+        const btns = ['tab-dashboard-btn', 'tab-monthly-btn', 'tab-location-btn', 'tab-shift-btn', 'tab-admin-btn', 'tab-overtime-btn', 'tab-leave-btn', 'tab-salary-btn', 'tab-worklog-btn', 'tab-expense-btn'];
     
         // 1. 移除舊的 active 類別和 CSS 屬性
         tabs.forEach(id => {
@@ -1771,6 +1775,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             initWorkScheduleAdmin();
             initAdminAnalysis();
             if (typeof loadAllUsers === 'function') loadAllUsers();
+            if (typeof loadPendingExpenses === 'function') loadPendingExpenses();
+            if (typeof initAdminAuditLog === 'function') initAdminAuditLog();
             refreshLocationPicker();
         } else if (tabId === 'overtime-view') {
             initOvertimeTab();
@@ -1781,6 +1787,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             initSalaryTab();
         } else if (tabId === 'worklog-view') { //  新增
             initWorklogTab();
+        } else if (tabId === 'expense-view') {
+            if (typeof initExpenseTab === 'function') initExpenseTab();
         }
         
     };

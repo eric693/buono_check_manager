@@ -1,5 +1,55 @@
 // Main.gs - 完整版（含打卡、加班、請假、排班系統）
 
+// 路由層的權限關卡。這幾支 handler 自己沒有檢查權限（有的連登入都不用），
+// 統一在這裡擋，handler 就算以後被改動也不會漏掉。
+//   'admin'          只有管理員
+//   { self: 參數名 }  管理員，或是查詢／操作自己的資料（參數值等於自己的 userId）
+const ROUTE_ACCESS = {
+  getReviewRequest: 'admin',
+  approveReview: 'admin',
+  rejectReview: 'admin',
+  addLocation: 'admin',
+  updateEmployeeName: 'admin',
+  getEmployeeSalaryTW: 'admin',
+  setEmployeeSalaryTW: 'admin',
+  saveMonthlySalary: 'admin',
+  getAllMonthlySalary: 'admin',
+  setDailyEmployee: 'admin',
+  getDailyEmployee: 'admin',
+  getAllDailyEmployees: 'admin',
+  calculateDailySalary: 'admin',
+  saveDailySalaryRecord: 'admin',
+  getDailySalaryRecords: 'admin',
+  calculateMonthlySalary: { self: 'employeeId' },
+  getAttendanceDetails: { self: 'userId' },
+  getAbnormalRecords: { self: 'userId' },
+  getPendingExpenses: 'admin',
+  reviewExpense: 'admin'
+};
+
+/**
+ * 檢查這次請求有沒有權限。通過時回傳 { ok: true, user }（不需檢查的 action，user 為 null）
+ */
+function checkRouteAccess_(action, params) {
+  const rule = ROUTE_ACCESS[action];
+  if (!rule) return { ok: true, user: null };
+
+  const session = checkSession_(params.token);
+  if (!session.ok || !session.user) {
+    return { ok: false, error: { ok: false, code: 'ERR_SESSION_INVALID', msg: '未授權或 session 已過期' } };
+  }
+
+  const user = session.user;
+  if (user.dept === '管理員') return { ok: true, user: user };
+
+  if (rule !== 'admin' && rule.self) {
+    const requested = String(params[rule.self] || '').trim();
+    if (requested && requested === user.userId) return { ok: true, user: user };
+  }
+
+  return { ok: false, error: { ok: false, code: 'PERMISSION_DENIED', msg: '需要管理員權限' } };
+}
+
 // doGet(e) 負責處理所有外部請求
 function doGet(e) {
   const action       = e.parameter.action;
@@ -11,19 +61,28 @@ function doGet(e) {
   // 不必把 token 一路當參數傳下去。原本只有匯出 Excel 那一支會設。
   globalThis.currentRequest = e;
 
+  // 通過權限關卡的使用者，寫操作記錄時直接沿用，不必再查一次 session
+  let requestUser = null;
+
   function respond(obj) {
+    logAdminAction_(action, e.parameter, obj, requestUser);
     return ContentService.createTextOutput(
       `${callback}(${JSON.stringify(obj)})`
     ).setMimeType(ContentService.MimeType.JAVASCRIPT);
   }
   
   function respond1(obj) {
+    logAdminAction_(action, e.parameter, obj, requestUser);
     const output = ContentService.createTextOutput(JSON.stringify(obj));
     output.setMimeType(ContentService.MimeType.JSON);
     return output;
   }
   
   try {
+    const access = checkRouteAccess_(action, e.parameter);
+    if (!access.ok) return respond1(access.error);
+    requestUser = access.user;
+
     switch (action) {
       // ==================== 登入與 Session ====================
       case "getProfile":
@@ -348,6 +407,8 @@ function doGet(e) {
         return respond1(handlePreviewSalaryConfigCopy(e.parameter));
       case "listPayableEmployees":
         return respond1(handleListPayableEmployees(e.parameter));
+      case "getAdminAuditLog":
+        return respond1(handleGetAdminAuditLog(e.parameter));
       case "getSalaryAuditLog":
         return respond1(handleGetSalaryAuditLog(e.parameter));
 
@@ -380,19 +441,15 @@ function doGet(e) {
       case "deleteAnnouncement":
         return respond1(handleDeleteAnnouncement(e.parameter));
       
-      // ==================== 費用管理系統 ====================
-      case "submitAdvanceApplication":
-        return respond1(handleSubmitAdvanceApplication(e.parameter));
-      case "submitReimbursement":
-        return respond1(handleSubmitReimbursement(e.parameter));
-      case "getAdvanceRecords":
-        return respond1(handleGetAdvanceRecords(e.parameter));
-      case "getReimbursementRecords":
-        return respond1(handleGetReimbursementRecords(e.parameter));
-      case "reviewAdvanceApplication":
-        return respond1(handleReviewAdvanceApplication(e.parameter));
-      case "reviewReimbursement":
-        return respond1(handleReviewReimbursement(e.parameter));
+      // ==================== 費用申請（預支／報銷）====================
+      case "submitExpense":
+        return respond1(handleSubmitExpense(e.parameter));
+      case "getMyExpenses":
+        return respond1(handleGetMyExpenses(e.parameter));
+      case "getPendingExpenses":
+        return respond1(handleGetPendingExpenses(e.parameter));
+      case "reviewExpense":
+        return respond1(handleReviewExpense(e.parameter));
       // ==================== 假日清單 ====================
       case "getHolidays":
         return respond1(handleGetHolidays());
@@ -489,6 +546,7 @@ function doPost(e) {
         
         // 呼叫核心函數
         const result = batchAddShifts(shiftsArray);
+        logAdminAction_('batchAddShifts', e.parameter, { ok: result.success }, permCheck.user);
         
         Logger.log('');
         Logger.log(' 批量新增結果:');

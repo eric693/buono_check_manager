@@ -172,6 +172,7 @@
                     <button id="tab-overtime-btn" data-i18n="TAB_OVERTIME" class="py-2 px-4 rounded-full font-bold text-sm text-gray-600 bg-gray-200 dark:text-gray-300 dark:bg-gray-700">加班</button>
                     <!--  請假按鈕 -->
                     <button id="tab-leave-btn" data-i18n="TAB_LEAVE" class="py-2 px-4 rounded-full font-bold text-sm text-gray-600 bg-gray-200 dark:text-gray-300 dark:bg-gray-700">請假</button>
+                    <button id="tab-expense-btn" data-i18n="TAB_EXPENSE" class="py-2 px-4 rounded-full font-bold text-sm text-gray-600 bg-gray-200 dark:text-gray-300 dark:bg-gray-700">費用</button>
                     <button id="tab-admin-btn" data-i18n="TAB_ADMIN" class="py-2 px-4 rounded-full font-bold text-sm text-gray-600 bg-gray-200 dark:text-gray-300 dark:bg-gray-700" style="display: none;">管理員</button>
                 
                     <button id="tab-worklog-btn" data-i18n="TAB_WORKLOG" 
@@ -983,6 +984,62 @@
                     </div>
                 </section>
 
+                <section id="expense-view" class="space-y-6" style="display: none;">
+                    <div class="card p-6">
+                        <h2 data-i18n="EXPENSE_APPLY_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-2">費用申請</h2>
+                        <p data-i18n="EXPENSE_APPLY_DESCRIPTION" class="text-gray-500 dark:text-gray-400 mb-4">預支是先向公司借款；報銷是自己先墊付，再憑發票請款。</p>
+
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label data-i18n="EXPENSE_TYPE_LABEL" for="expense-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">類型</label>
+                                    <select id="expense-type" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="advance" data-i18n-option="EXPENSE_TYPE_ADVANCE">預支</option>
+                                        <option value="reimbursement" data-i18n-option="EXPENSE_TYPE_REIMBURSEMENT">報銷</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label data-i18n="EXPENSE_DATE_LABEL" for="expense-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">日期</label>
+                                    <input type="date" id="expense-date" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label data-i18n="EXPENSE_AMOUNT_LABEL" for="expense-amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">金額</label>
+                                <input type="number" id="expense-amount" min="1" step="1" inputmode="numeric" placeholder="0" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+
+                            <div>
+                                <label data-i18n="EXPENSE_REASON_LABEL" for="expense-reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">事由</label>
+                                <textarea id="expense-reason" rows="2" maxlength="500" data-i18n="EXPENSE_REASON_PLACEHOLDER" placeholder="例如：出差交通費、採購文具" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                            </div>
+
+                            <div class="expense-reimbursement-only">
+                                <label data-i18n="EXPENSE_INVOICE_LABEL" for="expense-invoice" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">發票號碼（選填）</label>
+                                <input type="text" id="expense-invoice" maxlength="50" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+
+                            <div class="expense-reimbursement-only">
+                                <label data-i18n="EXPENSE_RECEIPT_LABEL" for="expense-receipt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">發票或收據照片（選填，也可以送出後再補）</label>
+                                <input type="file" id="expense-receipt" class="block w-full text-sm text-gray-600 dark:text-gray-300">
+                            </div>
+
+                            <div>
+                                <label data-i18n="EXPENSE_NOTE_LABEL" for="expense-note" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">備註（選填）</label>
+                                <input type="text" id="expense-note" maxlength="500" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+
+                            <button id="submit-expense-btn" data-i18n="BTN_SUBMIT_EXPENSE" class="w-full py-3 px-4 rounded-lg font-bold btn-primary">送出申請</button>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <h2 data-i18n="EXPENSE_MY_RECORDS_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-4">我的費用申請</h2>
+                        <p id="expense-records-empty" data-i18n="EXPENSE_NO_RECORDS" class="text-center text-gray-500 dark:text-gray-400 py-4" style="display: none;">還沒有費用申請</p>
+                        <ul id="expense-records-list" class="space-y-3"></ul>
+                    </div>
+                </section>
+
                 <section id="worklog-view" class="space-y-6" style="display: none;">
     
                     <!-- 工作日誌填寫表單 -->
@@ -1232,6 +1289,44 @@
                             </button>
                         </div>
                     </div>
+                    <!-- 費用申請審核 -->
+                    <div class="card p-6">
+                        <h2 data-i18n="EXPENSE_PENDING_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-2">待審核費用申請</h2>
+                        <p data-i18n="EXPENSE_PENDING_DESCRIPTION" class="text-gray-500 dark:text-gray-400 mb-4">審核員工的預支與報銷申請</p>
+                        <div id="expense-pending-empty" class="text-center text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 p-4 rounded-lg" style="display: none;">
+                            <p data-i18n="EXPENSE_NO_PENDING" class="font-semibold">目前沒有待審核的費用申請</p>
+                        </div>
+                        <ul id="pending-expense-list" class="space-y-3"></ul>
+                    </div>
+
+                    <!-- 操作紀錄 -->
+                    <div id="admin-audit-section" class="card p-6">
+                        <h2 data-i18n="AUDIT_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-1">操作紀錄</h2>
+                        <p data-i18n="AUDIT_DESCRIPTION" class="text-gray-500 dark:text-gray-400 mb-4">查詢審核、權限、員工、排班與設定的變更，是誰在什麼時候做的。</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                            <div>
+                                <label data-i18n="AUDIT_MONTH_LABEL" for="audit-month" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">月份</label>
+                                <input type="month" id="audit-month"
+                                    class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white">
+                            </div>
+                            <div>
+                                <label data-i18n="AUDIT_ACTION_LABEL" for="audit-action" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">動作</label>
+                                <select id="audit-action"
+                                    class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white"></select>
+                            </div>
+                            <div>
+                                <label data-i18n="AUDIT_KEYWORD_LABEL" for="audit-keyword" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">關鍵字</label>
+                                <input type="text" id="audit-keyword" data-i18n="AUDIT_KEYWORD_PLACEHOLDER" placeholder="操作者、員工或內容"
+                                    class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white">
+                            </div>
+                        </div>
+                        <button id="audit-search-btn" data-i18n="AUDIT_SEARCH_BTN" class="w-full py-2 px-4 rounded-lg font-bold btn-primary mb-2">查詢</button>
+                        <p data-i18n="AUDIT_LIMIT_NOTE" class="text-xs text-gray-500 dark:text-gray-400 mb-3">最多顯示最新 300 筆</p>
+
+                        <ul id="audit-list" class="space-y-2 max-h-96 overflow-y-auto"></ul>
+                    </div>
+
                     <!--  加班審核區塊 -->
                     <div class="card p-6 mt-6">
                         <h2 data-i18n="OVERTIME_PENDING_TITLE" 
@@ -1781,6 +1876,8 @@
         <script src="help.js"></script>
         <script src="script.js"></script>
         <script src="announcements.js"></script>
+        <script src="audit-log.js"></script>
+        <script src="expense.js"></script>
         <script src="users.js"></script>
         <script src="punch-adjust.js"></script>
         <script src="qr-punch.js"></script>

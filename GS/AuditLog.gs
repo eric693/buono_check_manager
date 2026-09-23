@@ -1,6 +1,6 @@
 // AuditLog.gs
 //
-// 薪資異動的稽核軌跡。
+// 稽核軌跡：薪資單的欄位異動，以及其他管理操作（檔案後半段）。
 //
 // saveMonthlySalary() 會直接覆寫同一個月的薪資單，改之前是多少、誰改的、什麼時候改的
 // 全都查不到。薪資是會被勞檢的資料，這種「靜默覆寫」有風險，所以每次寫入都留一筆記錄。
@@ -186,6 +186,186 @@ function handleGetSalaryAuditLog(params) {
 
   } catch (error) {
     Logger.log(' handleGetSalaryAuditLog 錯誤: ' + error.message);
+    return { ok: false, msg: error.toString() };
+  }
+}
+
+// ==================== 管理操作記錄 ====================
+//
+// 薪資單以外的管理操作（審核、權限、員工、排班、設定…）也要查得到是誰、何時做的。
+// 由 Main.gs 的路由在操作成功後統一呼叫，不必改每一支 handler。
+
+const SHEET_ADMIN_AUDIT = '管理操作記錄';
+
+// 要記錄的 action → 顯示名稱。沒列在這裡的 action 不記。
+const ADMIN_AUDIT_ACTIONS = {
+  approveReview: '核准補打卡',
+  rejectReview: '駁回補打卡',
+  reviewOvertime: '審核加班',
+  reviewLeave: '審核請假',
+  reviewWorklog: '審核工作日誌',
+  deleteWorklog: '刪除工作日誌',
+  addLocation: '新增打卡地點',
+  updateUserRole: '變更權限',
+  deleteUser: '刪除員工',
+  updateEmployeeName: '修改員工姓名',
+  deleteEmployeeBasicInfo: '刪除員工基本資料',
+  offboardEmployee: '辦理離職',
+  reinstateEmployee: '復職',
+  addShift: '新增排班',
+  batchAddShifts: '批次新增排班',
+  updateShift: '修改排班',
+  deleteShift: '刪除排班',
+  setEmployeeSalaryTW: '修改薪資設定',
+  copySalaryConfig: '複製薪資設定',
+  batchCalculateSalary: '批次計算薪資',
+  setBonusRecord: '設定獎金',
+  setDailyEmployee: '設定日薪員工',
+  saveDailySalaryRecord: '儲存日薪記錄',
+  updateSalaryRules: '修改加班費率',
+  resetSalaryRules: '重設加班費率',
+  saveSalaryItems: '修改薪資自訂項目',
+  updateWorkSchedule: '修改上班時間設定',
+  resetWorkSchedule: '重設上班時間設定',
+  addAnnouncement: '發布公告',
+  deleteAnnouncement: '刪除公告',
+  deleteAttachment: '刪除附件',
+  reviewExpense: '審核費用申請'
+};
+
+// 這些參數不寫進記錄：路由用的、登入憑證、個資
+const ADMIN_AUDIT_SKIP_PARAMS = ['action', 'token', 'callback', 'otoken', 'sessionToken'];
+const ADMIN_AUDIT_MASK_PATTERN = /idNumber|bankAccount|account|password|secret/i;
+const ADMIN_AUDIT_MAX_VALUE = 120;
+const ADMIN_AUDIT_MAX_DETAIL = 1000;
+
+function getAdminAuditSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_ADMIN_AUDIT);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_ADMIN_AUDIT);
+    sheet.appendRow(['時間', '操作者ID', '操作者', '動作代碼', '動作', '對象ID', '對象姓名', '內容']);
+    sheet.setFrozenRows(1);
+    sheet.getRange(1, 1, 1, 8)
+         .setFontWeight('bold')
+         .setBackground('#6b7280')
+         .setFontColor('#ffffff');
+    Logger.log(' 已建立「管理操作記錄」工作表');
+  }
+
+  return sheet;
+}
+
+/**
+ * 把請求參數整理成一行可讀的文字：略過憑證、遮蔽個資、截斷太長的值（例如整包排班 JSON）
+ */
+function summarizeAuditParams_(params) {
+  const parts = [];
+  Object.keys(params || {}).sort().forEach(key => {
+    if (ADMIN_AUDIT_SKIP_PARAMS.indexOf(key) !== -1) return;
+    let value = params[key];
+    if (value === null || value === undefined || value === '') return;
+    value = String(value);
+    if (ADMIN_AUDIT_MASK_PATTERN.test(key)) {
+      value = '***';
+    } else if (value.length > ADMIN_AUDIT_MAX_VALUE) {
+      value = `(${value.length} 字元)`;
+    }
+    parts.push(`${key}=${value}`);
+  });
+  return parts.join(', ').slice(0, ADMIN_AUDIT_MAX_DETAIL);
+}
+
+/**
+ * 路由在回應前呼叫。只記錄清單內、而且執行成功的操作。
+ *
+ * @param {string} action
+ * @param {Object} params  e.parameter
+ * @param {Object} result  handler 的回傳值
+ * @param {Object} [actor] 已驗證過的使用者（有就不必再查一次 session）
+ */
+function logAdminAction_(action, params, result, actor) {
+  try {
+    const label = ADMIN_AUDIT_ACTIONS[action];
+    if (!label || !result) return;
+    if (result.ok !== true && result.success !== true) return;
+
+    params = params || {};
+    let user = actor;
+    if (!user && params.token) {
+      const session = checkSession_(params.token);
+      if (session.ok) user = session.user;
+    }
+
+    const targetId = params.employeeId || params.userId || params.sourceEmployeeId || '';
+    const targetName = params.employeeName || params.newName || '';
+
+    getAdminAuditSheet_().appendRow([
+      new Date(),
+      user ? user.userId : '',
+      user ? user.name : '系統',
+      action,
+      label,
+      targetId,
+      targetName,
+      summarizeAuditParams_(params)
+    ]);
+  } catch (error) {
+    // 記錄失敗不能影響操作本身
+    Logger.log(' 寫入管理操作記錄失敗: ' + error.message);
+  }
+}
+
+/**
+ * API：查詢管理操作記錄（僅管理員）
+ * 可選篩選：yearMonth（yyyy-MM）、actionKey（動作代碼）、keyword（比對操作者、對象、內容）
+ */
+function handleGetAdminAuditLog(params) {
+  try {
+    const session = checkSession_(params.token);
+    if (!session.ok || !session.user || session.user.dept !== '管理員') {
+      return { ok: false, code: 'PERMISSION_DENIED', msg: '此功能僅限管理員使用' };
+    }
+
+    const sheet = getAdminAuditSheet_();
+    const data = sheet.getDataRange().getValues();
+    const tz = Session.getScriptTimeZone();
+
+    const yearMonth = String(params.yearMonth || '').trim();
+    const actionKey = String(params.actionKey || '').trim();
+    const keyword = String(params.keyword || '').trim().toLowerCase();
+
+    const entries = [];
+
+    // 由新到舊掃，湊滿 300 筆就停
+    for (let i = data.length - 1; i >= 1 && entries.length < 300; i--) {
+      const row = data[i];
+      const at = row[0] instanceof Date ? Utilities.formatDate(row[0], tz, 'yyyy-MM-dd HH:mm:ss') : String(row[0]);
+
+      if (yearMonth && at.slice(0, 7) !== yearMonth) continue;
+      if (actionKey && String(row[3]) !== actionKey) continue;
+      if (keyword) {
+        const haystack = [row[1], row[2], row[5], row[6], row[7]].join(' ').toLowerCase();
+        if (haystack.indexOf(keyword) === -1) continue;
+      }
+
+      entries.push({
+        at: at,
+        actorId: row[1],
+        actor: row[2],
+        action: row[3],
+        label: row[4],
+        targetId: row[5],
+        targetName: row[6],
+        detail: row[7]
+      });
+    }
+
+    return { ok: true, entries: entries, actions: ADMIN_AUDIT_ACTIONS };
+
+  } catch (error) {
+    Logger.log(' handleGetAdminAuditLog 錯誤: ' + error.message);
     return { ok: false, msg: error.toString() };
   }
 }

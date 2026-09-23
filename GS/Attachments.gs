@@ -1,6 +1,6 @@
 // Attachments.gs
 //
-// 申請單的附件：請假的診斷證明、加班的佐證、補打卡的說明照片等。
+// 申請單的附件：請假的診斷證明、加班的佐證、補打卡的說明照片、報銷的發票等。
 // 原本這些只能用文字描述，審核的人沒有依據。
 //
 // 檔案存進 Google 雲端硬碟，metadata 存在「附件」工作表。
@@ -19,7 +19,7 @@ const ATTACHMENT_ALLOWED_TYPES = [
 ];
 
 // 附件掛在哪一種申請單上
-const ATTACHMENT_TYPES = ['leave', 'overtime', 'adjustPunch', 'worklog'];
+const ATTACHMENT_TYPES = ['leave', 'overtime', 'adjustPunch', 'worklog', 'expense'];
 
 /**
  * 取得（必要時建立）附件記錄表

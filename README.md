@@ -23,6 +23,7 @@
 - **加班申請**：平日／休息日／例假日／國定假日分別計費
 - **請假申請**：15 種假別、額度管理、時數自動計算（跳過非工作日與午休）
 - **工作日誌**：每日工時與內容，主管審核
+- **費用申請**：預支（先向公司借款）與報銷（代墊後請款，可附發票照片），管理員審核
 - **附件**：請假的診斷證明、加班的佐證可以上傳（圖片或 PDF，3 MB 內）
 
 ### 排班
@@ -47,6 +48,7 @@
 - 打卡地點設定（座標與半徑）
 - 離職處理：標記狀態、作廢登入、排除薪資計算，可復職
 - 出勤分析圖表
+- 操作紀錄：審核、權限、員工、排班、薪資設定等管理操作，記下誰在什麼時候做了什麼（身分證字號、帳號會遮蔽）
 
 ### 系統
 - **多國語系**：繁中、英、日、韓、越、泰、印尼
@@ -117,6 +119,8 @@ node tools/smoke-test.js salary.html
 ├── api.js                  所有後端呼叫的唯一入口（GET/POST 切換）
 ├── script.js               主頁邏輯
 ├── announcements.js        公告
+├── audit-log.js            管理員分頁的操作紀錄
+├── expense.js              費用申請（預支／報銷）與審核
 ├── users.js                員工管理、離職處理
 ├── punch-adjust.js         補打卡
 ├── qr-punch.js             QR Code 與 LINE Bot 網頁打卡
@@ -143,9 +147,10 @@ node tools/smoke-test.js salary.html
     ├── SystemSettings.gs   工作時段、加班倍率、投保級距、所得稅、自訂項目
     ├── SalaryManagement.gs 薪資計算核心
     ├── SalaryTools.gs      批次計算、設定複製
-    ├── AuditLog.gs         薪資異動記錄
+    ├── AuditLog.gs         薪資異動記錄、管理操作記錄
     ├── Offboarding.gs      薪資簽收、離職處理
     ├── Attachments.gs      附件
+    ├── Expense.gs          費用申請（預支／報銷）
     ├── LeaveManagement.gs / OvertimeOperations.gs / ShiftManagement.gs
     ├── WorklogOperations.gs / WorklogHandlers.gs
     ├── LineBotPunch.gs / LineNotification.gs / LineApi.gs

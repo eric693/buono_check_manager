@@ -1,6 +1,6 @@
 // attachments.js
 //
-// 申請單附件：請假的診斷證明、加班的佐證、補打卡的說明照片。
+// 申請單附件：請假的診斷證明、加班的佐證、補打卡的說明照片、報銷的發票。
 //
 // 附件是掛在「記錄鍵」上的，不是掛在試算表列號上 —— 列號會因為刪除其他列而位移，
 // 掛上去遲早會對到別人的申請。記錄鍵由申請單本身的欄位組出來，申請人與審核者
@@ -33,6 +33,9 @@ function buildAttachmentKey(type, record) {
     }
     if (type === 'worklog') {
         return `worklog:${record.id || ''}`;
+    }
+    if (type === 'expense') {
+        return `expense:${record.id || ''}`;
     }
 
     return `${type}:${employeeId}`;
@@ -122,6 +125,23 @@ async function renderAttachments(container, type, recordKey, options = {}) {
     await refreshAttachmentList(list, type, recordKey, canUpload);
 }
 
+/**
+ * 上傳一個檔案到指定記錄。回傳後端的結果（{ ok, msg, attachment }）
+ */
+async function uploadAttachmentFile(type, recordKey, file) {
+    const data = await readFileAsBase64(file);
+    const query =
+        `type=${encodeURIComponent(type)}` +
+        `&recordKey=${encodeURIComponent(recordKey)}` +
+        `&filename=${encodeURIComponent(file.name)}` +
+        `&mimeType=${encodeURIComponent(file.type)}` +
+        `&data=${encodeURIComponent(data)}`;
+
+    const res = await callApifetch(`uploadAttachment&${query}`, null);
+    if (res.ok) _attachmentCache = null;  // 剛上傳的不在批次快取裡
+    return res;
+}
+
 function buildAttachmentUploader(type, recordKey, onDone) {
     const wrapper = document.createElement('div');
     wrapper.className = 'attachment-upload';
@@ -153,19 +173,10 @@ function buildAttachmentUploader(type, recordKey, onDone) {
         button.textContent = t('ATTACHMENT_UPLOADING');
 
         try {
-            const data = await readFileAsBase64(file);
-            const query =
-                `type=${encodeURIComponent(type)}` +
-                `&recordKey=${encodeURIComponent(recordKey)}` +
-                `&filename=${encodeURIComponent(file.name)}` +
-                `&mimeType=${encodeURIComponent(file.type)}` +
-                `&data=${encodeURIComponent(data)}`;
-
-            const res = await callApifetch(`uploadAttachment&${query}`, null);
+            const res = await uploadAttachmentFile(type, recordKey, file);
 
             if (res.ok) {
                 showNotification(t('ATTACHMENT_UPLOADED'), 'success');
-                _attachmentCache = null;  // 剛上傳的不在批次快取裡
                 if (onDone) await onDone();
             } else {
                 showNotification(res.msg || t('ATTACHMENT_UPLOAD_FAILED'), 'error');
