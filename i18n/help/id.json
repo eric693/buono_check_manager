@@ -182,9 +182,9 @@
         "Tambah atau ubah koordinat dan radius absen di \"Lokasi absen\" - ini langsung menentukan karyawan bisa absen atau tidak.",
         "\"Analisis absensi\" menampilkan total jam kerja dan sebaran waktu absen; bagian laporan mengekspor Excel untuk HR atau akuntansi.",
         "「Pengajuan biaya menunggu」untuk meninjau uang muka dan penggantian karyawan; untuk penggantian, buka lampiran untuk melihat foto bukti.",
-        "Di「Kios absen」, isi nama lokasi lalu buat tautan. Buka di tablet kantor dan biarkan menyala; layar terus menampilkan kode QR masuk/pulang yang berganti otomatis.「QR Code 打卡管理」digunakan untuk membuat kode QR sementara.",
+        "Di「Kios absen」, isi nama lokasi lalu buat tautan. Buka di tablet kantor dan biarkan menyala; layar terus menampilkan kode QR masuk/pulang yang berganti otomatis.「Absen kode QR」digunakan untuk membuat kode QR sementara.",
         "「Log aktivitas」bisa dicari per bulan, tindakan, dan kata kunci untuk melihat siapa mengubah persetujuan, peran, karyawan, jadwal, atau pengaturan gaji, dan kapan.",
-        "Tombol「編輯姓名」di manajemen karyawan mengubah nama LINE karyawan menjadi nama asli."
+        "Tombol「Ubah nama」di manajemen karyawan mengubah nama LINE karyawan menjadi nama asli."
       ],
       "notes": [
         "Persetujuan langsung memengaruhi absensi dan perhitungan gaji; saat menolak, tulis alasannya dengan jelas.",

@@ -1757,42 +1757,43 @@
                     </div>
                     <!-- QR Code 打卡管理 -->
                     <div class="card p-6 mt-6">
-                        <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-2">QR Code 打卡管理</h2>
-                        <p class="text-gray-500 dark:text-gray-400 mb-4">產生限時 QR Code，讓員工掃描打卡，無需 GPS 定位。</p>
+                        <h2 data-i18n="QR_ADMIN_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-2">QR Code 打卡管理</h2>
+                        <p data-i18n="QR_ADMIN_DESC" class="text-gray-500 dark:text-gray-400 mb-4">產生限時 QR Code，讓員工掃描打卡，無需 GPS 定位。</p>
 
                         <div class="space-y-4">
                             <!-- 打卡類型 -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">打卡類型</label>
+                                <label data-i18n="QR_TYPE_LABEL" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">打卡類型</label>
                                 <div class="flex space-x-3">
                                     <label class="flex items-center space-x-2 cursor-pointer">
                                         <input type="radio" name="qr-punch-type" value="上班" id="qr-type-in" checked
                                                class="text-indigo-600">
-                                        <span class="text-gray-700 dark:text-gray-300 font-medium">上班打卡</span>
+                                        <span data-i18n="KIOSK_CHECK_IN" class="text-gray-700 dark:text-gray-300 font-medium">上班打卡</span>
                                     </label>
                                     <label class="flex items-center space-x-2 cursor-pointer">
                                         <input type="radio" name="qr-punch-type" value="下班" id="qr-type-out"
                                                class="text-indigo-600">
-                                        <span class="text-gray-700 dark:text-gray-300 font-medium">下班打卡</span>
+                                        <span data-i18n="KIOSK_CHECK_OUT" class="text-gray-700 dark:text-gray-300 font-medium">下班打卡</span>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- 有效時間 -->
                             <div>
-                                <label for="qr-valid-minutes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <label for="qr-valid-minutes" data-i18n="QR_VALID_LABEL" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     QR Code 有效時間
                                 </label>
                                 <select id="qr-valid-minutes"
                                         class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
-                                    <option value="5">5 分鐘</option>
-                                    <option value="10" selected>10 分鐘</option>
-                                    <option value="15">15 分鐘</option>
-                                    <option value="30">30 分鐘</option>
-                                    <option value="60">60 分鐘</option>
-                                    <option value="custom">自訂...</option>
+                                    <option value="5" data-i18n-option="QR_MIN_5">5 分鐘</option>
+                                    <option value="10" selected data-i18n-option="QR_MIN_10">10 分鐘</option>
+                                    <option value="15" data-i18n-option="QR_MIN_15">15 分鐘</option>
+                                    <option value="30" data-i18n-option="QR_MIN_30">30 分鐘</option>
+                                    <option value="60" data-i18n-option="QR_MIN_60">60 分鐘</option>
+                                    <option value="custom" data-i18n-option="QR_MIN_CUSTOM">自訂...</option>
                                 </select>
                                 <input type="number" id="qr-valid-minutes-custom" min="1" max="1440"
+                                       data-i18n="QR_CUSTOM_PLACEHOLDER"
                                        placeholder="輸入分鐘數 (1~1440)"
                                        style="display:none;"
                                        class="w-full mt-2 p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
@@ -1800,16 +1801,15 @@
 
                             <!-- 地點名稱 (選填) -->
                             <div>
-                                <label for="qr-location-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    地點名稱 <span class="text-gray-400">(選填)</span>
-                                </label>
-                                <input type="text" id="qr-location-name" placeholder="例如：台北辦公室"
+                                <label for="qr-location-name" data-i18n="QR_LOCATION_LABEL" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">地點名稱（選填）</label>
+                                <input type="text" id="qr-location-name" maxlength="50" data-i18n="QR_LOCATION_PLACEHOLDER" placeholder="例如：台北辦公室"
                                        class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
                             </div>
 
                             <!-- 生成按鈕 -->
                             <button id="generate-qr-btn"
                                     onclick="generateAdminQRCode()"
+                                    data-i18n="QR_GENERATE_BTN"
                                     class="w-full py-3 px-4 rounded-lg font-bold btn-primary">
                                 產生 QR Code
                             </button>
@@ -1828,7 +1828,7 @@
 
                                 <!-- 倒數計時 -->
                                 <div id="qr-countdown-container" class="space-y-2">
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">QR Code 有效時間剩餘</p>
+                                    <p data-i18n="QR_REMAINING" class="text-sm text-gray-500 dark:text-gray-400">QR Code 有效時間剩餘</p>
                                     <div id="qr-countdown" class="text-4xl font-bold font-mono text-indigo-600 dark:text-indigo-400">--:--</div>
                                     <div id="qr-progress-bar" class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-2">
                                         <div id="qr-progress-fill" class="bg-indigo-600 h-2 rounded-full transition-all duration-1000" style="width:100%"></div>
@@ -1836,7 +1836,7 @@
                                 </div>
 
                                 <!-- 過期提示 -->
-                                <div id="qr-expired-msg" style="display:none;"
+                                <div id="qr-expired-msg" style="display:none;" data-i18n="QR_EXPIRED_MSG"
                                      class="mt-4 p-3 bg-red-50 dark:bg-red-900/30 rounded-lg text-red-600 dark:text-red-400 font-semibold">
                                     QR Code 已過期，請重新產生
                                 </div>
@@ -1844,6 +1844,7 @@
                                 <!-- 重新產生按鈕 -->
                                 <button id="qr-regenerate-btn" style="display:none;"
                                         onclick="generateAdminQRCode()"
+                                        data-i18n="QR_REGENERATE_BTN"
                                         class="mt-4 w-full py-2 px-4 rounded-lg font-bold btn-primary">
                                     重新產生 QR Code
                                 </button>

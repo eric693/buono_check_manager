@@ -21,7 +21,7 @@ async function loadAllUsers() {
         
         // 按鈕進入處理中狀態
         if (refreshBtn) {
-            generalButtonState(refreshBtn, 'processing', '載入中...');
+            generalButtonState(refreshBtn, 'processing', t('LOADING'));
         }
         
         const res = await callApifetch('getAllUsers');
@@ -71,71 +71,71 @@ function renderUsersList(users) {
 
         div.innerHTML = `
         <div class="flex items-start space-x-3">
-            <img src="${user.picture || 'https://via.placeholder.com/48'}" 
+            <img src="${escapeHtml(user.picture || 'https://via.placeholder.com/48')}" 
                 alt="${escapeHtml(user.name)}" 
                 class="w-12 h-12 flex-shrink-0 rounded-full border-2 ${isAdmin ? 'border-yellow-400' : isScheduler ? 'border-blue-400' : 'border-gray-300'}">
             
             <div class="flex-1 min-w-0">
                 <div class="flex flex-wrap items-center gap-1 mb-1">
                     <p class="font-bold text-gray-800 dark:text-white truncate">${escapeHtml(user.name)}</p>
-                    ${isCurrentUser ? '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full whitespace-nowrap">您</span>' : ''}
-                    ${isAdmin ? '<span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full whitespace-nowrap">管理員</span>' : 
-                      isScheduler ? '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full whitespace-nowrap">排班人員</span>' :
-                      '<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full whitespace-nowrap">員工</span>'}
+                    ${isCurrentUser ? `<span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full whitespace-nowrap">${escapeHtml(t('USERS_BADGE_YOU'))}</span>` : ''}
+                    ${isAdmin ? `<span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full whitespace-nowrap">${escapeHtml(t('ROLE_ADMIN'))}</span>` : 
+                      isScheduler ? `<span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full whitespace-nowrap">${escapeHtml(t('ROLE_SCHEDULER'))}</span>` :
+                      `<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full whitespace-nowrap">${escapeHtml(t('ROLE_EMPLOYEE'))}</span>`}
                 </div>
                 
                 <p class="text-xs text-gray-600 dark:text-gray-400 mb-2 truncate">
-                    ${escapeHtml(user.dept || '未設定部門')} ${user.rate ? `| ${user.rate}` : ''}
+                    ${escapeHtml(user.dept ? roleLabel(user.dept) : t('USERS_NO_DEPT'))} ${user.rate ? `| ${escapeHtml(user.rate)}` : ''}
                 </p>
                 
                 ${!isCurrentUser ? `
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="openEditNameDialog('${user.userId}', '${escapeJsAttr(user.name)}')"
+                        <button onclick="openEditNameDialog('${escapeJsAttr(user.userId)}', '${escapeJsAttr(user.name)}')"
                                 class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-md transition-colors">
-                             編輯姓名
+                            ${escapeHtml(t('BTN_EDIT_NAME'))}
                         </button>
                         
                         ${isAdmin ? `
-                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'scheduler')"
+                            <button onclick="changeUserRole('${escapeJsAttr(user.userId)}', '${escapeJsAttr(user.name)}', 'scheduler')"
                                     class="flex-1 min-w-[120px] px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-md transition-colors">
-                                改為排班人員
+                                ${escapeHtml(t('BTN_ROLE_TO_SCHEDULER'))}
                             </button>
-                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'employee')"
+                            <button onclick="changeUserRole('${escapeJsAttr(user.userId)}', '${escapeJsAttr(user.name)}', 'employee')"
                                     class="flex-1 min-w-[120px] px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-md transition-colors">
-                                降級為員工
+                                ${escapeHtml(t('BTN_DEMOTE_TO_EMPLOYEE'))}
                             </button>
                         ` : isScheduler ? `
-                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'admin')"
+                            <button onclick="changeUserRole('${escapeJsAttr(user.userId)}', '${escapeJsAttr(user.name)}', 'admin')"
                                     class="flex-1 min-w-[120px] px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs font-semibold rounded-md transition-colors">
-                                升級為管理員
+                                ${escapeHtml(t('BTN_PROMOTE_TO_ADMIN'))}
                             </button>
-                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'employee')"
+                            <button onclick="changeUserRole('${escapeJsAttr(user.userId)}', '${escapeJsAttr(user.name)}', 'employee')"
                                     class="flex-1 min-w-[120px] px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-md transition-colors">
-                                降級為員工
+                                ${escapeHtml(t('BTN_DEMOTE_TO_EMPLOYEE'))}
                             </button>
                         ` : `
-                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'admin')"
+                            <button onclick="changeUserRole('${escapeJsAttr(user.userId)}', '${escapeJsAttr(user.name)}', 'admin')"
                                     class="flex-1 min-w-[120px] px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs font-semibold rounded-md transition-colors">
-                                升級為管理員
+                                ${escapeHtml(t('BTN_PROMOTE_TO_ADMIN'))}
                             </button>
-                            <button onclick="changeUserRole('${user.userId}', '${escapeJsAttr(user.name)}', 'scheduler')"
+                            <button onclick="changeUserRole('${escapeJsAttr(user.userId)}', '${escapeJsAttr(user.name)}', 'scheduler')"
                                     class="flex-1 min-w-[120px] px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-md transition-colors">
-                                升級為排班人員
+                                ${escapeHtml(t('BTN_PROMOTE_TO_SCHEDULER'))}
                             </button>
                         `}
                         
-                        <button onclick="offboardEmployee('${user.userId}', '${escapeJsAttr(user.name)}')"
+                        <button onclick="offboardEmployee('${escapeJsAttr(user.userId)}', '${escapeJsAttr(user.name)}')"
                                 class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-md transition-colors">
-                            辦理離職
+                            ${escapeHtml(t('AUDIT_ACTION_OFFBOARD_EMPLOYEE'))}
                         </button>
                         
-                        <button onclick="confirmDeleteUser('${user.userId}', '${escapeJsAttr(user.name)}')"
+                        <button onclick="confirmDeleteUser('${escapeJsAttr(user.userId)}', '${escapeJsAttr(user.name)}')"
                                 class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-md transition-colors">
-                            刪除
+                            ${escapeHtml(t('BTN_DELETE'))}
                         </button>
                     </div>
                 ` : `
-                    <span class="text-xs text-gray-500 dark:text-gray-400">無法操作自己</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">${escapeHtml(t('USERS_CANNOT_EDIT_SELF'))}</span>
                 `}
             </div>
         </div>
@@ -143,6 +143,16 @@ function renderUsersList(users) {
         
         listEl.appendChild(div);
     });
+}
+
+/**
+ * 權限值（後端存中文）→ 目前語言的顯示文字
+ */
+function roleLabel(dept) {
+    if (dept === '管理員') return t('ROLE_ADMIN');
+    if (dept === '排班人員') return t('ROLE_SCHEDULER');
+    if (dept === '員工') return t('ROLE_EMPLOYEE');
+    return dept;
 }
 
 /**
@@ -188,14 +198,14 @@ async function changeUserRole(userId, userName, newRole) {
     // const roleText = newRole === 'admin' ? '管理員' : '員工';
     
     const roleMap = {
-        'admin': '管理員',
-        'scheduler': '排班人員',  //  新增
-        'employee': '員工'
+        'admin': t('ROLE_ADMIN'),
+        'scheduler': t('ROLE_SCHEDULER'),
+        'employee': t('ROLE_EMPLOYEE')
     };
 
     const roleText = roleMap[newRole] || newRole;
     
-    if (!confirm(`確定要將「${userName}」的角色改為「${roleText}」嗎？`)) {
+    if (!confirm(t('USERS_ROLE_CONFIRM', { name: userName, role: roleText }))) {
         return;
     }
 
@@ -220,7 +230,7 @@ async function changeUserRole(userId, userName, newRole) {
                 }, 2000);
             }
         } else {
-            showNotification(res.msg || '操作失敗', 'error');
+            showNotification(res.msg || t('NOTIF_OPERATION_FAILED'), 'error');
         }
         
     } catch (error) {
@@ -233,11 +243,11 @@ async function changeUserRole(userId, userName, newRole) {
  * 確認刪除用戶
  */
 function confirmDeleteUser(userId, userName) {
-    if (!confirm(` 警告：確定要刪除用戶「${userName}」嗎？\n\n此操作無法復原！`)) {
+    if (!confirm(t('USERS_DELETE_CONFIRM', { name: userName }))) {
         return;
     }
     
-    if (!confirm(`再次確認：真的要刪除「${userName}」嗎？`)) {
+    if (!confirm(t('USERS_DELETE_CONFIRM_AGAIN', { name: userName }))) {
         return;
     }
     
@@ -259,7 +269,7 @@ async function deleteUser(userId, userName) {
             // 重新載入列表
             await loadAllUsers();
         } else {
-            showNotification(res.msg || '刪除失敗', 'error');
+            showNotification(res.msg || t('DELETE_FAILED'), 'error');
         }
         
     } catch (error) {
@@ -277,41 +287,41 @@ function openEditNameDialog(userId, currentName) {
     dialog.innerHTML = `
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">
-                 編輯員工姓名
+                ${escapeHtml(t('EDIT_NAME_TITLE'))}
             </h3>
             
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    目前姓名
+                    ${escapeHtml(t('EDIT_NAME_CURRENT'))}
                 </label>
                 <input type="text" 
-                       value="${currentName}" 
+                       value="${escapeHtml(currentName)}" 
                        disabled
                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-500 dark:text-gray-400">
             </div>
             
             <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    新姓名 <span class="text-red-500">*</span>
+                    ${escapeHtml(t('EDIT_NAME_NEW'))} <span class="text-red-500">*</span>
                 </label>
                 <input type="text" 
                        id="new-name-input"
-                       placeholder="請輸入新姓名（至少 2 個字）"
+                       placeholder="${escapeHtml(t('EDIT_NAME_PLACEHOLDER'))}"
                        maxlength="50"
                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    ℹ 修改後將立即生效
+                    ${escapeHtml(t('EDIT_NAME_HINT'))}
                 </p>
             </div>
             
             <div class="flex space-x-3">
                 <button onclick="closeEditNameDialog()"
                         class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-semibold transition-colors">
-                    取消
+                    ${escapeHtml(t('BTN_CANCEL'))}
                 </button>
-                <button onclick="saveNewName('${userId}')"
+                <button onclick="saveNewName('${escapeJsAttr(userId)}')"
                         class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
-                    確認修改
+                    ${escapeHtml(t('BTN_CONFIRM_CHANGE'))}
                 </button>
             </div>
         </div>
@@ -376,6 +386,12 @@ async function saveNewName(userId) {
         return;
     }
     
+    if (/[<>]/.test(newName)) {
+        showNotification(t('REAL_NAME_INVALID_CHARS'), 'error');
+        input.focus();
+        return;
+    }
+    
     try {
         showNotification(t('NOTIF_UPDATING'), 'info');
         
@@ -392,7 +408,7 @@ async function saveNewName(userId) {
             // 重新載入用戶列表
             await loadAllUsers();
         } else {
-            showNotification(res.msg || '更新失敗', 'error');
+            showNotification(res.msg || t('UPDATE_FAILED'), 'error');
         }
         
     } catch (error) {
@@ -489,6 +505,10 @@ async function saveEmployeeBasicInfo() {
             showNotification(t('NOTIF_NAME_TOO_SHORT'), 'error');
             return;
         }
+        if (/[<>]/.test(realName)) {
+            showNotification(t('REAL_NAME_INVALID_CHARS'), 'error');
+            return;
+        }
         
         if (!idNumber) {
             showNotification(t('NOTIF_ID_NUMBER_REQUIRED'), 'error');
@@ -539,7 +559,7 @@ async function saveEmployeeBasicInfo() {
                 updateTimeEl.style.display = 'block';
             }
         } else {
-            showNotification(res.msg || '儲存失敗', 'error');
+            showNotification(res.msg || t('NOTIF_SAVE_FAILED'), 'error');
         }
         
     } catch (error) {

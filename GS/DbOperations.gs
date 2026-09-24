@@ -1564,6 +1564,14 @@ function updateEmployeeName(userId, newName) {
       };
     }
     
+    // 姓名會顯示在各種管理畫面上，擋掉 HTML 符號，就算哪個畫面漏了跳脫也不會被塞進程式碼
+    if (/[<>]/.test(trimmedName)) {
+      return {
+        ok: false,
+        msg: '姓名不能包含 < 或 > 符號'
+      };
+    }
+    
     const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_EMPLOYEES);
     
     if (!sheet) {

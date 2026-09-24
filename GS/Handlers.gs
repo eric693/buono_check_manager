@@ -2078,6 +2078,9 @@ function handleSetEmployeeBasicInfo(params) {
     if (realName.length < 2 || realName.length > 50) {
       return { ok: false, code: 'NOTIF_NAME_TOO_SHORT', msg: '姓名需為 2～50 個字' };
     }
+    if (/[<>]/.test(realName)) {
+      return { ok: false, code: 'REAL_NAME_INVALID_CHARS', msg: '姓名不能包含 < 或 > 符號' };
+    }
 
     // ⭐⭐⭐ 關鍵修正：使用當前使用者的 ID，不從前端接收
     const employeeData = {

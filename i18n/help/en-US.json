@@ -182,7 +182,7 @@
         "Add or adjust the allowed punch coordinates and radius under \"Punch locations\" - this directly decides whether staff can punch.",
         "\"Attendance analysis\" shows overall hours and punch-time distribution; the report section exports Excel for HR or accounting.",
         "\"Pending expense requests\" is where you review employees' advances and reimbursements; open the attachments to see receipt photos.",
-        "Under \"Punch kiosk\", enter a location name and create a link. Open it on a company tablet and leave it on — it keeps showing refreshing clock-in and clock-out QR codes. \"QR Code punch management\" creates a one-off QR code instead.",
+        "Under \"Punch kiosk\", enter a location name and create a link. Open it on a company tablet and leave it on — it keeps showing refreshing clock-in and clock-out QR codes. \"QR code punch\" creates a one-off QR code instead.",
         "\"Activity log\" lets you search by month, action and keyword to see who changed reviews, roles, employees, shifts or salary settings, and when.",
         "\"Edit name\" under employee management changes an employee's LINE name to their real name."
       ],

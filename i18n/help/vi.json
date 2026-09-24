@@ -182,9 +182,9 @@
         "Thêm hoặc chỉnh toạ độ và bán kính cho phép ở \"Địa điểm chấm công\" - việc này quyết định nhân viên có chấm công được hay không.",
         "\"Phân tích chấm công\" cho thấy tổng giờ làm và phân bố giờ chấm công; khu báo cáo xuất Excel cho nhân sự hoặc kế toán.",
         "「Đề nghị chi phí chờ duyệt」dùng để duyệt tạm ứng và hoàn ứng của nhân viên; với hoàn ứng có thể mở tệp đính kèm để xem ảnh hóa đơn.",
-        "Trong「Máy chấm công」, nhập tên địa điểm rồi tạo liên kết. Mở trên máy tính bảng của công ty và để đó, màn hình sẽ liên tục hiển thị mã QR vào ca/tan ca tự đổi. 「QR Code 打卡管理」dùng để tạo mã QR dùng tạm thời.",
+        "Trong「Máy chấm công」, nhập tên địa điểm rồi tạo liên kết. Mở trên máy tính bảng của công ty và để đó, màn hình sẽ liên tục hiển thị mã QR vào ca/tan ca tự đổi. 「Chấm công bằng mã QR」dùng để tạo mã QR dùng tạm thời.",
         "「Nhật ký thao tác」cho phép tìm theo tháng, thao tác và từ khóa để biết ai đã thay đổi phê duyệt, quyền, nhân viên, ca làm hay cài đặt lương vào lúc nào.",
-        "Nút「編輯姓名」trong quản lý nhân viên dùng để đổi tên LINE của nhân viên thành tên thật."
+        "Nút「Sửa tên」trong quản lý nhân viên dùng để đổi tên LINE của nhân viên thành tên thật."
       ],
       "notes": [
         "Duyệt xong là ảnh hưởng ngay tới chấm công và tính lương; khi từ chối hãy ghi rõ lý do.",

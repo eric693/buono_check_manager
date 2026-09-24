@@ -5,6 +5,16 @@
 // 從 script.js 拆出來的：那支原本 4,000 多行，每個頁面都要整份載入。
 // 這裡的函式仍然是全域的，載入順序沒有相依性。
 
+/**
+ * 後端的錯誤訊息只有中文（有些會附上距離等細節）。中文介面直接用，
+ * 其他語言改用翻譯好的通用訊息，員工才看得懂。
+ */
+function punchServerMessage(res, fallbackKey) {
+    const lang = (typeof currentLang !== 'undefined' && currentLang) || 'zh-TW';
+    if (lang === 'zh-TW' && res && res.msg) return res.msg;
+    return t(fallbackKey);
+}
+
 async function handleLinePunchFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('linePunchToken');
@@ -19,11 +29,14 @@ async function handleLinePunchFromUrl() {
     overlay.innerHTML = `
       <div style="background:#fff;border-radius:16px;padding:32px 24px;max-width:320px;width:90%;text-align:center;">
         <div id="lpo-icon" style="font-size:48px;margin-bottom:12px;">📍</div>
-        <div id="lpo-title" style="font-size:20px;font-weight:bold;margin-bottom:8px;">正在取得位置...</div>
-        <div id="lpo-sub" style="font-size:14px;color:#666;margin-bottom:16px;">請允許瀏覽器存取您的 GPS 位置</div>
-        <button id="lpo-close" style="display:none;margin-top:8px;padding:10px 28px;border-radius:8px;border:none;background:#4CAF50;color:#fff;font-size:16px;cursor:pointer;">關閉</button>
+        <div id="lpo-title" style="font-size:20px;font-weight:bold;margin-bottom:8px;"></div>
+        <div id="lpo-sub" style="font-size:14px;color:#666;margin-bottom:16px;"></div>
+        <button id="lpo-close" style="display:none;margin-top:8px;padding:10px 28px;border-radius:8px;border:none;background:#4CAF50;color:#fff;font-size:16px;cursor:pointer;"></button>
       </div>`;
     document.body.appendChild(overlay);
+    overlay.querySelector('#lpo-title').textContent = t('LPT_LOCATING');
+    overlay.querySelector('#lpo-sub').textContent = t('LPT_ALLOW_GPS');
+    overlay.querySelector('#lpo-close').textContent = t('LPT_CLOSE');
 
     const setResult = (icon, title, sub, btnColor) => {
         overlay.querySelector('#lpo-icon').textContent = icon;
@@ -43,7 +56,7 @@ async function handleLinePunchFromUrl() {
             });
         });
 
-        overlay.querySelector('#lpo-title').textContent = '正在打卡...';
+        overlay.querySelector('#lpo-title').textContent = t('LPT_PUNCHING');
         overlay.querySelector('#lpo-sub').textContent = '';
 
         const params = new URLSearchParams({
@@ -55,9 +68,9 @@ async function handleLinePunchFromUrl() {
         const res = await callApifetch(`linePunch&${params.toString()}`);
 
         if (res.ok) {
-            const typeText = res.punchType === '上班' ? '🟢 上班打卡' : '🟠 下班打卡';
+            const typeText = res.punchType === '上班' ? '🟢 ' + t('KIOSK_CHECK_IN') : '🟠 ' + t('KIOSK_CHECK_OUT');
             const detailText = `${res.location ? res.location + '｜' : ''}${res.time || ''}`;
-            setResult('✅', typeText + ' 成功！', detailText, '#4CAF50');
+            setResult('✅', t('LPT_SUCCESS', { type: typeText }), detailText, '#4CAF50');
 
             // 3 秒倒數後自動關閉，並嘗試返回上一頁
             const card = overlay.querySelector('div');
@@ -65,7 +78,7 @@ async function handleLinePunchFromUrl() {
             countdownEl.style.cssText = 'font-size:12px;color:#aaa;margin-top:10px;';
             card.appendChild(countdownEl);
             let secs = 3;
-            countdownEl.textContent = `${secs} 秒後自動關閉`;
+            countdownEl.textContent = t('LPT_AUTO_CLOSE', { secs: secs });
             const autoCloseTimer = setInterval(() => {
                 secs--;
                 if (secs <= 0) {
@@ -73,7 +86,7 @@ async function handleLinePunchFromUrl() {
                     overlay.remove();
                     try { window.history.back(); } catch(e) {}
                 } else {
-                    countdownEl.textContent = `${secs} 秒後自動關閉`;
+                    countdownEl.textContent = t('LPT_AUTO_CLOSE', { secs: secs });
                 }
             }, 1000);
             overlay.querySelector('#lpo-close').onclick = () => {
@@ -85,16 +98,17 @@ async function handleLinePunchFromUrl() {
             await loadAbnormalRecordsInBackground();
         } else {
             const msgMap = {
-                ERR_LPT_INVALID:  '連結無效或已使用，請重新在 LINE 輸入打卡指令',
-                ERR_LPT_EXPIRED:  '連結已過期（5 分鐘），請重新在 LINE 輸入打卡指令',
-                ERR_NOT_IN_RANGE: res.msg || '不在打卡範圍內',
-                ERR_DUPLICATE_PUNCH: '您剛剛已打過卡了'
+                ERR_LPT_INVALID:  t('LPT_ERR_INVALID'),
+                ERR_LPT_EXPIRED:  t('LPT_ERR_EXPIRED'),
+                // 後端的中文訊息會附上最近的打卡地點與距離，中文介面直接用
+                ERR_NOT_IN_RANGE: punchServerMessage(res, 'LPT_ERR_NOT_IN_RANGE'),
+                ERR_DUPLICATE_PUNCH: t('LPT_ERR_DUPLICATE')
             };
-            setResult('❌', '打卡失敗', msgMap[res.code] || res.msg || '請稍後再試', '#f44336');
+            setResult('❌', t('LPT_FAILED'), msgMap[res.code] || punchServerMessage(res, 'LPT_TRY_LATER'), '#f44336');
         }
     } catch (err) {
-        const geoErrors = { 1: '請允許位置存取權限後重試', 3: 'GPS 逾時，請確認定位已開啟' };
-        setResult('❌', '無法取得位置', geoErrors[err.code] || '請確認 GPS 已開啟', '#f44336');
+        const geoErrors = { 1: t('LPT_GEO_DENIED'), 3: t('LPT_GEO_TIMEOUT') };
+        setResult('❌', t('LPT_NO_LOCATION'), geoErrors[err.code] || t('LPT_GEO_CHECK'), '#f44336');
     }
 }
 
@@ -132,12 +146,12 @@ async function performQRPunch(qrTokenId) {
             await loadAbnormalRecordsInBackground();
         } else {
             const msgMap = {
-                'ERR_QR_EXPIRED':       'QR Code 已過期，請聯絡管理員重新產生',
-                'ERR_QR_INVALID':       'QR Code 無效或已失效',
-                'ERR_DUPLICATE_PUNCH':  res.msg || '今天已打過此類型的卡',
-                'ERR_SESSION_INVALID':  '請先登入再掃描 QR Code'
+                'ERR_QR_EXPIRED':       t('QR_ERR_EXPIRED'),
+                'ERR_QR_INVALID':       t('QR_ERR_INVALID'),
+                'ERR_DUPLICATE_PUNCH':  punchServerMessage(res, 'QR_ERR_DUPLICATE'),
+                'ERR_SESSION_INVALID':  t('QR_ERR_LOGIN')
             };
-            showNotification(msgMap[res.code] || res.msg || 'QR 打卡失敗', 'error');
+            showNotification(msgMap[res.code] || punchServerMessage(res, 'NOTIF_QR_PUNCH_FAILED'), 'error');
         }
     } catch (err) {
         console.error('QR 打卡錯誤:', err);
@@ -171,7 +185,7 @@ async function generateAdminQRCode() {
 
     const btn = document.getElementById('generate-qr-btn');
     btn.disabled    = true;
-    btn.textContent = '產生中...';
+    btn.textContent = t('QR_GENERATING');
 
     try {
         const res = await callApifetch(
@@ -204,7 +218,7 @@ async function generateAdminQRCode() {
 
         // 標籤顯示
         const typeBadge = document.getElementById('qr-type-badge');
-        typeBadge.textContent = punchType === '上班' ? '上班打卡' : '下班打卡';
+        typeBadge.textContent = punchType === '上班' ? t('KIOSK_CHECK_IN') : t('KIOSK_CHECK_OUT');
         typeBadge.className   = punchType === '上班'
             ? 'inline-block px-3 py-1 rounded-full text-sm font-bold mb-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
             : 'inline-block px-3 py-1 rounded-full text-sm font-bold mb-3 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300';
@@ -237,7 +251,7 @@ async function generateAdminQRCode() {
         showNotification(t('NOTIF_QR_GENERATE_FAILED'), 'error');
     } finally {
         btn.disabled    = false;
-        btn.textContent = '產生 QR Code';
+        btn.textContent = t('QR_GENERATE_BTN');
     }
 }
 
