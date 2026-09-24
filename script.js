@@ -1776,6 +1776,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             initAdminAnalysis();
             if (typeof loadAllUsers === 'function') loadAllUsers();
             if (typeof loadPendingExpenses === 'function') loadPendingExpenses();
+            if (typeof initKioskAdmin === 'function') initKioskAdmin();
             if (typeof initAdminAuditLog === 'function') initAdminAuditLog();
             refreshLocationPicker();
         } else if (tabId === 'overtime-view') {

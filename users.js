@@ -428,6 +428,12 @@ async function initEmployeeBasicInfo() {
         if (loadingEl) loadingEl.style.display = 'none';
         if (formEl) formEl.style.display = 'block';
         
+        // 姓名：填過就用填的，沒填過先帶目前系統上的名字（通常是 LINE 名稱）讓員工改
+        const nameInput = document.getElementById('employee-real-name');
+        if (nameInput) {
+            nameInput.value = (res.data && res.data.employeeName) || res.currentName || '';
+        }
+        
         if (res.ok && res.data) {
             console.log(' 載入成功，填入資料'); //  改這裡
             
@@ -468,12 +474,22 @@ async function saveEmployeeBasicInfo() {
         const loadingText = t('SAVING') || '儲存中...';
         
         // 取得表單資料
+        const realName = (document.getElementById('employee-real-name')?.value || '').trim();
         const idNumber = document.getElementById('employee-id-number').value.trim();
         const address = document.getElementById('employee-address').value.trim();
         const phone = document.getElementById('employee-phone').value.trim();
         const birthDate = document.getElementById('employee-birthdate').value;
         
         // 驗證必填欄位
+        if (!realName) {
+            showNotification(t('REAL_NAME_REQUIRED'), 'error');
+            return;
+        }
+        if (realName.length < 2) {
+            showNotification(t('NOTIF_NAME_TOO_SHORT'), 'error');
+            return;
+        }
+        
         if (!idNumber) {
             showNotification(t('NOTIF_ID_NUMBER_REQUIRED'), 'error');
             return;
@@ -493,11 +509,25 @@ async function saveEmployeeBasicInfo() {
         
         // 呼叫 API
         const res = await callApifetch(
-            `setEmployeeBasicInfo&idNumber=${encodeURIComponent(idNumber)}&address=${encodeURIComponent(address)}&phone=${encodeURIComponent(phone)}&birthDate=${encodeURIComponent(birthDate)}`
+            `setEmployeeBasicInfo&name=${encodeURIComponent(realName)}&idNumber=${encodeURIComponent(idNumber)}&address=${encodeURIComponent(address)}&phone=${encodeURIComponent(phone)}&birthDate=${encodeURIComponent(birthDate)}`
         );
         
         if (res.ok) {
             showNotification(t('SAVE_SUCCESS') || '儲存成功！', 'success');
+            
+            // 畫面上方的名字與快取的使用者資料一起換掉，不必重新登入
+            const newName = res.name || realName;
+            const userNameEl = document.getElementById('user-name');
+            if (userNameEl) userNameEl.textContent = newName;
+            try {
+                const cached = JSON.parse(localStorage.getItem('cachedUser') || 'null');
+                if (cached) {
+                    cached.name = newName;
+                    localStorage.setItem('cachedUser', JSON.stringify(cached));
+                }
+            } catch (error) {
+                // 快取壞掉就算了，下次登入會重抓
+            }
             
             // 更新最後更新時間
             const updateTimeEl = document.getElementById('basic-info-update-time');

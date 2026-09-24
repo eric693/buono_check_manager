@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111827">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="robots" content="noindex">
+    <title data-i18n="KIOSK_PAGE_TITLE">平板打卡</title>
+    <style>
+        :root {
+            --bg: #111827;
+            --panel: #1f2937;
+            --text: #f9fafb;
+            --muted: #9ca3af;
+            --in: #22c55e;
+            --out: #f97316;
+            --warn: #fbbf24;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; height: 100%; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px;
+            overflow-x: hidden;
+        }
+        header { text-align: center; margin-bottom: 16px; }
+        #kiosk-clock { font-size: clamp(40px, 9vw, 88px); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 2px; }
+        #kiosk-date { color: var(--muted); font-size: clamp(16px, 2.5vw, 22px); margin-top: 4px; }
+        #kiosk-location { margin-top: 8px; font-size: clamp(18px, 3vw, 26px); font-weight: 600; }
+
+        .panels { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 1100px; }
+        .panel {
+            background: var(--panel);
+            border-radius: 20px;
+            padding: 20px;
+            flex: 1 1 320px;
+            max-width: 480px;
+            text-align: center;
+            border-top: 8px solid var(--accent);
+        }
+        .panel.in { --accent: var(--in); }
+        .panel.out { --accent: var(--out); }
+        .panel h2 { margin: 0 0 12px; font-size: clamp(24px, 4vw, 36px); color: var(--accent); }
+        .qr-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            display: inline-flex;
+            transition: opacity .3s;
+        }
+        .qr-box canvas, .qr-box img { width: min(60vw, 320px) !important; height: auto !important; }
+        .qr-box.stale { opacity: .15; }
+
+        footer { margin-top: 20px; text-align: center; color: var(--muted); font-size: 15px; max-width: 700px; }
+        #kiosk-status { margin-top: 8px; color: var(--warn); font-weight: 600; min-height: 1.4em; }
+        #kiosk-fullscreen {
+            margin-top: 12px; background: transparent; color: var(--muted);
+            border: 1px solid #374151; border-radius: 8px; padding: 8px 16px; font-size: 14px; cursor: pointer;
+        }
+
+        #kiosk-setup { display: none; max-width: 520px; text-align: center; margin-top: 15vh; line-height: 1.7; }
+        #kiosk-setup h1 { font-size: 28px; }
+        #kiosk-setup p { color: var(--muted); font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div id="kiosk-main" style="display:none; width:100%; flex-direction:column; align-items:center;">
+        <header>
+            <div id="kiosk-clock">--:--:--</div>
+            <div id="kiosk-date"></div>
+            <div id="kiosk-location"></div>
+        </header>
+
+        <div class="panels">
+            <section class="panel in">
+                <h2 data-i18n="KIOSK_CHECK_IN">上班打卡</h2>
+                <div id="kiosk-qr-in" class="qr-box stale"></div>
+            </section>
+            <section class="panel out">
+                <h2 data-i18n="KIOSK_CHECK_OUT">下班打卡</h2>
+                <div id="kiosk-qr-out" class="qr-box stale"></div>
+            </section>
+        </div>
+
+        <footer>
+            <div data-i18n="KIOSK_INSTRUCTION">用手機相機掃描對應的 QR Code 即可打卡。QR Code 每 30 秒更新，拍照帶走的無法使用。</div>
+            <div id="kiosk-status"></div>
+            <button id="kiosk-fullscreen" type="button" data-i18n="KIOSK_FULLSCREEN">全螢幕</button>
+        </footer>
+    </div>
+
+    <div id="kiosk-setup">
+        <h1 data-i18n="KIOSK_SETUP_TITLE">這台平板還沒設定</h1>
+        <p id="kiosk-setup-message" data-i18n="KIOSK_SETUP_MESSAGE">請管理員到後台「管理員」分頁的「平板打卡」產生連結，再用這台平板開啟。</p>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="utils.js"></script>
+    <script src="i18n.js"></script>
+    <script src="qrcode.min.js"></script>
+    <script src="kiosk.js"></script>
+    <script src="pwa.js"></script>
+</body>
+</html>

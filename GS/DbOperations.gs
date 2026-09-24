@@ -494,11 +494,32 @@ function punchAdjusted(sessionToken, type, punchDate, lat, lng, note) {
 }
 
 /**
+ * 員工ID → 目前的姓名（手動設定的姓名優先，沒有才用 LINE 名稱）
+ */
+function getEmployeeNameMap_() {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_EMPLOYEES);
+  const map = {};
+  if (!sheet) return map;
+
+  const values = sheet.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    const userId = String(values[i][0] || '').trim();
+    if (!userId) continue;
+    map[userId] = String(values[i][8] || values[i][2] || '').trim();
+  }
+  return map;
+}
+
+/**
  * 取得出勤紀錄
+ *
+ * 打卡當下會把姓名寫進紀錄，所以員工後來改了姓名，舊紀錄還是 LINE 名稱。
+ * 這裡一律換成目前的姓名，報表才會一致；找不到員工（例如已刪除）才用紀錄上的名字。
  */
 function getAttendanceRecords(monthParam, userIdParam) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ATTENDANCE);
   const values = sheet.getDataRange().getValues().slice(1);
+  const nameMap = getEmployeeNameMap_();
   
   return values.filter(row => {
     if (!row[0]) return false;
@@ -512,7 +533,7 @@ function getAttendanceRecords(monthParam, userIdParam) {
     date: r[0],
     userId: r[1],
     salary: r[2],
-    name: r[3],
+    name: nameMap[String(r[1]).trim()] || r[3],
     type: r[4],
     gps: r[5],
     location: r[6],
@@ -1858,61 +1879,7 @@ function deleteEmployeeBasicInfo(employeeId) {
   }
 }
 
-// ==================== QR 打卡系統 ====================
-
-/**
- * 員工使用 QR Code 打卡
- * Token 格式（前端產生）：{I|O}_{到期毫秒HEX}_{8位亂數HEX}
- * I = 上班，O = 下班
- */
-function qrPunch(sessionToken, qrTokenId, locationName) {
-  const session = checkSession_(sessionToken);
-  if (!session.ok || !session.user) {
-    return { ok: false, code: 'ERR_SESSION_INVALID', msg: '請先登入' };
-  }
-  const user = session.user;
-
-  // 解析 token 格式：{I|O}_{EXPIRY_HEX}_{RANDOM}
-  const match = String(qrTokenId).match(/^([IO])_([0-9A-Fa-f]+)_([0-9A-Za-z]+)$/);
-  if (!match) {
-    return { ok: false, code: 'ERR_QR_INVALID', msg: 'QR Code 格式無效' };
-  }
-
-  const typeCode  = match[1];
-  const expiryMs  = parseInt(match[2], 16);
-  const punchType = typeCode === 'I' ? '上班' : '下班';
-  const loc       = (locationName || '').trim() || 'QR打卡';
-
-  if (isNaN(expiryMs) || Date.now() > expiryMs) {
-    return { ok: false, code: 'ERR_QR_EXPIRED', msg: 'QR Code 已過期，請管理員重新產生' };
-  }
-
-  // 防重複：同一員工同一天同類型只能打一次
-  const attendanceSh = SpreadsheetApp.getActive().getSheetByName(SHEET_ATTENDANCE);
-  const now   = new Date();
-  const today = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  const rows  = attendanceSh.getDataRange().getValues();
-
-  for (let i = 1; i < rows.length; i++) {
-    const row = rows[i];
-    if (!row[0]) continue;
-    const rowDate   = Utilities.formatDate(new Date(row[0]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
-    const rowUserId = String(row[1]).trim();
-    const rowType   = String(row[4]).trim();
-    const rowNote   = String(row[7] || '').trim();
-    if (rowNote === '補打卡') continue;
-    if (rowDate === today && rowUserId === user.userId && rowType === punchType) {
-      return { ok: false, code: 'ERR_DUPLICATE_PUNCH', msg: '今天已打過' + punchType + '卡，請勿重複打卡' };
-    }
-  }
-
-  // 寫入打卡紀錄
-  const punchRow = [now, user.userId, user.dept, user.name, punchType, 'QR打卡', loc, '', '', 'QR打卡'];
-  attendanceSh.getRange(attendanceSh.getLastRow() + 1, 1, 1, punchRow.length).setValues([punchRow]);
-
-  Logger.log('QR打卡成功: ' + user.name + ' - ' + punchType + ' - ' + loc);
-  return { ok: true, code: 'PUNCH_SUCCESS', params: { type: punchType, location: loc } };
-}
+// QR 打卡已移到 QrPunch.gs
 
 /**
  *  檢查 Session（自動延期）- 修正版

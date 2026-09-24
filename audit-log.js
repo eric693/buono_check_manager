@@ -11,7 +11,8 @@ const AUDIT_ACTION_KEYS = [
   'setEmployeeSalaryTW', 'copySalaryConfig', 'batchCalculateSalary', 'setBonusRecord',
   'setDailyEmployee', 'saveDailySalaryRecord',
   'updateSalaryRules', 'resetSalaryRules', 'saveSalaryItems', 'updateWorkSchedule', 'resetWorkSchedule',
-  'addAnnouncement', 'deleteAnnouncement', 'deleteAttachment', 'reviewExpense'
+  'addAnnouncement', 'deleteAnnouncement', 'deleteAttachment', 'reviewExpense',
+  'createQrToken', 'resetKioskKey', 'disableKiosk'
 ];
 
 let auditLogInitialized = false;

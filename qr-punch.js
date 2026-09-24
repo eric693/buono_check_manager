@@ -146,13 +146,14 @@ async function performQRPunch(qrTokenId) {
 }
 
 /**
- * 管理員：產生 QR Code（純前端，不需要後端 API）
- * Token 格式：{I|O}_{到期毫秒HEX}_{8位亂數HEX}
+ * 管理員：產生 QR Code
+ *
+ * 代碼由後端簽章（見 GS/QrPunch.gs）。以前是前端自己組，員工可以自己拼一個
+ * 到期時間很久以後的代碼在家打卡。
  */
 async function generateAdminQRCode() {
     const punchTypeEl = document.querySelector('input[name="qr-punch-type"]:checked');
     const punchType   = punchTypeEl ? punchTypeEl.value : '上班';
-    const typeCode    = punchType === '上班' ? 'I' : 'O';
 
     const validSelect = document.getElementById('qr-valid-minutes');
     let validMinutes;
@@ -173,15 +174,20 @@ async function generateAdminQRCode() {
     btn.textContent = '產生中...';
 
     try {
-        // 純前端產生 token，不呼叫後端
-        const expiryMs  = Date.now() + validMinutes * 60 * 1000;
-        const expiryHex = expiryMs.toString(16).toUpperCase();
-        const random    = Math.random().toString(16).slice(2, 10).toUpperCase();
-        const tokenId   = `${typeCode}_${expiryHex}_${random}`;
+        const res = await callApifetch(
+            `createQrToken&punchType=${encodeURIComponent(punchType)}` +
+            `&minutes=${validMinutes}&loc=${encodeURIComponent(locationName)}`, null);
+        if (!res.ok) {
+            showNotification(res.msg || t('NOTIF_QR_GENERATE_FAILED'), 'error');
+            return;
+        }
+        const expiryMs  = res.expiresAt;
+        const tokenId   = res.token;
 
         // 組成員工掃描後開啟的 URL
         const redirectUrl = API_CONFIG.redirectUrl.replace(/\/$/, '');
-        const locParam    = locationName ? `&loc=${encodeURIComponent(locationName)}` : '';
+        const signedLoc   = res.loc || '';  // 後端簽章用的地點名稱，網址要跟它一字不差
+        const locParam    = signedLoc ? `&loc=${encodeURIComponent(signedLoc)}` : '';
         const punchUrl    = `${redirectUrl}/?qrToken=${tokenId}${locParam}`;
 
         // 使用 qrcodejs 在瀏覽器端直接產生 QR Code（同步，不需要 Promise）
@@ -273,5 +279,119 @@ function _tickQRCountdown() {
         fillEl.className = remaining < 60000
             ? 'bg-red-500 h-2 rounded-full transition-all duration-1000'
             : 'bg-indigo-600 h-2 rounded-full transition-all duration-1000';
+    }
+}
+
+// ==================== 平板打卡（管理員設定） ====================
+//
+// 平板用 kiosk.html 常駐顯示 QR Code。管理員在這裡產生平板專用的連結，
+// 連結裡的金鑰只能拿來產生打卡 QR Code，平板上不必登入任何帳號。
+
+let _kioskAdminBound = false;
+
+function buildKioskUrl(kioskKey) {
+    const base = API_CONFIG.redirectUrl.replace(/\/?$/, '/');
+    // 金鑰放在 # 後面：不會送到伺服器，也不會出現在其他網站的 Referer 裡
+    return `${base}kiosk.html#key=${encodeURIComponent(kioskKey)}`;
+}
+
+async function initKioskAdmin() {
+    const section = document.getElementById('kiosk-admin-section');
+    if (!section) return;
+
+    if (!_kioskAdminBound) {
+        _kioskAdminBound = true;
+        document.getElementById('kiosk-create-btn')?.addEventListener('click', createKioskLink);
+        document.getElementById('kiosk-disable-btn')?.addEventListener('click', disableKioskLink);
+        document.getElementById('kiosk-copy-btn')?.addEventListener('click', async () => {
+            const input = document.getElementById('kiosk-link-input');
+            if (!input) return;
+            try {
+                await navigator.clipboard.writeText(input.value);
+            } catch (error) {
+                input.select();
+                document.execCommand('copy');
+            }
+            showNotification(t('KIOSK_COPIED'), 'success');
+        });
+    }
+
+    await refreshKioskStatus();
+}
+
+async function refreshKioskStatus() {
+    const statusEl = document.getElementById('kiosk-status');
+    const disableBtn = document.getElementById('kiosk-disable-btn');
+    try {
+        const res = await callApifetch('getKioskStatus', null);
+        if (!res.ok) return;
+
+        const locInput = document.getElementById('kiosk-location-name');
+        if (locInput && !locInput.value) locInput.value = res.loc || '';
+
+        if (statusEl) {
+            statusEl.textContent = res.enabled
+                ? t('KIOSK_STATUS_ENABLED', { loc: res.loc })
+                : t('KIOSK_STATUS_DISABLED');
+            statusEl.className = 'text-sm font-semibold mb-4 ' +
+                (res.enabled ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400');
+        }
+        if (disableBtn) disableBtn.style.display = res.enabled ? 'block' : 'none';
+    } catch (error) {
+        console.error('查詢平板打卡狀態失敗:', error);
+    }
+}
+
+async function createKioskLink() {
+    const button = document.getElementById('kiosk-create-btn');
+    const loc = (document.getElementById('kiosk-location-name')?.value || '').trim();
+
+    if (!confirm(t('KIOSK_CREATE_CONFIRM'))) return;
+
+    generalButtonState(button, 'processing', t('LOADING'));
+    try {
+        const res = await callApifetch(`resetKioskKey&loc=${encodeURIComponent(loc)}`, null);
+        if (!res.ok) {
+            showNotification(res.msg || t('KIOSK_CREATE_FAILED'), 'error');
+            return;
+        }
+
+        const url = buildKioskUrl(res.kioskKey);
+        const area = document.getElementById('kiosk-link-area');
+        const input = document.getElementById('kiosk-link-input');
+        const qr = document.getElementById('kiosk-link-qr');
+        if (input) input.value = url;
+        if (qr && typeof QRCode !== 'undefined') {
+            qr.innerHTML = '';
+            new QRCode(qr, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+        }
+        if (area) area.style.display = 'block';
+
+        showNotification(t('KIOSK_CREATED'), 'success');
+        await refreshKioskStatus();
+    } catch (error) {
+        console.error('產生平板打卡連結失敗:', error);
+        showNotification(t('KIOSK_CREATE_FAILED'), 'error');
+    } finally {
+        generalButtonState(button, 'idle');
+    }
+}
+
+async function disableKioskLink() {
+    if (!confirm(t('KIOSK_DISABLE_CONFIRM'))) return;
+
+    try {
+        const res = await callApifetch('disableKiosk', null);
+        if (!res.ok) {
+            showNotification(res.msg || t('KIOSK_DISABLE_FAILED'), 'error');
+            return;
+        }
+        const area = document.getElementById('kiosk-link-area');
+        if (area) area.style.display = 'none';
+        showNotification(t('KIOSK_DISABLED'), 'success');
+        await refreshKioskStatus();
+    } catch (error) {
+        console.error('停用平板打卡失敗:', error);
+        showNotification(t('KIOSK_DISABLE_FAILED'), 'error');
     }
 }

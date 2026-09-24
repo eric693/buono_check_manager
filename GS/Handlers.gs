@@ -2073,10 +2073,16 @@ function handleSetEmployeeBasicInfo(params) {
     Logger.log(' 當前使用者: ' + currentUser.name);
     Logger.log('   userId: ' + currentUser.userId);
     
+    // 姓名由員工自己填（真實姓名）。存檔後同步成系統上顯示的名字，並鎖定不再被 LINE 名稱覆蓋
+    const realName = String(params.name || '').trim();
+    if (realName.length < 2 || realName.length > 50) {
+      return { ok: false, code: 'NOTIF_NAME_TOO_SHORT', msg: '姓名需為 2～50 個字' };
+    }
+
     // ⭐⭐⭐ 關鍵修正：使用當前使用者的 ID，不從前端接收
     const employeeData = {
       employeeId: currentUser.userId,        // 自動使用登入者的 ID
-      employeeName: currentUser.name,        // 自動使用登入者的姓名
+      employeeName: realName,
       idNumber: params.idNumber,             // 從前端接收
       address: params.address,               // 從前端接收
       phone: params.phone,                   // 從前端接收
@@ -2091,9 +2097,17 @@ function handleSetEmployeeBasicInfo(params) {
     
     const result = setEmployeeBasicInfo(employeeData);
     
+    if (result.success && realName !== currentUser.name) {
+      const renamed = updateEmployeeName(currentUser.userId, realName);
+      if (!renamed.ok) {
+        return { ok: false, msg: renamed.msg || '姓名更新失敗' };
+      }
+    }
+    
     return {
       ok: result.success,
-      msg: result.message
+      msg: result.message,
+      name: realName
     };
     
   } catch (error) {
@@ -2126,10 +2140,12 @@ function handleGetEmployeeBasicInfo(params) {
     // ⭐⭐⭐ 只能查詢自己的資料
     const result = getEmployeeBasicInfo(currentUser.userId);
     
+    // 還沒填過也回傳目前的姓名，表單才有預設值
     return {
       ok: result.success,
       data: result.data,
-      msg: result.message
+      msg: result.message,
+      currentName: currentUser.name
     };
     
   } catch (error) {

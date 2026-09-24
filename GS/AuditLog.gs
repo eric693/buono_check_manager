@@ -230,7 +230,10 @@ const ADMIN_AUDIT_ACTIONS = {
   addAnnouncement: '發布公告',
   deleteAnnouncement: '刪除公告',
   deleteAttachment: '刪除附件',
-  reviewExpense: '審核費用申請'
+  reviewExpense: '審核費用申請',
+  createQrToken: '產生打卡 QR Code',
+  resetKioskKey: '重設平板打卡連結',
+  disableKiosk: '停用平板打卡'
 };
 
 // 這些參數不寫進記錄：路由用的、登入憑證、個資

@@ -6,7 +6,7 @@
 //
 // 改版時記得把 CACHE_VERSION 加一，舊快取會在 activate 時清掉。
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `attendance-shell-${CACHE_VERSION}`;
 
 // 安裝時先抓下來的「外殼」：沒有網路也能把畫面畫出來的最小集合
@@ -31,6 +31,8 @@ const PRECACHE_URLS = [
   './announcements.js',
   './audit-log.js',
   './expense.js',
+  './kiosk.html',
+  './kiosk.js',
   './users.js',
   './punch-adjust.js',
   './qr-punch.js',

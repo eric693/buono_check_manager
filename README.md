@@ -13,7 +13,8 @@
 ### 出勤
 - **LINE 登入**：以 LINE 帳號認證身分
 - **GPS 打卡**：上下班打卡，會檢查是否在允許的地點範圍內
-- **QR Code 打卡**：管理員產生一次性 QR Code，員工掃碼打卡
+- **QR Code 打卡**：管理員產生限時 QR Code，員工掃碼打卡。代碼由後端簽章，無法自行偽造
+- **平板打卡**：公司平板開啟 `kiosk.html` 後放著，同時顯示上班／下班 QR Code，每 30 秒自動更新（代碼 3 分鐘失效）。平板用專用金鑰，不登入帳號，管理員可隨時重設或停用
 - **LINE Bot 打卡**：在 LINE 對話中直接打卡，或用一次性連結開網頁打卡
 - **生物辨識**：支援裝置的指紋／臉部辨識做二次確認
 - **補打卡**：當日調整與歷史補登，都要經管理員審核
@@ -45,6 +46,7 @@
 ### 管理
 - 公告發布
 - 員工角色管理（管理員／排班人員／員工）
+- 員工姓名：員工在「我的基本資料」填真實姓名（管理員也能在員工管理修改），之後打卡紀錄與報表都顯示真實姓名，LINE 改名不會蓋掉；舊的打卡紀錄也會跟著顯示新姓名
 - 打卡地點設定（座標與半徑）
 - 離職處理：標記狀態、作廢登入、排除薪資計算，可復職
 - 出勤分析圖表
@@ -113,6 +115,7 @@ node tools/smoke-test.js salary.html
 ├── index.html              主頁（打卡、出勤、加班、請假、工作日誌、管理員）
 ├── salary.html             薪資管理（我的薪資／設定／試算／報表）
 ├── shift.html              排班管理
+├── kiosk.html              公司平板的打卡頁（常駐顯示 QR Code）
 ├── manual.html             使用手冊（由操作說明資料自動彙整）
 │
 ├── config.js               API 網址與環境設定
@@ -123,7 +126,8 @@ node tools/smoke-test.js salary.html
 ├── expense.js              費用申請（預支／報銷）與審核
 ├── users.js                員工管理、離職處理
 ├── punch-adjust.js         補打卡
-├── qr-punch.js             QR Code 與 LINE Bot 網頁打卡
+├── qr-punch.js             QR Code 與 LINE Bot 網頁打卡、平板打卡設定
+├── kiosk.js                平板打卡頁
 ├── attachments.js          申請單附件
 ├── leave.js / overtime.js / worklog.js / shift.js
 ├── salary.js               薪資明細與設定表單
@@ -144,6 +148,7 @@ node tools/smoke-test.js salary.html
     ├── Constants.gs        工作表名稱、假別、系統常數
     ├── Handlers.gs         API handler
     ├── DbOperations.gs     打卡、Session、員工資料
+    ├── QrPunch.gs          QR 代碼簽章與驗證、平板金鑰
     ├── SystemSettings.gs   工作時段、加班倍率、投保級距、所得稅、自訂項目
     ├── SalaryManagement.gs 薪資計算核心
     ├── SalaryTools.gs      批次計算、設定複製

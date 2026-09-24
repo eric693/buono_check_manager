@@ -324,6 +324,22 @@
                         
                         <!-- 表單區域 -->
                         <div id="basic-info-form" class="space-y-4">
+                            <!-- 姓名：填了之後打卡紀錄、報表都顯示這個名字，不再是 LINE 名稱 -->
+                            <div>
+                                <label for="employee-real-name"
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <span data-i18n="REAL_NAME_LABEL">姓名</span> <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text"
+                                    id="employee-real-name"
+                                    maxlength="50"
+                                    autocomplete="name"
+                                    data-i18n="REAL_NAME_PLACEHOLDER"
+                                    placeholder="請輸入真實姓名"
+                                    class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                <p data-i18n="REAL_NAME_HINT" class="text-xs text-gray-500 dark:text-gray-400 mt-1">打卡紀錄與報表會顯示這個名字，而不是 LINE 名稱。</p>
+                            </div>
+
                             <!-- 身分證字號 -->
                             <div>
                                 <label data-i18n="ID_NUMBER_LABEL" 
@@ -1833,6 +1849,34 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- 平板打卡：公司平板常駐顯示自動更新的 QR Code -->
+                    <div id="kiosk-admin-section" class="card p-6 mt-6">
+                        <h2 data-i18n="KIOSK_ADMIN_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-2">平板打卡</h2>
+                        <p data-i18n="KIOSK_ADMIN_DESC" class="text-gray-500 dark:text-gray-400 mb-4">在公司平板開啟打卡頁後放著即可，畫面會同時顯示上班、下班 QR Code，每 30 秒自動更新，不必每天重新產生。</p>
+
+                        <p id="kiosk-status" class="text-sm font-semibold mb-4 text-gray-600 dark:text-gray-300"></p>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label data-i18n="KIOSK_LOCATION_LABEL" for="kiosk-location-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">地點名稱（顯示在平板與打卡紀錄）</label>
+                                <input type="text" id="kiosk-location-name" maxlength="50" data-i18n="KIOSK_LOCATION_PLACEHOLDER" placeholder="例如：台北門市" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                            </div>
+                            <button id="kiosk-create-btn" data-i18n="KIOSK_CREATE_BTN" class="w-full py-3 px-4 rounded-lg font-bold btn-primary">產生平板打卡連結</button>
+                            <p data-i18n="KIOSK_CREATE_WARNING" class="text-xs text-gray-500 dark:text-gray-400">產生新連結後，之前設定過的平板會立刻失效，需要用新連結重新開啟。</p>
+                        </div>
+
+                        <div id="kiosk-link-area" class="mt-6 text-center" style="display:none;">
+                            <p data-i18n="KIOSK_LINK_HINT" class="text-sm text-gray-600 dark:text-gray-300 mb-3">用平板的相機掃描下面的 QR Code，或把連結複製到平板的瀏覽器開啟。這個連結等同平板的鑰匙，請不要傳給員工。</p>
+                            <div class="flex justify-center mb-3"><div id="kiosk-link-qr" class="bg-white p-2 rounded-lg"></div></div>
+                            <div class="flex gap-2">
+                                <input type="text" id="kiosk-link-input" readonly class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white text-xs">
+                                <button id="kiosk-copy-btn" data-i18n="KIOSK_COPY_BTN" class="px-4 rounded-lg font-bold btn-primary whitespace-nowrap">複製</button>
+                            </div>
+                        </div>
+
+                        <button id="kiosk-disable-btn" data-i18n="KIOSK_DISABLE_BTN" class="mt-4 w-full py-2 px-4 rounded-lg font-bold btn-warning" style="display:none;">停用平板打卡</button>
                     </div>
 
                     <div class="card p-6 mt-6">

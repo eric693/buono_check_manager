@@ -24,7 +24,11 @@ const ROUTE_ACCESS = {
   getAttendanceDetails: { self: 'userId' },
   getAbnormalRecords: { self: 'userId' },
   getPendingExpenses: 'admin',
-  reviewExpense: 'admin'
+  reviewExpense: 'admin',
+  createQrToken: 'admin',
+  resetKioskKey: 'admin',
+  disableKiosk: 'admin',
+  getKioskStatus: 'admin'
 };
 
 /**
@@ -379,6 +383,16 @@ function doGet(e) {
       // ==================== QR 打卡系統 ====================
       case "qrPunch":
         return respond1(handleQRPunch(e.parameter));
+      case "createQrToken":
+        return respond1(handleCreateQrToken(e.parameter));
+      case "getKioskQr":
+        return respond1(handleGetKioskQr(e.parameter));
+      case "resetKioskKey":
+        return respond1(handleResetKioskKey(e.parameter));
+      case "disableKiosk":
+        return respond1(handleDisableKiosk(e.parameter));
+      case "getKioskStatus":
+        return respond1(handleGetKioskStatus(e.parameter));
 
       // ==================== 系統設定 ====================
       case "getWorkSchedule":
