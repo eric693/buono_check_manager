@@ -27,6 +27,7 @@
         ['overtime-view', 'TAB_OVERTIME'],
         ['leave-view', 'TAB_LEAVE'],
         ['worklog-view', 'TAB_WORKLOG'],
+        ['expense-view', 'TAB_EXPENSE'],
         ['salary-view', 'TAB_SALARY'],
         ['admin-view', 'TAB_ADMIN']
       ]

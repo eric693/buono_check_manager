@@ -12,14 +12,17 @@
       "intro": "The page you open first every day: announcements, punch buttons, your personal profile, and any attendance exceptions the system found.",
       "steps": [
         "Tap \"Punch In\" when you arrive and \"Punch Out\" before you leave; both the time and your GPS location are recorded.",
+        "Besides the buttons, you can also punch by typing in LINE, or by scanning the QR code on the company tablet with your phone camera (it opens this system; log in first if asked).",
         "If your phone supports fingerprint or face recognition, tap \"Set up biometrics\" once to pair it, then punch with biometrics from then on.",
         "If you forgot to punch or the time is wrong, submit a make-up punch request with a reason and wait for the administrator's approval.",
-        "Fill in your ID number, address, phone and birthday under \"My profile\" - payroll and insurance work needs them."
+        "Fill in your ID number, address, phone and birthday under \"My profile\" - payroll and insurance work needs them.",
+        "Under \"My Basic Information\", enter your full name first — punch records and reports show this name instead of your LINE name."
       ],
       "notes": [
         "Punching requires location permission; if the browser blocks it, the punch fails or is recorded as an exception.",
         "\"Attendance exceptions\" are detected automatically (missing punch, late, early leave). An approved make-up punch clears the exception.",
-        "Announcements are sorted by importance; red ones are important, please read them."
+        "Announcements are sorted by importance; red ones are important, please read them.",
+        "The QR codes on the tablet change every 30 seconds, so photos of them or copies sent to others stop working. Scan them in person."
       ],
       "terms": [
         [
@@ -146,6 +149,30 @@
         "Logged hours are entered by you and tracked separately from punch hours; the two need not match."
       ]
     },
+    "expense-view": {
+      "intro": "Request an advance (money borrowed from the company up front) or a reimbursement (paying you back for something you paid, with a receipt), and follow each request's review result.",
+      "steps": [
+        "Choose the type — \"Advance\" or \"Reimbursement\" — then enter the date, amount and reason.",
+        "For a reimbursement you can add the invoice number and attach a photo of the receipt; you can also upload it later from the list below.",
+        "Press \"Submit request\". It appears under \"My expense requests\" as \"Pending\".",
+        "After an admin reviews it, the status changes to \"Approved\" or \"Rejected\"; a rejection comes with a reason."
+      ],
+      "notes": [
+        "Amounts are in whole dollars and cannot be edited after submitting. If you made a mistake, ask an admin to reject it and submit again.",
+        "Approved advances and reimbursements are not added to or deducted from your salary automatically; payment and repayment follow company rules.",
+        "Only you and admins can see your receipt photos."
+      ],
+      "terms": [
+        [
+          "Advance",
+          "Money borrowed from the company up front, paid back or deducted from salary according to company rules."
+        ],
+        [
+          "Reimbursement",
+          "Claiming back a company expense you paid yourself, with an invoice or receipt."
+        ]
+      ]
+    },
     "admin-view": {
       "intro": "Administrators only: announcements, approvals, punch locations, attendance analysis and report exports all live here.",
       "steps": [
@@ -153,13 +180,19 @@
         "Publish announcements under \"Announcement management\"; set priority to \"Important\" so staff see it first.",
         "Handle make-up punch and virtual card requests under \"Pending requests\"; overtime, leave and work logs have their own approval sections.",
         "Add or adjust the allowed punch coordinates and radius under \"Punch locations\" - this directly decides whether staff can punch.",
-        "\"Attendance analysis\" shows overall hours and punch-time distribution; the report section exports Excel for HR or accounting."
+        "\"Attendance analysis\" shows overall hours and punch-time distribution; the report section exports Excel for HR or accounting.",
+        "\"Pending expense requests\" is where you review employees' advances and reimbursements; open the attachments to see receipt photos.",
+        "Under \"Punch kiosk\", enter a location name and create a link. Open it on a company tablet and leave it on — it keeps showing refreshing clock-in and clock-out QR codes. \"QR Code punch management\" creates a one-off QR code instead.",
+        "\"Activity log\" lets you search by month, action and keyword to see who changed reviews, roles, employees, shifts or salary settings, and when.",
+        "\"Edit name\" under employee management changes an employee's LINE name to their real name."
       ],
       "notes": [
         "Approvals affect attendance and payroll immediately; when rejecting, state the reason so the employee knows how to fix it.",
         "Too small a radius blocks legitimate punches; too large defeats the purpose of location control.",
         "Exported files contain personal and salary data - do not forward them outside the company.",
-        "After changing the working hours, only leave submitted afterwards uses the new figures; approved leave is not recalculated."
+        "After changing the working hours, only leave submitted afterwards uses the new figures; approved leave is not recalculated.",
+        "The kiosk link works like a key for the tablet, so do not send it to employees. If the tablet is lost or the link leaks, create a new link or press \"Disable kiosk\" and the old one stops working immediately.",
+        "The activity log is read-only; ID numbers and bank accounts are masked in it."
       ],
       "terms": [
         [
@@ -169,6 +202,14 @@
         [
           "Punch radius",
           "The distance in meters around the configured coordinates within which punching is allowed."
+        ],
+        [
+          "Punch kiosk",
+          "A company tablet that keeps showing QR codes, refreshed every 30 seconds. Staff scan them on site to punch, no GPS needed."
+        ],
+        [
+          "Activity log",
+          "An automatic history of admin actions, so you can check who did what and when if there is a dispute."
         ]
       ]
     },

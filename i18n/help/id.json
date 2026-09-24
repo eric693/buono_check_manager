@@ -12,14 +12,17 @@
       "intro": "Halaman yang dibuka pertama setiap hari: pengumuman, tombol absen, data pribadi, dan kejanggalan absensi yang terdeteksi sistem.",
       "steps": [
         "Setibanya di tempat kerja tekan \"Absen masuk\", sebelum pulang tekan \"Absen pulang\"; waktu dan lokasi GPS dicatat bersamaan.",
+        "Selain tombol, Anda juga bisa absen dengan mengetik di LINE, atau memindai kode QR di tablet kantor dengan kamera ponsel (setelah dipindai sistem ini akan terbuka; login dulu jika diminta).",
         "Jika ponsel mendukung sidik jari atau wajah, tekan \"Atur biometrik\" sekali, lalu absen cukup dengan biometrik.",
         "Jika lupa absen atau waktunya salah, ajukan \"Perbaikan absensi\" dengan alasannya dan tunggu persetujuan admin.",
-        "Lengkapi nomor identitas, alamat, telepon, dan tanggal lahir di \"Data pribadi saya\" karena dibutuhkan untuk penggajian dan jaminan sosial."
+        "Lengkapi nomor identitas, alamat, telepon, dan tanggal lahir di \"Data pribadi saya\" karena dibutuhkan untuk penggajian dan jaminan sosial.",
+        "Di「Informasi Dasar Saya」, isi「Nama lengkap」(nama asli) terlebih dahulu. Catatan absen dan laporan akan menampilkan nama ini, bukan nama LINE."
       ],
       "notes": [
         "Absen memerlukan izin lokasi; bila diblokir peramban, absen gagal atau tercatat sebagai kejanggalan.",
         "\"Kejanggalan absensi\" ditentukan otomatis (absen kurang, terlambat, pulang cepat); setelah perbaikan disetujui, catatan itu hilang sendiri.",
-        "Pengumuman diurutkan menurut tingkat kepentingan; tanda merah berarti penting, harap dibaca."
+        "Pengumuman diurutkan menurut tingkat kepentingan; tanda merah berarti penting, harap dibaca.",
+        "Kode QR di tablet berganti setiap 30 detik, jadi foto atau kode yang dikirim ke orang lain tidak bisa dipakai. Pindai langsung di tempat."
       ],
       "terms": [
         [
@@ -146,6 +149,30 @@
         "Jam kerja diisi sendiri dan dihitung terpisah dari jam absensi, keduanya tidak harus sama."
       ]
     },
+    "expense-view": {
+      "intro": "Ajukan uang muka (pinjaman dari perusahaan di awal) atau penggantian (klaim biaya yang Anda bayar sendiri, dengan bukti) dan pantau hasil peninjauan setiap pengajuan.",
+      "steps": [
+        "Pilih jenis「Uang muka」atau「Penggantian」, lalu isi tanggal, jumlah, dan keperluan.",
+        "Untuk penggantian, Anda bisa mengisi nomor faktur dan melampirkan foto bukti; bisa juga diunggah nanti dari daftar di bawah.",
+        "Tekan「Kirim pengajuan」. Pengajuan muncul di「Pengajuan saya」dengan status「Menunggu」.",
+        "Setelah admin meninjau, status berubah menjadi「Disetujui」atau「Ditolak」; penolakan disertai alasan."
+      ],
+      "notes": [
+        "Jumlah dalam satuan bulat dan tidak bisa diubah setelah dikirim. Jika salah, minta admin menolaknya lalu ajukan ulang.",
+        "Uang muka dan penggantian yang disetujui tidak otomatis ditambahkan atau dipotong dari gaji; pembayaran dan pengembalian mengikuti aturan perusahaan.",
+        "Hanya Anda dan admin yang bisa melihat foto bukti."
+      ],
+      "terms": [
+        [
+          "Uang muka",
+          "Uang yang dipinjam dari perusahaan di awal, dikembalikan atau dipotong dari gaji sesuai aturan perusahaan."
+        ],
+        [
+          "Penggantian",
+          "Mengklaim biaya perusahaan yang Anda bayar sendiri, dengan faktur atau kuitansi."
+        ]
+      ]
+    },
     "admin-view": {
       "intro": "Khusus admin: pengumuman, persetujuan berbagai pengajuan, pengaturan lokasi absen, analisis absensi, dan ekspor laporan.",
       "steps": [
@@ -153,13 +180,19 @@
         "Terbitkan pengumuman di \"Manajemen pengumuman\"; untuk hal penting setel tingkat kepentingan ke \"Penting\".",
         "Proses pengajuan perbaikan absensi dan kartu virtual di \"Pengajuan menunggu\"; lembur, cuti, dan catatan kerja punya bagian persetujuan sendiri.",
         "Tambah atau ubah koordinat dan radius absen di \"Lokasi absen\" - ini langsung menentukan karyawan bisa absen atau tidak.",
-        "\"Analisis absensi\" menampilkan total jam kerja dan sebaran waktu absen; bagian laporan mengekspor Excel untuk HR atau akuntansi."
+        "\"Analisis absensi\" menampilkan total jam kerja dan sebaran waktu absen; bagian laporan mengekspor Excel untuk HR atau akuntansi.",
+        "「Pengajuan biaya menunggu」untuk meninjau uang muka dan penggantian karyawan; untuk penggantian, buka lampiran untuk melihat foto bukti.",
+        "Di「Kios absen」, isi nama lokasi lalu buat tautan. Buka di tablet kantor dan biarkan menyala; layar terus menampilkan kode QR masuk/pulang yang berganti otomatis.「QR Code 打卡管理」digunakan untuk membuat kode QR sementara.",
+        "「Log aktivitas」bisa dicari per bulan, tindakan, dan kata kunci untuk melihat siapa mengubah persetujuan, peran, karyawan, jadwal, atau pengaturan gaji, dan kapan.",
+        "Tombol「編輯姓名」di manajemen karyawan mengubah nama LINE karyawan menjadi nama asli."
       ],
       "notes": [
         "Persetujuan langsung memengaruhi absensi dan perhitungan gaji; saat menolak, tulis alasannya dengan jelas.",
         "Radius terlalu kecil membuat karyawan gagal absen, terlalu besar menghilangkan makna kontrol lokasi.",
         "Berkas ekspor memuat data pribadi dan gaji, jangan diteruskan ke luar perusahaan.",
-        "Setelah jam kerja diubah, hanya cuti yang diajukan sesudahnya memakai angka baru; cuti yang sudah disetujui tidak dihitung ulang."
+        "Setelah jam kerja diubah, hanya cuti yang diajukan sesudahnya memakai angka baru; cuti yang sudah disetujui tidak dihitung ulang.",
+        "Tautan kios seperti kunci tablet, jangan dikirim ke karyawan. Jika tablet hilang atau tautan bocor, buat tautan baru atau tekan「Nonaktifkan kios」, tautan lama langsung berhenti berfungsi.",
+        "Log aktivitas hanya bisa dilihat, tidak bisa diubah; nomor identitas dan rekening bank disamarkan."
       ],
       "terms": [
         [
@@ -169,6 +202,14 @@
         [
           "Radius absen",
           "Jarak (meter) di sekeliling koordinat yang ditetapkan, tempat absen diizinkan."
+        ],
+        [
+          "Kios absen",
+          "Tablet di kantor yang terus menampilkan kode QR dan berganti otomatis setiap 30 detik. Karyawan memindai di tempat untuk absen, tanpa GPS."
+        ],
+        [
+          "Log aktivitas",
+          "Riwayat tindakan admin yang dicatat otomatis, untuk memeriksa siapa melakukan apa dan kapan jika ada perselisihan."
         ]
       ]
     },
