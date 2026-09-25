@@ -131,3 +131,21 @@ test('初始化 API 與請假額度', () => {
   assert.equal(t.api({ action: 'getWorkSchedule', token: EMP }).ok, true);
   assert.equal(t.api({ action: 'getSalaryRules', token: ADMIN }).ok, true);
 });
+
+test('匯出薪資總表：產生 .xlsx 存在本機，連結可以下載', async () => {
+  const ExcelJS = require('exceljs');
+  const res = t.api({ action: 'exportAllSalaryExcel', token: ADMIN, yearMonth: month });
+  assert.equal(res.ok, true, show(res));
+  assert.match(res.fileUrl, /^https:\/\/buono\.example\/files\/[0-9a-f]{32}\//);
+
+  const id = res.fileUrl.match(/files\/([0-9a-f]{32})/)[1];
+  const file = t.runtime.DriveApp.__readFile(id);
+  assert.ok(file, '檔案要存在');
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.readFile(file.path);
+  const ws = wb.worksheets[0];
+  assert.equal(ws.name, '薪資明細');
+  assert.equal(ws.getCell('C1').value, '員工姓名');
+  assert.equal(ws.getCell('C2').value, '小明', '薪資單存的是計算當時的姓名');
+  assert.ok(ws.rowCount >= 2);
+});

@@ -8,10 +8,15 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const vm = require('vm');
+const crypto = require('crypto');
+const { spawnSync } = require('child_process');
+const Database = require('better-sqlite3');
 
 const { Store, createSpreadsheetApp } = require('./spreadsheet');
+const { encodeRow } = require('./values');
 const services = require('./services');
 
 // 先載 Constants，其他檔案在載入時就會用到裡面的常數；其餘照檔名排序
@@ -60,8 +65,20 @@ function createRuntime(options) {
   vm.createContext(context, { name: 'gas' });
 
   // 試算表讀出來的日期要用 vm 裡的 Date 建立，GS 的 instanceof Date 才會成立
-  const store = new Store(db, vm.runInContext('Date', context));
-  context.SpreadsheetApp = createSpreadsheetApp(store);
+  const VmDate = vm.runInContext('Date', context);
+  const store = new Store(db, VmDate);
+
+  // SpreadsheetApp.create() 建的暫存試算表（只有匯出 Excel 用），轉成 .xlsx 後就丟掉
+  const tempSpreadsheets = new Map();
+  context.SpreadsheetApp = createSpreadsheetApp(store, {
+    createTemp(name) {
+      const id = 'tmp_' + crypto.randomBytes(12).toString('hex');
+      const temp = new Store(new Database(':memory:'), VmDate, { id, name });
+      temp.createSheet('工作表1');
+      tempSpreadsheets.set(id, temp);
+      return temp;
+    }
+  });
 
   for (const file of listGsFiles(gsDir)) {
     const source = fs.readFileSync(path.join(gsDir, file), 'utf8');
@@ -73,6 +90,36 @@ function createRuntime(options) {
       throw error;
     }
   }
+  // 匯出 Excel：原本是把 Google 試算表設成公開、回傳 Google 的下載網址（SalaryManagement.gs）。
+  // 這裡改成把暫存試算表寫成 .xlsx 存進本機雲端硬碟，回傳這台伺服器的下載網址。
+  context.getSpreadsheetExportUrl_ = function (spreadsheet) {
+    const temp = tempSpreadsheets.get(spreadsheet.getId());
+    if (!temp) throw new Error('找不到要匯出的試算表：' + spreadsheet.getId());
+    tempSpreadsheets.delete(spreadsheet.getId());
+    const sheets = [...temp.sheets.values()].map(sheet => ({
+      name: sheet.name,
+      rows: sheet.rows.map(row => JSON.parse(encodeRow(row || [])))
+    }));
+    temp.db.close();
+
+    const tmpFile = path.join(os.tmpdir(), `export-${crypto.randomBytes(8).toString('hex')}.xlsx`);
+    const result = spawnSync(process.execPath, [path.join(__dirname, 'xlsx-writer.js')], {
+      input: JSON.stringify({ file: tmpFile, sheets }),
+      env: process.env,
+      maxBuffer: 10 * 1024 * 1024
+    });
+    if (result.status !== 0) {
+      throw new Error('產生 Excel 失敗：' + String(result.stderr || result.error || '').slice(0, 300));
+    }
+    try {
+      const blob = context.Utilities.newBlob(fs.readFileSync(tmpFile),
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', temp.meta.name + '.xlsx');
+      return DriveApp.createFile(blob).getUrl();
+    } finally {
+      fs.rmSync(tmpFile, { force: true });
+    }
+  };
+
   // 載入時如果有寫入（例如建立工作表），也寫回去
   store.flush();
 

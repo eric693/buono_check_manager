@@ -59,8 +59,9 @@ class Store {
    * @param {import('better-sqlite3').Database} db
    * @param {DateConstructor} DateCtor  GS 程式所在 vm 的 Date（讀給 GS 的日期要用它建立）
    */
-  constructor(db, DateCtor) {
+  constructor(db, DateCtor, meta) {
     this.db = db;
+    this.meta = meta || { id: 'local', name: '出勤管家' };
     this.values = createValues(DateCtor || Date);
     db.exec(`
       CREATE TABLE IF NOT EXISTS sheets (name TEXT PRIMARY KEY, position INTEGER NOT NULL);
@@ -338,8 +339,8 @@ function makeSheet(store, sheetData) {
 
 function spreadsheetFor(store) {
   const ss = {
-    getId: () => 'local',
-    getName: () => '出勤管家',
+    getId: () => store.meta.id,
+    getName: () => store.meta.name,
     getUrl: () => '',
     getSpreadsheetTimeZone: () => process.env.TZ,
     getSheetByName(name) {
@@ -366,17 +367,20 @@ function builder() {
   return b;
 }
 
-function createSpreadsheetApp(store) {
+function createSpreadsheetApp(store, options = {}) {
   return {
     getActive: () => spreadsheetFor(store),
     getActiveSpreadsheet: () => spreadsheetFor(store),
     flush() {},
     newDataValidation: builder,
     newConditionalFormatRule: builder,
-    // create() 只有 Google 雲端匯出 Excel 在用；改寫過的匯出不會走到這裡
-    create() { throw new Error('相容層不支援建立新的 Google 試算表'); },
+    // create() 只有匯出 Excel 在用：建一份暫存的試算表，由 runtime 轉成 .xlsx（見 runtime.js）
+    create(name) {
+      if (!options.createTemp) throw new Error('相容層不支援建立新的試算表');
+      return spreadsheetFor(options.createTemp(String(name || '未命名試算表')));
+    },
     getUi() { throw new Error('相容層沒有試算表介面（getUi 只能在 Apps Script 編輯器手動執行）'); }
   };
 }
 
-module.exports = { Store, createSpreadsheetApp, parseA1 };
+module.exports = { Store, createSpreadsheetApp, spreadsheetFor, parseA1 };

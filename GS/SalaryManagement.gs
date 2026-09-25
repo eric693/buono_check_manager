@@ -2700,13 +2700,9 @@ function exportAllSalaryExcel() {
     // 凍結標題列
     sheet.setFrozenRows(1);
     
-    // 設定檔案權限
-    const file = DriveApp.getFileById(spreadsheet.getId());
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    
     // 取得下載連結
     const fileId = spreadsheet.getId();
-    const downloadUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
+    const downloadUrl = getSpreadsheetExportUrl_(spreadsheet);
     
     Logger.log(' Excel 已生成');
     Logger.log(' 檔案 ID: ' + fileId);
@@ -2725,6 +2721,17 @@ function exportAllSalaryExcel() {
     return jsonResponse(false, null, '匯出失敗: ' + error.toString(), 'EXPORT_ERROR');
   }
 }
+/**
+ * 把試算表開放「知道連結就能看」，回傳 xlsx 下載網址。
+ *
+ * 自架後端（server/）會換掉這支：改成直接產生 .xlsx 存在伺服器上，回傳自己的下載網址。
+ */
+function getSpreadsheetExportUrl_(spreadsheet) {
+  const file = DriveApp.getFileById(spreadsheet.getId());
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return `https://docs.google.com/spreadsheets/d/${spreadsheet.getId()}/export?format=xlsx`;
+}
+
 /**
  *  取得或建立資料夾
  * 
