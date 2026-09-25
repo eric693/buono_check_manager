@@ -336,3 +336,14 @@ function checkAttendanceAbnormal(attendanceRows) {
   
   return abnormalRecords;
 }
+
+/**
+ * 讀取目前請求的參數（doGet 會把請求放在 globalThis.currentRequest）。
+ *
+ * saveMonthlySalaryAPI 等幾支函式直接呼叫 getParam()，但 repo 裡從來沒有這支函式，
+ * 「儲存薪資單」因此一直丟 ReferenceError。
+ */
+function getParam(name) {
+  const e = globalThis.currentRequest;
+  return e && e.parameter ? e.parameter[name] : undefined;
+}
