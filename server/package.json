@@ -1,0 +1,17 @@
+{
+  "name": "buono-check-manager-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "在自己的伺服器上執行 GS/*.gs（Apps Script 相容層 + SQLite）",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node --test test/*.test.js",
+    "import": "node scripts/import-xlsx.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "exceljs": "^4.4.0"
+  }
+}
