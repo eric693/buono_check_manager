@@ -55,3 +55,17 @@ test('formatDate 支援程式用到的格式', () => {
   assert.equal(formatDate(d, 'Asia/Taipei', 'EEE'), 'Sat');
   assert.equal(formatDate('2026-09-05', 'Asia/Taipei', 'yyyy-MM-dd'), '2026-09-05');
 });
+
+test('formatDate：伺服器時區的快速路徑與 Intl 結果一致', () => {
+  const { formatDate } = require('../src/services');
+  const samples = [new Date(2026, 0, 1, 0, 0, 0), new Date(2026, 11, 31, 23, 59, 59), new Date(1899, 11, 30, 9, 5),
+    new Date(1975, 5, 15, 12, 0), new Date(Date.UTC(2026, 2, 8, 16, 30))];
+  for (const d of samples) {
+    // Asia/Taipei 走快速路徑；Etc/GMT-8 走 Intl（現代日期兩者都是 UTC+8）
+    if (d.getFullYear() > 1980) {
+      assert.equal(formatDate(d, 'Asia/Taipei', 'yyyy-MM-dd HH:mm:ss EEE Z'), formatDate(d, 'Etc/GMT-8', 'yyyy-MM-dd HH:mm:ss EEE Z'));
+    }
+    assert.equal(formatDate(d, 'Asia/Taipei', 'HH:mm'),
+      new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(d));
+  }
+});

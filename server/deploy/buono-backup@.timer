@@ -1,0 +1,11 @@
+# 每天凌晨 3:15 備份，保留 30 份
+#   systemctl enable --now buono-backup@staging.timer
+[Unit]
+Description=Daily backup of buono attendance data (%i)
+
+[Timer]
+OnCalendar=*-*-* 03:15:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

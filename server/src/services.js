@@ -43,6 +43,17 @@ function normalizeTimeZone(tz) {
 
 function zonedParts(date, tz) {
   const zone = normalizeTimeZone(tz);
+
+  // 最常見的情況：要的就是伺服器本身的時區（腳本時區）。直接用 Date 的本地時間欄位，
+  // 比 Intl 快幾十倍 —— 打卡前檢查重複時，會對整張打卡表每一列都格式化一次日期。
+  if (zone === process.env.TZ) {
+    return {
+      y: date.getFullYear(), mo: date.getMonth() + 1, d: date.getDate(),
+      h: date.getHours(), mi: date.getMinutes(), s: date.getSeconds(), ms: date.getMilliseconds(),
+      wd: date.getDay(), offset: -date.getTimezoneOffset(), zone
+    };
+  }
+
   let fmt = partsFormatters.get(zone);
   if (!fmt) {
     fmt = new Intl.DateTimeFormat('en-US', {

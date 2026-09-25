@@ -1,0 +1,24 @@
+# 出勤管家後端（systemd 範本，%i = staging 或 production）
+#
+#   程式：/root/project/buono/deploy/%i          （repo 的 clone，staging 用 staging branch）
+#   設定：/root/project/buono/deploy/%i.env      （PORT、DATA_DIR、PUBLIC_BASE_URL…）
+#
+#   cp server/deploy/buono@.service /etc/systemd/system/
+#   systemctl daemon-reload && systemctl enable --now buono@staging
+#
+# 只能有一個行程：GS 程式靠「請求一個接一個處理」取代 LockService，不要開多個實例共用同一份資料。
+
+[Unit]
+Description=Buono attendance backend (%i)
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/root/project/buono/deploy/%i/server
+EnvironmentFile=/root/project/buono/deploy/%i.env
+ExecStart=/usr/bin/node src/main.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

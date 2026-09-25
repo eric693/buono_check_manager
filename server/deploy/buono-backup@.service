@@ -1,0 +1,10 @@
+# 每日備份（由 buono-backup@.timer 觸發）
+[Unit]
+Description=Backup buono attendance data (%i)
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/root/project/buono/deploy/%i/server
+EnvironmentFile=/root/project/buono/deploy/%i.env
+ExecStart=/usr/bin/node scripts/backup.js

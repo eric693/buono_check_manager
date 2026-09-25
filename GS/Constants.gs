@@ -3,7 +3,10 @@
 // ==================== LINE 登入設定 ====================
 const LINE_CHANNEL_ID     = PropertiesService.getScriptProperties().getProperty("LINE_CHANNEL_ID");
 const LINE_CHANNEL_SECRET = PropertiesService.getScriptProperties().getProperty("LINE_CHANNEL_SECRET");
-const LINE_REDIRECT_URL   = "https://eric693.github.io/buono_check_manager/";
+// LINE 登入完成後導回的前端網址。測試區的前端在不同網址，用指令碼屬性 LINE_REDIRECT_URL 覆蓋；
+// 這個網址也要登記在 LINE Login channel 的 Callback URL 裡。
+const LINE_REDIRECT_URL   = PropertiesService.getScriptProperties().getProperty("LINE_REDIRECT_URL") ||
+                            "https://eric693.github.io/buono_check_manager/";
 
 // ==================== Session 設定 ====================
 const SESSION_TTL_MS = 7000 * 60 * 60 * 24; // 1 天
