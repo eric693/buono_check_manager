@@ -20,6 +20,7 @@ process.env.TZ = process.env.TZ || 'Asia/Taipei';
 const ExcelJS = require('exceljs');
 const Database = require('better-sqlite3');
 const { encodeRow } = require('../src/values');
+const { refuseIfRunning } = require('../src/pidlock');
 
 const file = process.argv[2];
 const replace = process.argv.includes('--replace');
@@ -51,6 +52,9 @@ function cellValue(cell) {
   }
   return v;
 }
+
+// 真的要寫入時，先確認服務沒在跑（見 src/pidlock.js），不要等讀完大檔案才發現
+if (replace) refuseIfRunning(DATA_DIR, '匯入');
 
 (async () => {
   const workbook = new ExcelJS.Workbook();

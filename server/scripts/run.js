@@ -17,6 +17,7 @@ process.env.TZ = process.env.TZ || 'Asia/Taipei';
 const Database = require('better-sqlite3');
 const { createRuntime } = require('../src/runtime');
 const { ensureCoreSheets } = require('../src/bootstrap');
+const { refuseIfRunning } = require('../src/pidlock');
 
 const [fnName, argsJson] = process.argv.slice(2);
 if (!fnName) {
@@ -25,6 +26,7 @@ if (!fnName) {
 }
 
 const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(__dirname, '..', 'data'));
+refuseIfRunning(DATA_DIR, 'run.js');
 fs.mkdirSync(DATA_DIR, { recursive: true });
 const db = new Database(path.join(DATA_DIR, 'buono.sqlite'));
 

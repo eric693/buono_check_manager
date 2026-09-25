@@ -28,6 +28,7 @@ const Database = require('better-sqlite3');
 const { createRuntime } = require('./runtime');
 const { createServer } = require('./server');
 const { ensureCoreSheets } = require('./bootstrap');
+const pidlock = require('./pidlock');
 
 const PORT = +(process.env.PORT || 8040);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -36,6 +37,7 @@ const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || `http://localhost:${PORT
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://eric693.github.io/buono_check_manager/';
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
+pidlock.acquire(DATA_DIR);
 
 const db = new Database(path.join(DATA_DIR, 'buono.sqlite'));
 db.pragma('journal_mode = WAL');

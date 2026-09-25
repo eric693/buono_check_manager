@@ -149,3 +149,18 @@ test('匯出薪資總表：產生 .xlsx 存在本機，連結可以下載', asyn
   assert.equal(ws.getCell('C2').value, '小明', '薪資單存的是計算當時的姓名');
   assert.ok(ws.rowCount >= 2);
 });
+
+test('儲存薪資單（saveMonthlySalary 以前因為 getParam 不存在而失敗）', () => {
+  const res = t.api({ action: 'saveMonthlySalary', token: ADMIN, employeeId: 'Uemp', employeeName: '小明', yearMonth: month,
+    salaryType: '月薪', baseSalary: '32000', grossSalary: '34400', netSalary: '33000', status: '已計算' });
+  assert.equal(res.ok, true, show(res));
+  const sheet = t.ss.getSheetByName('月薪資記錄');
+  const values = sheet.getDataRange().getValues();
+  const col = values[0].indexOf('實發金額');
+  const ymCol = values[0].indexOf('年月');
+  const row = values.find((r, i) => i > 0 && r[1] === 'Uemp' &&
+    Utilities.formatDate(r[ymCol], 'Asia/Taipei', 'yyyy-MM') === month);
+  assert.ok(row, '要有這個月的薪資單');
+  assert.equal(row[col], 33000);
+  assert.equal(t.api({ action: 'saveMonthlySalary', token: EMP, employeeId: 'Uemp', yearMonth: month }).code, 'PERMISSION_DENIED');
+});

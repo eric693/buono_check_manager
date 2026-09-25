@@ -30,9 +30,22 @@
 ```bash
 cd server
 npm install
-npm test                                  # 相容層與各功能流程的測試
+npm test                                  # 全部測試（約 1 分鐘）
 DATA_DIR=/tmp/buono PORT=8041 npm start   # 本機試跑
 ```
+
+測試涵蓋：
+
+| 檔案 | 內容 |
+|---|---|
+| `values.test.js` | 試算表的自動轉型、日期格式化 |
+| `flows.test.js`、`features.test.js` | 打卡、審核、請假、加班、工作日誌、排班、薪資（含儲存與匯出）、費用、附件、QR、公告、操作紀錄 |
+| `line.test.js` | LINE webhook 簽章、LINE Bot 回覆、LINE Login |
+| `all-actions.test.js` | Main.gs 路由的**每一個** action 以管理員與員工各呼叫一次，不能有執行期錯誤 |
+| `import.test.js` | 匯入 Google 匯出的 .xlsx：日期、時間、文字、公式都要保留正確型別 |
+| `frontend.test.js` | 真正的前端頁面接真正的後端，以管理員與員工點過每個分頁 |
+
+改了 `GS/*.gs` 之後跑一次 `npm test`，就能知道有沒有哪支 API 壞掉。
 
 ## 部署（以測試區 staging 為例，正式區把 staging 換成 production）
 
@@ -96,13 +109,16 @@ LINE 那邊要改的：
 ## 其他維運
 
 ```bash
-node scripts/run.js 函式名稱            # 執行某一支 GS 函式（取代 Apps Script 編輯器的「執行」）
+node scripts/run.js 函式名稱            # 執行某一支 GS 函式（取代 Apps Script 編輯器的「執行」；要先停服務）
 node scripts/backup.js                  # 手動備份（每天 3:15 也會自動備份，保留 30 份）
 journalctl -u buono@staging -f          # 看記錄
 ```
 
 還原備份：停服務 → 解開 `DATA_DIR/backups/buono-日期.tar.gz` 覆蓋 `DATA_DIR` 裡的
 `buono.sqlite` 與 `drive/` → 刪掉 `buono.sqlite-wal`、`buono.sqlite-shm` → 啟動服務。
+
+匯入與 `run.js` 會直接改資料庫，服務在跑時會拒絕執行（服務啟動時會在 DATA_DIR 留下 `server.pid`）：
+服務手上的資料在記憶體裡，兩邊同時改會互相蓋掉。
 
 ## 已知限制
 

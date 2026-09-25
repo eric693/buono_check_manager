@@ -2112,7 +2112,8 @@
             console.log(' 薪資管理頁面載入完成（完整版 v2.0）');
             
             await checkUserPermission();
-            await loadEmployeeList();
+            // 員工清單只有管理員分頁用得到，一般員工呼叫會被擋下又重試三次
+            if (currentUserRole === 'admin') await loadEmployeeList();
             const now = new Date();
             const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             
