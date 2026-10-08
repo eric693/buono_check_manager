@@ -1466,5 +1466,6 @@
   "ERR_ADJUST_PUNCH_LIMIT": "Ngày đó đã có 2 yêu cầu bù cùng loại đang chờ duyệt, vui lòng chờ quản trị viên duyệt",
   "ERR_MISSING_DATETIME": "Vui lòng chọn ngày giờ",
   "MANUAL_PAYSLIP_EDITING": "Đang sửa: {name} ({month})",
-  "MANUAL_PAYSLIP_TARGET_CHANGED": "Nhân viên hoặc tháng đã thay đổi, đã tải lại, hãy kiểm tra trước khi lưu."
+  "MANUAL_PAYSLIP_TARGET_CHANGED": "Nhân viên hoặc tháng đã thay đổi, đã tải lại, hãy kiểm tra trước khi lưu.",
+  "PAYSLIP_PER_HOUR": "{amount} / giờ"
 }

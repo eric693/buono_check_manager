@@ -1431,5 +1431,6 @@
   "ERR_ADJUST_PUNCH_LIMIT": "There are already 2 pending requests for this punch type on that day; please wait for the admin to review them",
   "ERR_MISSING_DATETIME": "Please choose the date and time",
   "MANUAL_PAYSLIP_EDITING": "Editing: {name} ({month})",
-  "MANUAL_PAYSLIP_TARGET_CHANGED": "The employee or month changed; the form was reloaded. Check it before saving."
+  "MANUAL_PAYSLIP_TARGET_CHANGED": "The employee or month changed; the form was reloaded. Check it before saving.",
+  "PAYSLIP_PER_HOUR": "{amount} / hour"
 }
