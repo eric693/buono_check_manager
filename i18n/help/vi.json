@@ -299,7 +299,8 @@
       "notes": [
         "Lương là thông tin mật, tránh mở hoặc chụp màn hình trên thiết bị dùng chung.",
         "Cuối phiếu lương cho biết tháng này có thưởng chuyên cần không và lý do, cùng ghi chú của quản trị viên.",
-        "Với các tháng trước khi dùng hệ thống, phiếu lương có thể do quản trị viên nhập tay; số tiền là số họ đã nhập."
+        "Với các tháng trước khi dùng hệ thống, phiếu lương có thể do quản trị viên nhập tay; số tiền là số họ đã nhập.",
+        "Phiếu lương chỉ hiện sau khi quản trị viên phát hành; khi đó bạn nhận thông báo LINE. Nếu được sửa sau đó, phiếu sẽ ghi thời gian cập nhật."
       ]
     },
     "salary-setting": {
@@ -390,7 +391,8 @@
         "Nếu tháng đó đã có phiếu tính tự động, lưu phiếu nhập tay sẽ thay thế nó (sẽ hỏi xác nhận trước).",
         "\"Xóa (quay lại tính tự động)\" sẽ xóa phiếu nhập tay và tháng đó tính lại theo chấm công và lịch ca.",
         "Phiếu nhập tay không tự xét chuyên cần, tiền ăn, quà sinh nhật và không tự trừ bảo hiểm; mọi số tiền theo đúng số bạn nhập.",
-        "Mỗi lần lưu và xóa đều được ghi trong \"Nhật ký thao tác\" ở tab quản trị."
+        "Mỗi lần lưu và xóa đều được ghi trong \"Nhật ký thao tác\" ở tab quản trị.",
+        "Phiếu lương nhập tay đã lưu là bản nháp, nhân viên chưa thấy; kiểm tra xong cả tháng thì phát hành ở mục \"Phát hành phiếu lương\" trong Báo cáo lương."
       ],
       "terms": [
         [
@@ -415,7 +417,35 @@
         "Tính hàng loạt sẽ ghi đè bảng lương đã có của tháng đó, hãy duyệt xong mọi đơn trước khi chạy.",
         "Sao chép thiết lập chỉ mang theo điều kiện lương; dữ liệu cá nhân như CCCD, tài khoản, ngày vào làm không bị sao chép.",
         "Tệp xuất ra chứa dữ liệu cá nhân và tiền lương, không gửi ra ngoài công ty.",
-        "Tính hàng loạt sẽ bỏ qua nhân viên có phiếu nhập tay trong tháng và ghi \"手動薪資單，略過\" trong kết quả."
+        "Tính hàng loạt sẽ bỏ qua nhân viên có phiếu nhập tay trong tháng và ghi \"手動薪資單，略過\" trong kết quả.",
+        "Mục \"Phát hành phiếu lương\" ở trên giúp kiểm tra cả tháng và phát hành cho nhân viên cùng lúc."
+      ]
+    },
+    "payroll-publish": {
+      "intro": "Phiếu lương đã lưu là bản nháp, nhân viên chưa thấy. Kiểm tra xong cả tháng rồi phát hành cho mọi người cùng lúc kèm thông báo LINE.",
+      "steps": [
+        "Chọn tháng (mặc định tháng trước) và bấm \"Xem danh sách phát hành\".",
+        "Danh sách hiển thị mọi nhân viên đang làm: trạng thái phiếu (nhập tay／tự tính／chưa tạo), thu nhập, khấu trừ, thực lĩnh và đã xác nhận chưa, có tổng ở trên cùng.",
+        "Kiểm tra từng người. Muốn sửa thì sửa ở phiếu nhập tay hoặc màn hình tính lương trong \"Tính lương\" rồi quay lại.",
+        "Khi đúng hết, bấm \"Phát hành phiếu lương …\". Hệ thống báo ai chưa có phiếu; xác nhận xong mọi người cùng thấy, nhân viên có LINE nhận thông báo.",
+        "Sau khi phát hành, xem tại đây ai đã xác nhận, ai chưa."
+      ],
+      "notes": [
+        "Trước khi phát hành, nhân viên chỉ thấy \"Phiếu lương tháng này chưa được phát hành\" và chưa xác nhận được.",
+        "Nhân viên không có LINE (đăng nhập bằng liên kết) không nhận thông báo; tên sẽ được liệt kê sau khi phát hành để bạn báo riêng.",
+        "Sau khi phát hành vẫn sửa được phiếu; nhân viên sẽ thấy \"Phiếu lương đã được cập nhật lúc …\".",
+        "Nếu có lỗi lớn, bấm \"Thu hồi phát hành\" để tạm ẩn, sửa xong phát hành lại.",
+        "Mỗi lần phát hành và thu hồi đều được ghi trong nhật ký thao tác ở tab quản trị."
+      ],
+      "terms": [
+        [
+          "Bản nháp",
+          "Phiếu lương chưa phát hành, chỉ quản trị viên thấy."
+        ],
+        [
+          "Phát hành",
+          "Mở toàn bộ phiếu lương của tháng cho nhân viên xem, in và xác nhận."
+        ]
       ]
     }
   }

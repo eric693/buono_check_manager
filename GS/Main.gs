@@ -35,7 +35,10 @@ const ROUTE_ACCESS = {
   createLoginLink: 'admin',
   getManualPayslip: 'admin',
   saveManualPayslip: 'admin',
-  deleteManualPayslip: 'admin'
+  deleteManualPayslip: 'admin',
+  getPayrollMonthStatus: 'admin',
+  publishPayroll: 'admin',
+  unpublishPayroll: 'admin'
 };
 
 /**
@@ -68,10 +71,12 @@ const DEPLOY_CHECKS = [
                              String(generateLinePunchToken_).indexOf('cleanupLinePunchTokens_') !== -1],
   ['LineNotification.gs', () => typeof sendLineNotification_ === 'function' &&
                                  String(sendLineNotification_).indexOf('isLineUserId_') !== -1],
+  ['PayrollPublish.gs', () => typeof handlePublishPayroll === 'function' && typeof readPublishedPayslip_ === 'function'],
   ['ManualPayslip.gs', () => typeof handleSaveManualPayslip === 'function' && typeof readManualPayslip_ === 'function' &&
                               typeof sheetNumber_ === 'function'],
   ['LoginLinks.gs', () => typeof handleRedeemLoginLink === 'function' && typeof createSessionForUser_ === 'function'],
-  ['Offboarding.gs', () => typeof handleOffboardEmployee === 'function'],
+  ['Offboarding.gs', () => typeof handleOffboardEmployee === 'function' &&
+                            String(handleAcknowledgePayslip).indexOf('isPayrollPublished_') !== -1],
   ['OvertimeOperations.gs', () => typeof initOvertimeSheet === 'function'],
   ['PayrollRules.gs', () => typeof applyPayrollRules_ === 'function' && typeof payrollAttendanceZh_ === 'function' &&
                              String(handleSavePayrollAdjustments).indexOf('PAYSLIP_IS_MANUAL') !== -1],
@@ -80,7 +85,8 @@ const DEPLOY_CHECKS = [
   ['QrPunch.gs', () => typeof qrPunch === 'function' && String(qrPunch).indexOf('checkPunchSequence_') !== -1],
   ['SalaryManagement.gs', () => typeof calculateMonthlySalary === 'function' && calculateMonthlySalary.length >= 3 &&
                                  String(saveMonthlySalary).indexOf('PAYSLIP_IS_MANUAL') !== -1 &&
-                                 typeof ensureMonthlySalaryNumberFormats_ === 'function'],
+                                 typeof ensureMonthlySalaryNumberFormats_ === 'function' &&
+                                 String(getMySalary).indexOf('readPublishedPayslip_') !== -1],
   ['SalaryTools.gs', () => typeof listPayableEmployees_ === 'function' &&
                             String(handleBatchCalculateSalary).indexOf('readManualPayslip_') !== -1],
   ['ShiftManagement.gs', () => typeof shiftRowBreakMinutes_ === 'function'],
@@ -92,7 +98,7 @@ const DEPLOY_CHECKS = [
 ];
 
 // 每次後端有更新就改這個日期，健康檢查會回報，從外面就知道正式區部署到哪一版
-const BACKEND_VERSION = '2026-10-09';
+const BACKEND_VERSION = '2026-10-09b';
 
 function handleHealthCheck() {
   const problems = [];
@@ -318,6 +324,12 @@ function doGet(e) {
         return respond1(handleSaveManualPayslip(e.parameter));
       case "deleteManualPayslip":
         return respond1(handleDeleteManualPayslip(e.parameter));
+      case "getPayrollMonthStatus":
+        return respond1(handleGetPayrollMonthStatus(e.parameter));
+      case "publishPayroll":
+        return respond1(handlePublishPayroll(e.parameter));
+      case "unpublishPayroll":
+        return respond1(handleUnpublishPayroll(e.parameter));
       
       // ==================== 薪資系統 ====================
       case "setEmployeeSalaryTW":

@@ -52,6 +52,7 @@
         ['salary-calc', 'SALARY_TAB_CALC'],
         ['manual-payslip', 'MANUAL_PAYSLIP_TITLE'],
         ['salary-report', 'SALARY_TAB_REPORT'],
+        ['payroll-publish', 'PAYROLL_PUBLISH_TITLE'],
         ['bonus-records', 'SALARY_TAB_BONUS']
       ]
     }

@@ -1177,6 +1177,12 @@ function getMySalary(userId, yearMonth) {
     
     Logger.log(` 查詢薪資: ${employeeId}, ${yearMonth}`);
     
+    // 薪資發放（PayrollPublish.gs）：管理員按「發放」之前員工看不到；
+    // 發放之後給員工看的是存好的那一張，不再每次打開就重算
+    if (typeof readPublishedPayslip_ === 'function') {
+      return readPublishedPayslip_(employeeId, yearMonth);
+    }
+    
     // 手動薪資單：直接給管理員填的內容，不重新計算
     if (typeof readManualPayslip_ === 'function') {
       const manual = readManualPayslip_(employeeId, yearMonth);
@@ -1293,6 +1299,9 @@ function getMySalaryHistory(userId, limit = 12) {
             salary[header] = data[i][index];
           }
         });
+        // 還沒發放的月份（草稿）不列給員工看
+        const ym = String(salary['年月'] || '').substring(0, 7);
+        if (typeof isPayrollPublished_ === 'function' && !isPayrollPublished_(ym)) continue;
         salaries.push(salary);
       }
     }
