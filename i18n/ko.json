@@ -1410,5 +1410,6 @@
   "ERR_ADJUST_PUNCH_LIMIT": "이날 같은 종류의 보정 신청이 이미 2건 대기 중입니다. 검토 후 다시 신청하세요",
   "ERR_MISSING_DATETIME": "날짜와 시간을 선택하세요",
   "MANUAL_PAYSLIP_EDITING": "편집 중: {name} ({month})",
-  "MANUAL_PAYSLIP_TARGET_CHANGED": "직원 또는 월이 바뀌어 다시 불러왔습니다. 확인 후 저장하세요."
+  "MANUAL_PAYSLIP_TARGET_CHANGED": "직원 또는 월이 바뀌어 다시 불러왔습니다. 확인 후 저장하세요.",
+  "PAYSLIP_PER_HOUR": "{amount} / 시간"
 }

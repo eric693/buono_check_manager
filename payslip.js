@@ -181,6 +181,8 @@ function buildPayslipHtml(rawData) {
     const maskedAccount = account ? account.slice(-4).padStart(account.length, '*') : '';
     
     const workHours = num(data.totalWorkHours);
+    // 時薪員工：薪資條上列出時薪金額（月薪員工不顯示）
+    const hourlyRate = (data.salaryType === '時薪' || data['薪資類型'] === '時薪') ? num(data.hourlyRate || data['時薪']) : 0;
     const overtimeHours = num(data.totalOvertimeHours);
     
     return `<!DOCTYPE html>
@@ -233,6 +235,10 @@ function buildPayslipHtml(rawData) {
       <td>${escapeHtml(t('STATS_OVERTIME_HOURS'))}</td><td>${overtimeHours ? overtimeHours.toFixed(1) : '-'}</td>
       <td>${escapeHtml(t('SALARY_ACCOUNT'))}</td><td>${escapeHtml(maskedAccount || '-')}</td>
     </tr>
+    ${hourlyRate ? `
+    <tr>
+      <td>${escapeHtml(t('HOURLY_RATE_LABEL'))}</td><td colspan="3">${escapeHtml(t('PAYSLIP_PER_HOUR', { amount: payslipMoney(hourlyRate) }))}</td>
+    </tr>` : ''}
   </table>
   
   <div class="cols">
