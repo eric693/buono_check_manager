@@ -280,8 +280,9 @@ async function startLineLogin() {
 
 function showLoginUI() {
     setElementDisplay('login-btn', 'block');
-    document.getElementById('user-header').style.display = 'none';
-    document.getElementById('main-app').style.display = 'none';
+    // 薪資頁、排班頁沒有這兩個區塊，用 setElementDisplay 才不會因為找不到元素而整段出錯
+    setElementDisplay('user-header', 'none');
+    setElementDisplay('main-app', 'none');
     setElementText("status", t("SUBTITLE_LOGIN"));
 }
 

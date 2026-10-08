@@ -123,3 +123,17 @@ function setElementSrc(id, src) {
     if (el) el.src = src;
     return el;
 }
+
+// ==================== 數字欄位：滾輪不改數字 ====================
+//
+// 在數字輸入框打完字、游標還停在框裡時，用滑鼠滾輪捲動頁面，瀏覽器會把滾輪當成
+// 「調整數字」，每滾一格就加減 1（輸入 1000，往下捲兩格變成 998）。
+// 這裡在滾輪捲動時先讓那個欄位失去焦點，頁面照常捲動，數字不會被改到。
+(function preventWheelOnNumberInputs() {
+    if (typeof document === 'undefined' || window.__numberWheelGuard) return;
+    window.__numberWheelGuard = true;
+    document.addEventListener('wheel', () => {
+        const el = document.activeElement;
+        if (el && el.tagName === 'INPUT' && el.type === 'number') el.blur();
+    }, { passive: true, capture: true });
+})();
