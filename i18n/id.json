@@ -1440,5 +1440,14 @@
   "PAYROLL_ALREADY_PUBLISHED": "Bulan ini sudah dirilis",
   "PAYROLL_NOTHING_TO_PUBLISH": "Belum ada slip untuk bulan ini",
   "AUDIT_ACTION_PUBLISH_PAYROLL": "Rilis slip gaji",
-  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "Tarik rilis slip gaji"
+  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "Tarik rilis slip gaji",
+  "BTN_DELETE_SALARY_SETTING": "Hapus pengaturan gaji karyawan ini",
+  "SALARY_CONFIG_DELETE_CONFIRM": "Hapus pengaturan gaji {name}?\nSlip yang sudah tersimpan tetap ada, tetapi simulasi dan hitung massal tidak akan menyertakan karyawan ini lagi.",
+  "SALARY_CONFIG_DELETED": "Pengaturan gaji {name} dihapus",
+  "SALARY_CONFIG_DELETE_FAILED": "Gagal menghapus pengaturan gaji",
+  "PAYROLL_DELETE_DRAFT": "Hapus",
+  "PAYROLL_DELETE_DRAFT_CONFIRM": "Hapus slip {month} milik {name}?\nSlip belum dirilis sehingga karyawan tidak melihatnya. Bisa dibuat lagi lewat simulasi atau hitung massal.",
+  "PAYROLL_DRAFT_DELETED": "Slip {name} dihapus",
+  "AUDIT_ACTION_DELETE_SALARY_CONFIG": "Hapus pengaturan gaji",
+  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "Hapus slip yang belum dirilis"
 }

@@ -91,6 +91,9 @@ async function loadSalaryEmployeeDirectory(force = false) {
   try {
     const res = await callApifetch('listPayableEmployees', null);
     salaryEmployeeDirectory = (res.ok && Array.isArray(res.employees)) ? res.employees : [];
+    // 同一個人有重複的設定列時只列一次（舊版後端沒有去重）
+    const seen = new Set();
+    salaryEmployeeDirectory = salaryEmployeeDirectory.filter(emp => !seen.has(emp.employeeId) && seen.add(emp.employeeId));
     salaryAllEmployees = (res.ok && Array.isArray(res.allEmployees)) ? res.allEmployees : [];
   } catch (error) {
     console.error('載入員工清單失敗:', error);
@@ -186,6 +189,54 @@ function selectConfigEmployee(employeeId) {
 
   if (typeof onEmployeeSelect === 'function') onEmployeeSelect();
   loadCustomItemValues(employeeId);
+}
+
+/**
+ * 重新抓「已設定員工」清單並重畫（儲存或刪除薪資設定之後）
+ */
+async function refreshSalaryConfigList() {
+  await loadSalaryEmployeeDirectory(true);
+  renderEmployeeList(document.getElementById('employee-filter')?.value || '');
+  updateSalaryConfigDeleteButton();
+}
+
+/**
+ * 選到的員工已經有薪資設定，才顯示「刪除薪資設定」
+ */
+function updateSalaryConfigDeleteButton() {
+  const btn = document.getElementById('config-delete-btn');
+  if (!btn) return;
+  const employeeId = document.getElementById('config-employee-id')?.value.trim() || '';
+  btn.style.display = (employeeId && salaryEmployeeDirectory.some(emp => emp.employeeId === employeeId)) ? '' : 'none';
+}
+
+async function deleteSalaryConfig() {
+  const employeeId = document.getElementById('config-employee-id')?.value.trim() || '';
+  if (!employeeId) return;
+  const name = document.getElementById('config-employee-name')?.value.trim() || employeeId;
+  if (!confirm(ta('SALARY_CONFIG_DELETE_CONFIRM', '確定要刪除 {name} 的薪資設定嗎？\n已經存好的薪資單不受影響，但之後試算、批次計算不會再算到這位員工。').replace('{name}', name))) return;
+
+  const btn = document.getElementById('config-delete-btn');
+  if (btn) btn.disabled = true;
+  try {
+    const res = await callApifetch(`deleteSalaryConfig&employeeId=${encodeURIComponent(employeeId)}`, null);
+    if (res.ok) {
+      showNotification(ta('SALARY_CONFIG_DELETED', '已刪除 {name} 的薪資設定').replace('{name}', name), 'success');
+      const form = document.getElementById('salary-config-form');
+      if (form) form.reset();
+      if (typeof clearSalaryConfigForm === 'function') clearSalaryConfigForm();
+      ['config-employee-id', 'config-employee-name'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      currentConfigEmployeeId = '';
+      await refreshSalaryConfigList();
+    } else {
+      showNotification(res.msg || ta('SALARY_CONFIG_DELETE_FAILED', '刪除薪資設定失敗'), 'error');
+    }
+  } catch (error) {
+    console.error('刪除薪資設定失敗:', error);
+    showNotification(ta('SALARY_CONFIG_DELETE_FAILED', '刪除薪資設定失敗'), 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 // ==================== 自訂項目 ====================
@@ -1724,6 +1775,19 @@ function renderPayrollPublishStatus() {
       td.textContent = text;
       tr.appendChild(td);
     });
+    // 還沒發放的自動計算薪資單可以刪掉（例如誤按試算存下來的）；手動薪資單在上面的「手動薪資單」刪
+    const action = document.createElement('td');
+    action.className = 'py-2';
+    if (!res.published && e.status === 'auto') {
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'ghost-btn';
+      del.style.color = '#dc2626';
+      del.textContent = ta('PAYROLL_DELETE_DRAFT', '刪除');
+      del.onclick = () => deleteDraftPayslip(e);
+      action.appendChild(del);
+    }
+    tr.appendChild(action);
     rows.appendChild(tr);
   });
 
@@ -1767,6 +1831,26 @@ async function publishPayrollMonth() {
     console.error('發放失敗:', error);
     showNotification(ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
     btn.disabled = false;
+  }
+}
+
+async function deleteDraftPayslip(emp) {
+  const res = payrollPublishState;
+  if (!res || res.published) return;
+  const name = emp.employeeName || emp.employeeId;
+  if (!confirm(ta('PAYROLL_DELETE_DRAFT_CONFIRM', '確定要刪除 {name} {month} 的薪資單嗎？\n這張還沒發放，員工看不到；之後可以再用試算或批次計算重新產生。')
+    .replace('{name}', name).replace('{month}', res.yearMonth))) return;
+  try {
+    const out = await callApifetch(`deleteDraftPayslip&employeeId=${encodeURIComponent(emp.employeeId)}&yearMonth=${encodeURIComponent(res.yearMonth)}`, null);
+    if (out.ok) {
+      showNotification(ta('PAYROLL_DRAFT_DELETED', '已刪除 {name} 的薪資單').replace('{name}', name), 'success');
+      await loadPayrollPublishStatus();
+    } else {
+      showNotification(out.msg || ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
+    }
+  } catch (error) {
+    console.error('刪除薪資單失敗:', error);
+    showNotification(ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
   }
 }
 

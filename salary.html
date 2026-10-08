@@ -1874,6 +1874,7 @@
                     </div>
 
                     <button type="submit" class="submit-btn" data-i18n="BTN_SAVE_SALARY_SETTING"> 儲存薪資設定</button>
+                    <button type="button" id="config-delete-btn" class="ghost-btn" style="display: none; color: #dc2626; margin-top: 0.75rem;" onclick="deleteSalaryConfig()" data-i18n="BTN_DELETE_SALARY_SETTING">刪除這位員工的薪資設定</button>
                 </form>
             </div>
         </div>
@@ -2070,6 +2071,7 @@
                                     <th class="py-2 pr-3 text-right" data-i18n="SALARY_DEDUCTIONS">扣款總額</th>
                                     <th class="py-2 pr-3 text-right" data-i18n="SALARY_NET">實發金額</th>
                                     <th class="py-2" data-i18n="PAYROLL_PUBLISH_COL_ACK">簽收</th>
+                                    <th class="py-2"></th>
                                 </tr>
                             </thead>
                             <tbody id="pp-rows"></tbody>
@@ -2244,7 +2246,8 @@
             
             const employeeSalaryMonth = document.getElementById('employee-salary-month');
             if (employeeSalaryMonth) {
-                employeeSalaryMonth.value = currentMonth;
+                // 從薪資發放通知點進來會帶 ?month=，直接顯示那個月
+                employeeSalaryMonth.value = (typeof salaryInitialMonth === 'function') ? salaryInitialMonth() : currentMonth;
             }
             
             const calcYearMonth = document.getElementById('calc-year-month');
@@ -2343,6 +2346,12 @@
                     if (typeof onSalaryAdminReady === 'function') {
                         onSalaryAdminReady(isAdmin);
                     }
+                } else if (res && (res.code === 'ERR_SESSION_INVALID' || res.code === 'ERR_SESSION_EXPIRED' ||
+                                   res.code === 'MISSING_SESSION_TOKEN' || !localStorage.getItem('sessionToken'))) {
+                    // 還沒登入（例如從 LINE 通知點進來、這個瀏覽器沒登入過）：先去首頁登入，
+                    // 登入後回到這一頁、同一個月份（見 script.js 的 resumeAfterLogin）
+                    try { localStorage.setItem('loginNext', 'salary.html' + window.location.search); } catch (_) {}
+                    window.location.replace('./');
                 }
             } catch (error) {
                 console.error('檢查權限失敗:', error);
@@ -2998,6 +3007,7 @@
                     // 這段時間已經填好的員工類型、金額會被整個清掉，按儲存才跳出「請選擇」
                     clearSalaryConfigForm();
                     loadExistingSalaryConfig(employee.userId);
+                    if (typeof updateSalaryConfigDeleteButton === 'function') updateSalaryConfigDeleteButton();
                     
                 } catch (error) {
                     console.error('解析員工資料失敗:', error);
@@ -3008,6 +3018,7 @@
                 // 清空欄位
                 employeeIdEl.value = '';
                 employeeNameEl.value = '';
+                if (typeof updateSalaryConfigDeleteButton === 'function') updateSalaryConfigDeleteButton();
             }
         }
 

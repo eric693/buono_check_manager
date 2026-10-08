@@ -618,6 +618,10 @@ function setEmployeeSalaryTW(salaryData) {
     if (rowIndex > 0) {
       sheet.getRange(rowIndex, 1, 1, row.length).setValues([row]);
       Logger.log(` 更新員工薪資設定: ${salaryData.employeeName} (列 ${rowIndex})`);
+      // 同一個人重複的設定列（以前測試時留下的）一起清掉，只留這一列；從下往上刪，列號才不會跑掉
+      for (let i = data.length - 1; i >= rowIndex; i--) {
+        if (String(data[i][0]).trim() === String(salaryData.employeeId).trim()) sheet.deleteRow(i + 1);
+      }
     } else {
       sheet.appendRow(row);
       Logger.log(` 新增員工薪資設定: ${salaryData.employeeName}`);

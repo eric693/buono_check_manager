@@ -1499,5 +1499,14 @@
   "PAYROLL_ALREADY_PUBLISHED": "เดือนนี้เผยแพร่แล้ว",
   "PAYROLL_NOTHING_TO_PUBLISH": "เดือนนี้ยังไม่มีสลิป",
   "AUDIT_ACTION_PUBLISH_PAYROLL": "เผยแพร่สลิปเงินเดือน",
-  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "ยกเลิกการเผยแพร่สลิป"
+  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "ยกเลิกการเผยแพร่สลิป",
+  "BTN_DELETE_SALARY_SETTING": "ลบการตั้งค่าเงินเดือนของพนักงานคนนี้",
+  "SALARY_CONFIG_DELETE_CONFIRM": "ลบการตั้งค่าเงินเดือนของ {name} หรือไม่\nสลิปที่บันทึกไว้ยังอยู่ แต่การคำนวณทดลองและคำนวณทั้งหมดจะไม่รวมพนักงานคนนี้อีก",
+  "SALARY_CONFIG_DELETED": "ลบการตั้งค่าเงินเดือนของ {name} แล้ว",
+  "SALARY_CONFIG_DELETE_FAILED": "ลบการตั้งค่าเงินเดือนไม่สำเร็จ",
+  "PAYROLL_DELETE_DRAFT": "ลบ",
+  "PAYROLL_DELETE_DRAFT_CONFIRM": "ลบสลิปเดือน {month} ของ {name} หรือไม่\nยังไม่เผยแพร่ พนักงานจึงยังไม่เห็น สามารถสร้างใหม่ด้วยการคำนวณทดลองหรือคำนวณทั้งหมด",
+  "PAYROLL_DRAFT_DELETED": "ลบสลิปของ {name} แล้ว",
+  "AUDIT_ACTION_DELETE_SALARY_CONFIG": "ลบการตั้งค่าเงินเดือน",
+  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "ลบสลิปที่ยังไม่เผยแพร่"
 }

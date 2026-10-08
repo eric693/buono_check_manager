@@ -203,7 +203,8 @@ function handlePublishPayroll(params) {
 
   // 通知放在鎖外面：一個一個打 LINE API 要一點時間，不要卡住其他人
   const [y, m] = yearMonth.split('-');
-  const text = `💰 ${y} 年 ${Number(m)} 月薪資條已發放\n請到出勤管家「薪資」頁查看，確認無誤後按「簽收」。\n${LINE_REDIRECT_URL}salary.html`;
+  // 連結帶上月份，點開就是這個月的薪資條（不然會先看到當月的「尚未發放」）
+  const text = `💰 ${y} 年 ${Number(m)} 月薪資條已發放\n請到出勤管家「薪資」頁查看，確認無誤後按「簽收」。\n${LINE_REDIRECT_URL}salary.html?month=${yearMonth}`;
   let notified = 0;
   const notNotified = [];
   const names = (typeof getEmployeeNameMap_ === 'function') ? getEmployeeNameMap_() : {};
@@ -242,4 +243,40 @@ function handleUnpublishPayroll(params) {
   sheet.getRange(info.row, 2).setValue(PAYROLL_STATUS_WITHDRAWN);
   sheet.getRange(info.row, 7, 1, 2).setValues([[new Date(), admin.name || admin.userId]]);
   return { ok: true, yearMonth: yearMonth };
+}
+
+/**
+ * API（管理員）：刪除還沒發放的薪資單（例如誤按試算存下來的那一張）
+ * 已發放的月份要先撤回發放才能刪，避免員工看到的薪資單憑空消失
+ */
+function handleDeleteDraftPayslip(params) {
+  if (!requirePayrollAdmin_(params.token)) return { ok: false, code: 'PERMISSION_DENIED', msg: '需要管理員權限' };
+  const employeeId = String(params.employeeId || '').trim();
+  const yearMonth = String(params.yearMonth || '').trim();
+  if (!employeeId) return { ok: false, code: 'MISSING_EMPLOYEE_ID', msg: '缺少員工ID' };
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(yearMonth)) return { ok: false, code: 'INVALID_YEAR_MONTH', msg: '年月格式錯誤' };
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    if (isPayrollPublished_(yearMonth)) {
+      return { ok: false, code: 'PAYROLL_ALREADY_PUBLISHED', msg: '這個月已經發放，請先撤回發放再刪除' };
+    }
+    const sheet = getMonthlySalarySheetEnhanced();
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0].map(h => String(h).trim());
+    const idIndex = headers.indexOf('員工ID');
+    const ymIndex = headers.indexOf('年月');
+    let deleted = 0;
+    for (let i = data.length - 1; i >= 1; i--) {
+      if (String(data[i][idIndex]).trim() !== employeeId) continue;
+      if (payrollYearMonthText_(data[i][ymIndex]) !== yearMonth) continue;
+      sheet.deleteRow(i + 1);
+      deleted++;
+    }
+    if (!deleted) return { ok: false, code: 'PAYSLIP_NOT_FOUND', msg: '查無薪資記錄' };
+    return { ok: true, employeeId: employeeId, yearMonth: yearMonth, deleted: deleted };
+  } finally {
+    lock.releaseLock();
+  }
 }

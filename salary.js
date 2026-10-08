@@ -9,6 +9,19 @@ if (typeof callApifetch !== 'function') {
 /**
  *  初始化薪資頁面（完整版 + 多語言）
  */
+/**
+ * 「我的薪資」一打開要顯示哪個月：網址帶 ?month=2026-09（薪資發放的 LINE 通知連結）就顯示那個月，
+ * 不然顯示當月。以前一律顯示當月，員工點通知進來先看到「本月薪資尚未發放」，還要自己切月份。
+ */
+function salaryInitialMonth() {
+    try {
+        const month = new URLSearchParams(window.location.search).get('month');
+        if (month && /^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return month;
+    } catch (_) {}
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
 async function initSalaryTab() {
     try {
         console.log(' 開始初始化薪資頁面（完整版 v2.0 + 多語言）');
@@ -31,9 +44,8 @@ async function initSalaryTab() {
         console.log(' 權限:', session.user.dept);
         console.log(' 員工ID:', session.user.userId);
         
-        // 步驟 2：設定當前月份
-        const now = new Date();
-        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        // 步驟 2：設定月份（通知連結帶的月份，或當月）
+        const currentMonth = salaryInitialMonth();
         console.log(' 當前月份:', currentMonth);
         
         const employeeSalaryMonth = document.getElementById('employee-salary-month');
@@ -71,8 +83,7 @@ async function loadCurrentEmployeeSalary() {
     try {
         console.log(` 載入員工薪資`);
         
-        const now = new Date();
-        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const currentMonth = salaryInitialMonth();
         
         const loadingEl = document.getElementById('current-salary-loading');
         const emptyEl = document.getElementById('current-salary-empty');
@@ -1108,6 +1119,8 @@ async function handleSalaryConfigSubmit(e) {
         if (res.ok) {
             showNotification(t('SALARY_SAVE_SUCCESS'), 'success');
             e.target.reset();
+            // 左邊的「已設定員工」清單跟著更新（新設定的人才會出現、重複的列已在後端合併）
+            if (typeof refreshSalaryConfigList === 'function') refreshSalaryConfigList();
             
             // 重置所有輸入欄位為 0
             const resetFields = [
