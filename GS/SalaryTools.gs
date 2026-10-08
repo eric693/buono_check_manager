@@ -30,10 +30,12 @@ function listPayableEmployees_() {
   if (idIndex === -1) return [];
 
   const employees = [];
+  const seen = {};
 
   for (let i = 1; i < data.length; i++) {
     const employeeId = String(data[i][idIndex] || '').trim();
-    if (!employeeId) continue;
+    if (!employeeId || seen[employeeId]) continue;   // 重複的設定列只算第一列（和讀取設定時一致）
+    seen[employeeId] = true;
 
     // 沒有狀態欄就一律視為在職（舊資料）
     const status = (statusIndex === -1) ? '在職' : String(data[i][statusIndex] || '在職').trim();
@@ -456,5 +458,35 @@ function handleListPayableEmployees(params) {
   } catch (error) {
     Logger.log(` handleListPayableEmployees 錯誤: ${error.message}`);
     return { ok: false, msg: error.toString() };
+  }
+}
+
+/**
+ * API（管理員）：刪除某位員工的薪資設定（「員工薪資設定」裡這個人的所有列，含重複的）
+ * 已經存好的月薪資記錄不動；之後試算或批次計算就不會再算到這個人
+ */
+function handleDeleteSalaryConfig(params) {
+  const user = getUserByToken(params.token);
+  if (!user || user.dept !== '管理員') {
+    return { ok: false, code: 'PERMISSION_DENIED', msg: '此功能僅限管理員使用' };
+  }
+  const employeeId = String(params.employeeId || '').trim();
+  if (!employeeId) return { ok: false, code: 'MISSING_EMPLOYEE_ID', msg: '缺少員工ID' };
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const sheet = getEmployeeSalarySheet();
+    const data = sheet.getDataRange().getValues();
+    let deleted = 0;
+    for (let i = data.length - 1; i >= 1; i--) {
+      if (String(data[i][0]).trim() !== employeeId) continue;
+      sheet.deleteRow(i + 1);
+      deleted++;
+    }
+    if (!deleted) return { ok: false, code: 'SALARY_CONFIG_NOT_FOUND', msg: '找不到這位員工的薪資設定' };
+    return { ok: true, employeeId: employeeId, deleted: deleted };
+  } finally {
+    lock.releaseLock();
   }
 }

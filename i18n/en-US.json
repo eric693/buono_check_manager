@@ -1461,5 +1461,14 @@
   "PAYROLL_ALREADY_PUBLISHED": "This month has already been released",
   "PAYROLL_NOTHING_TO_PUBLISH": "There are no payslips for this month yet",
   "AUDIT_ACTION_PUBLISH_PAYROLL": "Release payslips",
-  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "Withdraw payslip release"
+  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "Withdraw payslip release",
+  "BTN_DELETE_SALARY_SETTING": "Delete this employee's salary setting",
+  "SALARY_CONFIG_DELETE_CONFIRM": "Delete {name}'s salary setting?\nSaved payslips are kept, but trial and batch calculations will skip this employee from now on.",
+  "SALARY_CONFIG_DELETED": "Deleted {name}'s salary setting",
+  "SALARY_CONFIG_DELETE_FAILED": "Could not delete the salary setting",
+  "PAYROLL_DELETE_DRAFT": "Delete",
+  "PAYROLL_DELETE_DRAFT_CONFIRM": "Delete {name}'s {month} payslip?\nIt has not been released, so the employee cannot see it. You can create it again with a trial or batch calculation.",
+  "PAYROLL_DRAFT_DELETED": "Deleted {name}'s payslip",
+  "AUDIT_ACTION_DELETE_SALARY_CONFIG": "Delete salary setting",
+  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "Delete unreleased payslip"
 }

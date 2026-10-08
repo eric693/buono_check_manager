@@ -318,7 +318,8 @@
         "Xoá một khoản tự định nghĩa chỉ khiến nó không được tính vào lương; số tiền vẫn được giữ và quay lại khi thêm lại.",
         "Chuyên cần toàn thời gian: mỗi tháng được đi trễ trong 5 phút 1 lần và quên chấm công 2 lần; trễ quá 5 phút, nghỉ việc riêng/ốm/nằm viện hoặc vắng không phép thì mất thưởng (có thể chỉnh số lần, số phút).",
         "Tiền ăn: số ngày đủ 8 giờ (toàn thời gian tính giờ thực, bán thời gian tính giờ xếp ca) × 110. Quà sinh nhật cần sinh nhật trong tháng và làm đủ 3 tháng (ngày vào làm lấy từ cài đặt lương).",
-        "Lương giờ tăng ca của nhân viên tháng = (lương cơ bản + tiền ăn + phụ cấp chức vụ) ÷ 30 ÷ 8. Hệ số mặc định theo Luật Lao động, chỉnh ở phần hệ số tăng ca."
+        "Lương giờ tăng ca của nhân viên tháng = (lương cơ bản + tiền ăn + phụ cấp chức vụ) ÷ 30 ÷ 8. Hệ số mặc định theo Luật Lao động, chỉnh ở phần hệ số tăng ca.",
+        "Để xóa thiết lập bị trùng hoặc không cần nữa, chọn nhân viên ở danh sách bên trái rồi nhấn «Xóa thiết lập lương của nhân viên này» ở cuối biểu mẫu. Phiếu lương đã lưu vẫn giữ nguyên. Các dòng trùng của cùng một nhân viên cũng sẽ tự gộp thành một khi lưu lần sau."
       ],
       "terms": [
         [
@@ -435,7 +436,8 @@
         "Nhân viên không có LINE (đăng nhập bằng liên kết) không nhận thông báo; tên sẽ được liệt kê sau khi phát hành để bạn báo riêng.",
         "Sau khi phát hành vẫn sửa được phiếu; nhân viên sẽ thấy \"Phiếu lương đã được cập nhật lúc …\".",
         "Nếu có lỗi lớn, bấm \"Thu hồi phát hành\" để tạm ẩn, sửa xong phát hành lại.",
-        "Mỗi lần phát hành và thu hồi đều được ghi trong nhật ký thao tác ở tab quản trị."
+        "Mỗi lần phát hành và thu hồi đều được ghi trong nhật ký thao tác ở tab quản trị.",
+        "Phiếu lương lưu do bấm nhầm tính thử hoặc tính hàng loạt chỉ là bản nháp, nhân viên không thấy. Nhấn «Xóa» ở dòng của nhân viên đó trong danh sách phát hành (phiếu nhập tay thì xóa ở mục «Phiếu lương nhập tay» phía trên). Tháng đã phát hành phải thu hồi trước mới xóa được."
       ],
       "terms": [
         [

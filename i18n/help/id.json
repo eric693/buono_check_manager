@@ -318,7 +318,8 @@
         "Menghapus item kustom hanya membuatnya tidak dihitung ke gaji. Jumlahnya tetap tersimpan dan kembali bila item ditambahkan lagi.",
         "Bonus kehadiran penuh waktu: per bulan boleh terlambat ≤5 menit 1 kali dan lupa absen 2 kali; terlambat lebih dari 5 menit, cuti pribadi/sakit/rawat inap, atau mangkir membatalkannya (angka bisa diubah).",
         "Uang makan: jumlah hari dengan 8+ jam (penuh waktu jam nyata, paruh waktu jam terjadwal) × 110. Hadiah ulang tahun perlu ulang tahun bulan ini dan masa kerja 3+ bulan (tanggal masuk dari pengaturan gaji).",
-        "Tarif lembur per jam karyawan bulanan = (gaji pokok + uang makan + tunjangan jabatan) ÷ 30 ÷ 8. Pengali default sesuai UU Ketenagakerjaan dan bisa diubah di tarif lembur."
+        "Tarif lembur per jam karyawan bulanan = (gaji pokok + uang makan + tunjangan jabatan) ÷ 30 ÷ 8. Pengali default sesuai UU Ketenagakerjaan dan bisa diubah di tarif lembur.",
+        "Untuk menghapus pengaturan ganda atau yang tidak dipakai, pilih karyawan di daftar kiri lalu tekan «Hapus pengaturan gaji karyawan ini» di bagian bawah formulir. Slip yang sudah tersimpan tetap ada. Baris ganda untuk karyawan yang sama juga digabung otomatis saat menyimpan berikutnya."
       ],
       "terms": [
         [
@@ -435,7 +436,8 @@
         "Karyawan tanpa LINE (login dengan tautan) tidak menerima pesan; namanya ditampilkan setelah rilis agar Anda bisa memberi tahu langsung.",
         "Slip masih bisa diubah setelah rilis; karyawan akan melihat \"Slip ini diperbarui pada …\".",
         "Jika ada kesalahan besar, tekan \"Tarik rilis\" agar sementara tidak terlihat, lalu rilis lagi setelah diperbaiki.",
-        "Setiap rilis dan penarikan tercatat di log tindakan pada tab admin."
+        "Setiap rilis dan penarikan tercatat di log tindakan pada tab admin.",
+        "Slip yang tersimpan karena salah menekan simulasi atau hitung massal hanyalah draf dan tidak terlihat oleh karyawan. Tekan «Hapus» di baris karyawan itu pada daftar rilis (slip manual dihapus di bagian «Slip gaji manual» di atas). Untuk bulan yang sudah dirilis, tarik rilisnya dulu."
       ],
       "terms": [
         [

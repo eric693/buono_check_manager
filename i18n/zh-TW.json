@@ -1480,5 +1480,14 @@
   "PAYROLL_ALREADY_PUBLISHED": "這個月已經發放過了",
   "PAYROLL_NOTHING_TO_PUBLISH": "這個月還沒有任何薪資單",
   "AUDIT_ACTION_PUBLISH_PAYROLL": "發放薪資條",
-  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "撤回薪資條發放"
+  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "撤回薪資條發放",
+  "BTN_DELETE_SALARY_SETTING": "刪除這位員工的薪資設定",
+  "SALARY_CONFIG_DELETE_CONFIRM": "確定要刪除 {name} 的薪資設定嗎？\n已經存好的薪資單不受影響，但之後試算、批次計算不會再算到這位員工。",
+  "SALARY_CONFIG_DELETED": "已刪除 {name} 的薪資設定",
+  "SALARY_CONFIG_DELETE_FAILED": "刪除薪資設定失敗",
+  "PAYROLL_DELETE_DRAFT": "刪除",
+  "PAYROLL_DELETE_DRAFT_CONFIRM": "確定要刪除 {name} {month} 的薪資單嗎？\n這張還沒發放，員工看不到；之後可以再用試算或批次計算重新產生。",
+  "PAYROLL_DRAFT_DELETED": "已刪除 {name} 的薪資單",
+  "AUDIT_ACTION_DELETE_SALARY_CONFIG": "刪除員工薪資設定",
+  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "刪除未發放的薪資單"
 }

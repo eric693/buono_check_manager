@@ -237,6 +237,22 @@ function decodeLoginResume(state) {
 }
 
 /**
+ * 登入前要去的頁面（例如從薪資發放通知點進薪資頁、但還沒登入）：登入後帶回去。
+ * 只接受薪資頁加月份，不能被拿來導到任意網址。
+ * @returns {boolean} 有帶回去就回傳 true
+ */
+function resumeAfterLogin() {
+    let next = '';
+    try {
+        next = localStorage.getItem('loginNext') || '';
+        localStorage.removeItem('loginNext');
+    } catch (_) { return false; }
+    if (!/^salary\.html(\?month=\d{4}-(0[1-9]|1[0-2]))?$/.test(next)) return false;
+    window.location.replace(next);
+    return true;
+}
+
+/**
  * 登入成功（LINE 或登入連結）：存 session、顯示主畫面，再處理登入前掃的 QR 卡
  */
 async function applyLoginResult(res) {
@@ -260,6 +276,8 @@ async function applyLoginResult(res) {
     }
 
     showNotification(t("LOGIN_SUCCESS"), "success");
+
+    if (resumeAfterLogin()) return;
 
     // UI 顯示後才載入異常記錄（不阻塞登入）
     loadAbnormalRecordsInBackground();
@@ -2021,6 +2039,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } else {
         const loginOk = await ensureLogin();
+        if (loginOk && resumeAfterLogin()) return;
         if (typeof initBiometricPunch === 'function') initBiometricPunch();
         if (loginOk) {
             if (typeof handlePendingQRPunch === 'function') await handlePendingQRPunch();

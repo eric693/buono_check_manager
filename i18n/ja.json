@@ -1440,5 +1440,14 @@
   "PAYROLL_ALREADY_PUBLISHED": "この月はすでに配布済みです",
   "PAYROLL_NOTHING_TO_PUBLISH": "この月の明細はまだありません",
   "AUDIT_ACTION_PUBLISH_PAYROLL": "給与明細を配布",
-  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "給与明細の配布を取り消し"
+  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "給与明細の配布を取り消し",
+  "BTN_DELETE_SALARY_SETTING": "この従業員の給与設定を削除",
+  "SALARY_CONFIG_DELETE_CONFIRM": "{name} の給与設定を削除しますか？\n保存済みの給与明細はそのままですが、今後の試算・一括計算の対象外になります。",
+  "SALARY_CONFIG_DELETED": "{name} の給与設定を削除しました",
+  "SALARY_CONFIG_DELETE_FAILED": "給与設定の削除に失敗しました",
+  "PAYROLL_DELETE_DRAFT": "削除",
+  "PAYROLL_DELETE_DRAFT_CONFIRM": "{name} の {month} 給与明細を削除しますか？\n未配布のため従業員には見えていません。試算や一括計算で作り直せます。",
+  "PAYROLL_DRAFT_DELETED": "{name} の給与明細を削除しました",
+  "AUDIT_ACTION_DELETE_SALARY_CONFIG": "給与設定を削除",
+  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "未配布の給与明細を削除"
 }

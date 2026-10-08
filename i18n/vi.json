@@ -1496,5 +1496,14 @@
   "PAYROLL_ALREADY_PUBLISHED": "Tháng này đã phát hành rồi",
   "PAYROLL_NOTHING_TO_PUBLISH": "Tháng này chưa có phiếu lương nào",
   "AUDIT_ACTION_PUBLISH_PAYROLL": "Phát hành phiếu lương",
-  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "Thu hồi phát hành phiếu lương"
+  "AUDIT_ACTION_UNPUBLISH_PAYROLL": "Thu hồi phát hành phiếu lương",
+  "BTN_DELETE_SALARY_SETTING": "Xóa thiết lập lương của nhân viên này",
+  "SALARY_CONFIG_DELETE_CONFIRM": "Xóa thiết lập lương của {name}?\nPhiếu lương đã lưu vẫn giữ nguyên, nhưng tính thử và tính hàng loạt sẽ bỏ qua nhân viên này.",
+  "SALARY_CONFIG_DELETED": "Đã xóa thiết lập lương của {name}",
+  "SALARY_CONFIG_DELETE_FAILED": "Xóa thiết lập lương thất bại",
+  "PAYROLL_DELETE_DRAFT": "Xóa",
+  "PAYROLL_DELETE_DRAFT_CONFIRM": "Xóa phiếu lương {month} của {name}?\nPhiếu chưa phát hành nên nhân viên không thấy. Có thể tạo lại bằng tính thử hoặc tính hàng loạt.",
+  "PAYROLL_DRAFT_DELETED": "Đã xóa phiếu lương của {name}",
+  "AUDIT_ACTION_DELETE_SALARY_CONFIG": "Xóa thiết lập lương",
+  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "Xóa phiếu lương chưa phát hành"
 }

@@ -318,7 +318,8 @@
         "Deleting a custom item only stops it counting toward pay. The amounts stay on file and come back if you add it again.",
         "Full-time attendance bonus: one late arrival within 5 minutes and 2 missed punches are allowed per month; being more than 5 minutes late, personal/sick/hospital leave or an unexcused absence cancels it (the numbers are adjustable).",
         "Meal pay: days with 8+ hours (actual hours for full-time, scheduled hours for part-time) × NT$110. The birthday gift needs a birthday this month and 3+ months of employment (hire date from the salary settings).",
-        "Overtime hourly rate for monthly staff = (base + meal allowance + position allowance) ÷ 30 ÷ 8. The multipliers default to the Labor Standards Act and can be changed under overtime rates."
+        "Overtime hourly rate for monthly staff = (base + meal allowance + position allowance) ÷ 30 ÷ 8. The multipliers default to the Labor Standards Act and can be changed under overtime rates.",
+        "To remove a duplicate or unneeded setting, pick the employee on the left and press \"Delete this employee's salary setting\" at the bottom of the form. Saved payslips are kept. Duplicate rows for the same employee are also merged into one the next time you save."
       ],
       "terms": [
         [
@@ -435,7 +436,8 @@
         "Staff without LINE (logged in with a login link) get no message; their names are listed after release so you can tell them yourself.",
         "You can still edit payslips after release; staff will see \"This payslip was updated on …\".",
         "For a big mistake, press \"Withdraw release\": staff stop seeing the month until you release it again.",
-        "Every release and withdrawal is recorded in the admin tab's audit log."
+        "Every release and withdrawal is recorded in the admin tab's audit log.",
+        "A payslip saved by an accidental trial or batch calculation is only a draft that staff cannot see. Press \"Delete\" on that employee's row in the release list (delete manual payslips in the \"Manual payslip\" section above). For a released month, withdraw the release first."
       ],
       "terms": [
         [

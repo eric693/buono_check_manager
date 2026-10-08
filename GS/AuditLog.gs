@@ -241,7 +241,9 @@ const ADMIN_AUDIT_ACTIONS = {
   saveManualPayslip: '儲存手動薪資單',
   deleteManualPayslip: '刪除手動薪資單',
   publishPayroll: '發放薪資條',
-  unpublishPayroll: '撤回薪資條發放'
+  unpublishPayroll: '撤回薪資條發放',
+  deleteSalaryConfig: '刪除員工薪資設定',
+  deleteDraftPayslip: '刪除未發放的薪資單'
 };
 
 // 這些參數不寫進記錄：路由用的、登入憑證、個資
