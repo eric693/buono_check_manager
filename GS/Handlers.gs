@@ -1317,6 +1317,7 @@ function handleGetMySalary(params) {
       ok: result.success,
       success: result.success, // 向後相容
       data: result.data, 
+      code: result.code,       // 例如 PAYSLIP_NOT_PUBLISHED（本月薪資尚未發放）
       msg: result.message || result.msg || (result.success ? '查詢成功' : '查無資料')
     };
     

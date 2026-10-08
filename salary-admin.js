@@ -1274,6 +1274,8 @@ async function initSalaryReportTab() {
   if (!salaryAdminIsAdmin || salaryTabsInitialized.report) return;
   salaryTabsInitialized.report = true;
 
+  initPayrollPublish();
+
   await loadSalaryEmployeeDirectory();
 
   const sourceSelect = document.getElementById('copy-source-employee');
@@ -1634,5 +1636,154 @@ async function deleteManualPayslip() {
   } catch (error) {
     console.error('刪除手動薪資單失敗:', error);
     showNotification(ta('MANUAL_PAYSLIP_SAVE_FAILED', '手動薪資單處理失敗'), 'error');
+  }
+}
+
+
+// ==================== 薪資發放（GS/PayrollPublish.gs） ====================
+
+let payrollPublishState = null;   // 最後一次載入的發放清單
+
+function initPayrollPublish() {
+  const month = document.getElementById('pp-month');
+  if (month && !month.value) {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - 1);   // 預設上個月：發薪通常是發上個月的
+    month.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+  on('pp-load', loadPayrollPublishStatus);
+  on('pp-publish', publishPayrollMonth);
+  on('pp-unpublish', unpublishPayrollMonth);
+  if (month) month.onchange = loadPayrollPublishStatus;
+}
+
+async function loadPayrollPublishStatus() {
+  const yearMonth = document.getElementById('pp-month')?.value;
+  if (!yearMonth) return;
+  try {
+    const res = await callApifetch(`getPayrollMonthStatus&yearMonth=${encodeURIComponent(yearMonth)}`, null);
+    if (document.getElementById('pp-month')?.value !== yearMonth) return;   // 等待期間換了月份
+    if (!res.ok) {
+      showNotification(res.msg || ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
+      return;
+    }
+    payrollPublishState = res;
+    renderPayrollPublishStatus();
+  } catch (error) {
+    console.error('載入發放清單失敗:', error);
+    showNotification(ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
+  }
+}
+
+function renderPayrollPublishStatus() {
+  const res = payrollPublishState;
+  if (!res) return;
+  const box = document.getElementById('pp-result');
+  const status = document.getElementById('pp-status');
+  const summary = document.getElementById('pp-summary');
+  const rows = document.getElementById('pp-rows');
+  const publishBtn = document.getElementById('pp-publish');
+  const unpublishBtn = document.getElementById('pp-unpublish');
+  const s = res.summary;
+  const money = n => formatCurrency(n || 0);
+
+  if (res.published) {
+    status.textContent = ta('PAYROLL_PUBLISHED_STATUS', '已於 {time} 由 {by} 發放，員工看得到這個月的薪資單')
+      .replace('{time}', res.publishedAt).replace('{by}', res.publishedBy);
+    status.className = 'mb-3 p-3 rounded-lg text-sm bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200';
+  } else {
+    status.textContent = ta('PAYROLL_DRAFT_STATUS', '尚未發放（草稿）：員工目前看不到這個月的薪資單');
+    status.className = 'mb-3 p-3 rounded-lg text-sm bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200';
+  }
+  summary.textContent = ta('PAYROLL_PUBLISH_SUMMARY', '共 {count} 張薪資單，應發合計 {gross}，實發合計 {net}；尚未建立 {missing} 人；已簽收 {ack} 人')
+    .replace('{count}', s.withPayslip).replace('{gross}', money(s.grossTotal)).replace('{net}', money(s.netTotal))
+    .replace('{missing}', s.missing).replace('{ack}', s.acknowledged);
+
+  const label = {
+    manual: ta('PAYROLL_STATUS_MANUAL', '手動輸入'),
+    auto: ta('PAYROLL_STATUS_AUTO', '自動計算'),
+    missing: ta('PAYROLL_STATUS_MISSING', '尚未建立')
+  };
+  rows.innerHTML = '';
+  res.employees.forEach(e => {
+    const tr = document.createElement('tr');
+    tr.className = 'border-b border-gray-100 dark:border-gray-700' + (e.status === 'missing' ? ' text-gray-400' : '');
+    const cells = [
+      e.employeeName || e.employeeId,
+      label[e.status] || e.status,
+      e.status === 'missing' ? '-' : money(e.grossSalary),
+      e.status === 'missing' ? '-' : money(e.deductions),
+      e.status === 'missing' ? '-' : money(e.netSalary),
+      e.acknowledgedAt || (e.status === 'missing' ? '-' : ta('PAYROLL_NOT_ACKED', '未簽收'))
+    ];
+    cells.forEach((text, i) => {
+      const td = document.createElement('td');
+      td.className = 'py-2 pr-3' + (i >= 2 && i <= 4 ? ' text-right font-mono' : '');
+      td.textContent = text;
+      tr.appendChild(td);
+    });
+    rows.appendChild(tr);
+  });
+
+  publishBtn.textContent = ta('PAYROLL_PUBLISH_BTN', '發放 {month} 薪資條').replace('{month}', res.yearMonth);
+  publishBtn.style.display = res.published ? 'none' : '';
+  publishBtn.disabled = !s.withPayslip;
+  unpublishBtn.style.display = res.published ? '' : 'none';
+  box.style.display = 'block';
+}
+
+async function publishPayrollMonth() {
+  const res = payrollPublishState;
+  if (!res || res.published) return;
+  const s = res.summary;
+  let message = ta('PAYROLL_PUBLISH_CONFIRM', '確定要發放 {month} 的薪資條嗎？\n{count} 位員工會同時看到薪資單並收到 LINE 通知。')
+    .replace('{month}', res.yearMonth).replace('{count}', s.withPayslip);
+  if (s.missing > 0) {
+    const names = res.employees.filter(e => e.status === 'missing' && e.active).map(e => e.employeeName || e.employeeId);
+    message += '\n\n' + ta('PAYROLL_PUBLISH_MISSING_WARN', '⚠ 還有 {count} 位在職員工沒有薪資單：{names}')
+      .replace('{count}', s.missing).replace('{names}', names.join('、'));
+  }
+  if (!confirm(message)) return;
+
+  const btn = document.getElementById('pp-publish');
+  btn.disabled = true;
+  try {
+    const out = await callApifetch(`publishPayroll&yearMonth=${encodeURIComponent(res.yearMonth)}`, null);
+    if (out.ok) {
+      let text = ta('PAYROLL_PUBLISHED_DONE', '已發放，{notified} 位員工收到 LINE 通知').replace('{notified}', out.notified);
+      if (out.notNotified && out.notNotified.length) {
+        text += ta('PAYROLL_PUBLISHED_NOT_NOTIFIED', '；沒有收到通知（沒有 LINE 或通知失敗）：{names}，請另外告知')
+          .replace('{names}', out.notNotified.join('、'));
+      }
+      showNotification(text, 'success');
+      await loadPayrollPublishStatus();
+    } else {
+      showNotification(out.msg || ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
+      btn.disabled = false;
+    }
+  } catch (error) {
+    console.error('發放失敗:', error);
+    showNotification(ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
+    btn.disabled = false;
+  }
+}
+
+async function unpublishPayrollMonth() {
+  const res = payrollPublishState;
+  if (!res || !res.published) return;
+  if (!confirm(ta('PAYROLL_UNPUBLISH_CONFIRM', '確定要撤回 {month} 的發放嗎？員工會暫時看不到這個月的薪資單，改好後再重新發放。').replace('{month}', res.yearMonth))) return;
+  try {
+    const out = await callApifetch(`unpublishPayroll&yearMonth=${encodeURIComponent(res.yearMonth)}`, null);
+    if (out.ok) {
+      showNotification(ta('PAYROLL_UNPUBLISHED_DONE', '已撤回發放'), 'success');
+      await loadPayrollPublishStatus();
+    } else {
+      showNotification(out.msg || ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
+    }
+  } catch (error) {
+    console.error('撤回發放失敗:', error);
+    showNotification(ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
   }
 }

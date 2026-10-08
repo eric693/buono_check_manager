@@ -239,7 +239,9 @@ const ADMIN_AUDIT_ACTIONS = {
   createNoLineEmployee: '新增員工（不使用 LINE）',
   createLoginLink: '產生員工登入連結',
   saveManualPayslip: '儲存手動薪資單',
-  deleteManualPayslip: '刪除手動薪資單'
+  deleteManualPayslip: '刪除手動薪資單',
+  publishPayroll: '發放薪資條',
+  unpublishPayroll: '撤回薪資條發放'
 };
 
 // 這些參數不寫進記錄：路由用的、登入憑證、個資

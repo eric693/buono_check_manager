@@ -299,7 +299,8 @@
       "notes": [
         "Salary data is confidential - avoid opening or screenshotting it on shared devices.",
         "The bottom of the payslip shows whether you earned the attendance bonus this month and why, plus any note from the admin.",
-        "For months before the system went live, your payslip may have been entered by an admin; the amounts shown are the ones they entered."
+        "For months before the system went live, your payslip may have been entered by an admin; the amounts shown are the ones they entered.",
+        "Payslips appear only after an admin releases them; you get a LINE message when that happens. If a payslip is corrected afterwards, it shows when it was updated."
       ]
     },
     "salary-setting": {
@@ -390,7 +391,8 @@
         "If the month already has an automatically calculated payslip, saving a manual one replaces it (you are asked to confirm first).",
         "\"Delete (back to automatic)\" removes the manual payslip and the month is calculated from punches and shifts again.",
         "A manual payslip does not work out the attendance bonus, meal pay or birthday gift, and does not deduct insurance by itself; every amount is what you enter.",
-        "Every save and delete is recorded in the admin tab's audit log."
+        "Every save and delete is recorded in the admin tab's audit log.",
+        "A saved manual payslip is a draft that staff cannot see yet; when the month is checked, release it under \"Payroll release\" in Salary reports."
       ],
       "terms": [
         [
@@ -415,7 +417,35 @@
         "Batch calculation overwrites existing payslips for that month, so finish all approvals first.",
         "Copying settings carries pay conditions only; personal data such as ID number, bank account and hire date is never copied.",
         "Exported files contain personal and salary data — do not send them outside the company.",
-        "Batch calculation skips employees whose month is a manual payslip and marks them \"手動薪資單，略過\" in the results."
+        "Batch calculation skips employees whose month is a manual payslip and marks them \"手動薪資單，略過\" in the results.",
+        "\"Payroll release\" at the top lets you check the whole month and release payslips to staff together."
+      ]
+    },
+    "payroll-publish": {
+      "intro": "Saved payslips start as drafts that staff cannot see. Check the whole month, then release them to everyone at once with a LINE message.",
+      "steps": [
+        "Choose the month (last month by default) and press \"Show release list\".",
+        "The list shows every active employee: payslip status (manual / calculated / not created), gross, deductions, net and whether they have acknowledged it, with totals at the top.",
+        "Check each amount. To change one, edit it in the manual payslip or calculation screen under \"Salary calculation\", then come back.",
+        "When everything is right, press \"Release … payslips\". You are told who still has no payslip; after confirming, everyone can see theirs at once and staff with LINE get a message.",
+        "After release, this list shows who has acknowledged and who has not."
+      ],
+      "notes": [
+        "Before release, staff only see \"This month's payslip has not been released yet\" under My salary and cannot acknowledge it.",
+        "Staff without LINE (logged in with a login link) get no message; their names are listed after release so you can tell them yourself.",
+        "You can still edit payslips after release; staff will see \"This payslip was updated on …\".",
+        "For a big mistake, press \"Withdraw release\": staff stop seeing the month until you release it again.",
+        "Every release and withdrawal is recorded in the admin tab's audit log."
+      ],
+      "terms": [
+        [
+          "Draft",
+          "A payslip not yet released; only admins can see it."
+        ],
+        [
+          "Release",
+          "Opens all of the month's payslips to staff for viewing, printing and acknowledging."
+        ]
       ]
     }
   }

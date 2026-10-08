@@ -299,7 +299,8 @@
       "notes": [
         "Data gaji rahasia; hindari membuka atau memotret layarnya di perangkat bersama.",
         "Bagian bawah slip menunjukkan apakah Anda mendapat bonus kehadiran bulan ini dan alasannya, serta catatan dari admin.",
-        "Untuk bulan sebelum sistem dipakai, slip Anda mungkin diisi manual oleh admin; jumlah yang tampil adalah yang mereka isi."
+        "Untuk bulan sebelum sistem dipakai, slip Anda mungkin diisi manual oleh admin; jumlah yang tampil adalah yang mereka isi.",
+        "Slip baru tampil setelah admin merilisnya; Anda menerima pesan LINE saat itu. Jika dikoreksi kemudian, slip menunjukkan waktu pembaruan."
       ]
     },
     "salary-setting": {
@@ -390,7 +391,8 @@
         "Jika bulan itu sudah ada slip hasil hitung otomatis, menyimpan slip manual akan menggantinya (ada konfirmasi dulu).",
         "\"Hapus (kembali ke otomatis)\" menghapus slip manual dan bulan itu dihitung ulang dari absensi dan jadwal.",
         "Slip manual tidak menilai bonus kehadiran, uang makan, atau hadiah ulang tahun, dan tidak memotong asuransi otomatis; semua jumlah sesuai yang Anda isi.",
-        "Setiap simpan dan hapus tercatat di \"Log tindakan\" pada tab admin."
+        "Setiap simpan dan hapus tercatat di \"Log tindakan\" pada tab admin.",
+        "Slip manual yang disimpan masih draf dan belum terlihat karyawan; setelah sebulan dicek, rilis di \"Rilis slip gaji\" pada Laporan gaji."
       ],
       "terms": [
         [
@@ -415,7 +417,35 @@
         "Hitung massal menimpa slip yang sudah ada untuk bulan itu, jadi selesaikan semua persetujuan lebih dulu.",
         "Menyalin pengaturan hanya membawa kondisi gaji; data pribadi seperti nomor identitas, rekening, dan tanggal masuk tidak ikut.",
         "Berkas hasil ekspor memuat data pribadi dan gaji — jangan dikirim ke luar perusahaan.",
-        "Hitung massal melewati karyawan yang bulannya slip manual dan menandai \"手動薪資單，略過\" di hasil."
+        "Hitung massal melewati karyawan yang bulannya slip manual dan menandai \"手動薪資單，略過\" di hasil.",
+        "\"Rilis slip gaji\" di atas untuk mengecek seluruh bulan dan merilis ke karyawan sekaligus."
+      ]
+    },
+    "payroll-publish": {
+      "intro": "Slip yang disimpan masih draf dan belum terlihat karyawan. Cek seluruh bulan, lalu rilis ke semua sekaligus dengan pesan LINE.",
+      "steps": [
+        "Pilih bulan (bawaan: bulan lalu) dan tekan \"Lihat daftar rilis\".",
+        "Daftar menampilkan semua karyawan aktif: status slip (manual／otomatis／belum dibuat), bruto, potongan, bersih, dan sudah dikonfirmasi atau belum, dengan total di atas.",
+        "Cek satu per satu. Untuk mengubah, ubah di slip manual atau layar perhitungan di \"Perhitungan gaji\", lalu kembali.",
+        "Jika sudah benar, tekan \"Rilis slip …\". Sistem memberi tahu siapa yang belum punya slip; setelah dikonfirmasi semua bisa melihat bersamaan dan karyawan dengan LINE menerima pesan.",
+        "Setelah rilis, daftar ini menunjukkan siapa yang sudah dan belum konfirmasi."
+      ],
+      "notes": [
+        "Sebelum rilis, karyawan hanya melihat \"Slip gaji bulan ini belum dirilis\" di Gaji saya dan belum bisa konfirmasi.",
+        "Karyawan tanpa LINE (login dengan tautan) tidak menerima pesan; namanya ditampilkan setelah rilis agar Anda bisa memberi tahu langsung.",
+        "Slip masih bisa diubah setelah rilis; karyawan akan melihat \"Slip ini diperbarui pada …\".",
+        "Jika ada kesalahan besar, tekan \"Tarik rilis\" agar sementara tidak terlihat, lalu rilis lagi setelah diperbaiki.",
+        "Setiap rilis dan penarikan tercatat di log tindakan pada tab admin."
+      ],
+      "terms": [
+        [
+          "Draf",
+          "Slip yang belum dirilis; hanya admin yang bisa melihat."
+        ],
+        [
+          "Rilis",
+          "Membuka semua slip bulan itu untuk dilihat, dicetak, dan dikonfirmasi karyawan."
+        ]
       ]
     }
   }

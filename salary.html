@@ -2042,6 +2042,46 @@
 
         <!-- Tab 4: 薪資報表（列表、匯出、批次計算、複製設定） -->
         <div id="salary-report" class="tab-content">
+            <!-- 薪資發放：核對完一整個月再統一發放（GS/PayrollPublish.gs） -->
+            <div id="payroll-publish" class="form-section">
+                <div class="feature-title" data-i18n="PAYROLL_PUBLISH_TITLE">薪資發放</div>
+                <p class="summary-hint section-intro" data-i18n="PAYROLL_PUBLISH_DESC">
+                    薪資單存好後先是草稿，員工看不到。核對完這個月所有人的金額，再按「發放」，所有人同時看得到，並收到 LINE 通知。
+                </p>
+                <div class="form-grid" style="max-width: 600px; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="pp-month" data-i18n="CALC_YEAR_MONTH_LABEL">計算年月</label>
+                        <input type="month" id="pp-month" class="form-input">
+                    </div>
+                    <div class="form-group" style="align-self: end;">
+                        <button type="button" id="pp-load" class="submit-btn" data-i18n="PAYROLL_PUBLISH_LOAD">查看發放清單</button>
+                    </div>
+                </div>
+                <div id="pp-result" style="display: none;">
+                    <p id="pp-status" class="mb-3 p-3 rounded-lg text-sm"></p>
+                    <p id="pp-summary" class="summary-hint mb-3"></p>
+                    <div style="overflow-x: auto;">
+                        <table class="w-full text-sm" id="pp-table">
+                            <thead>
+                                <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                                    <th class="py-2 pr-3" data-i18n="SALARY_EMPLOYEE_LABEL">員工</th>
+                                    <th class="py-2 pr-3" data-i18n="PAYROLL_PUBLISH_COL_STATUS">狀態</th>
+                                    <th class="py-2 pr-3 text-right" data-i18n="SALARY_GROSS">應發總額</th>
+                                    <th class="py-2 pr-3 text-right" data-i18n="SALARY_DEDUCTIONS">扣款總額</th>
+                                    <th class="py-2 pr-3 text-right" data-i18n="SALARY_NET">實發金額</th>
+                                    <th class="py-2" data-i18n="PAYROLL_PUBLISH_COL_ACK">簽收</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pp-rows"></tbody>
+                        </table>
+                    </div>
+                    <div class="button-row" style="margin-top: 1rem;">
+                        <button type="button" id="pp-publish" class="submit-btn" style="max-width: 280px;"></button>
+                        <button type="button" id="pp-unpublish" class="ghost-btn" style="display: none; color: #dc2626;" data-i18n="PAYROLL_UNPUBLISH_BTN">撤回發放</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-section">
                 <div class="feature-title" data-i18n="SALARY_LIST_TITLE">薪資列表</div>
                 
@@ -2337,6 +2377,7 @@
                     displayEmployeeSalary(res.data);
                     contentEl.style.display = 'block';
                 } else {
+                    if (typeof showNoSalaryMessage === 'function') showNoSalaryMessage(yearMonth, res.code);
                     emptyEl.style.display = 'block';
                 }
                 
