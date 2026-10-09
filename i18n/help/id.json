@@ -179,6 +179,7 @@
     "admin-view": {
       "intro": "Khusus admin: pengumuman, persetujuan berbagai pengajuan, pengaturan lokasi absen, analisis absensi, dan ekspor laporan.",
       "steps": [
+        "«Manajemen data» memungkinkan melihat dan mengubah catatan absen, jam kerja bulanan, sisa cuti, catatan cuti dan lembur, serta semua sheet data langsung di browser tanpa membuka Google Sheets.",
         "'Pengaturan Jam Kerja' menyetel jam masuk, pulang, dan istirahat seluruh perusahaan — jam cuti dihitung terhadap rentang itu.",
         "Terbitkan pengumuman di \"Manajemen pengumuman\"; untuk hal penting setel tingkat kepentingan ke \"Penting\".",
         "Proses pengajuan perbaikan absensi dan kartu virtual di \"Pengajuan menunggu\"; lembur, cuti, dan catatan kerja punya bagian persetujuan sendiri.",
@@ -196,7 +197,8 @@
         "Berkas ekspor memuat data pribadi dan gaji, jangan diteruskan ke luar perusahaan.",
         "Setelah jam kerja diubah, hanya cuti yang diajukan sesudahnya memakai angka baru; cuti yang sudah disetujui tidak dihitung ulang.",
         "Tautan kios seperti kunci tablet, jangan dikirim ke karyawan. Jika tablet hilang atau tautan bocor, buat tautan baru atau tekan「Nonaktifkan kios」, tautan lama langsung berhenti berfungsi.",
-        "Log aktivitas hanya bisa dilihat, tidak bisa diubah; nomor identitas dan rekening bank disamarkan."
+        "Log aktivitas hanya bisa dilihat, tidak bisa diubah; nomor identitas dan rekening bank disamarkan.",
+        "Manajemen data hanya membaca dan menulis spreadsheet milik sistem ini. Setiap penambahan, perubahan, dan penghapusan dicatat di «Log tindakan» beserta nilai sebelumnya; mengubah lembur yang disetujui akan menghitung ulang gaji bulan itu."
       ],
       "terms": [
         [
