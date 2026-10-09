@@ -1449,5 +1449,11 @@
   "PAYROLL_DELETE_DRAFT_CONFIRM": "Hapus slip {month} milik {name}?\nSlip belum dirilis sehingga karyawan tidak melihatnya. Bisa dibuat lagi lewat simulasi atau hitung massal.",
   "PAYROLL_DRAFT_DELETED": "Slip {name} dihapus",
   "AUDIT_ACTION_DELETE_SALARY_CONFIG": "Hapus pengaturan gaji",
-  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "Hapus slip yang belum dirilis"
+  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "Hapus slip yang belum dirilis",
+  "PAYROLL_RESEND_BTN": "Kirim ulang notifikasi LINE",
+  "PAYROLL_RESEND_CONFIRM": "Kirim ulang notifikasi LINE {month} ke {count} karyawan yang punya slip?",
+  "PAYROLL_RESEND_DONE": "Notifikasi dikirim ulang, {notified} karyawan menerimanya di LINE",
+  "PAYROLL_NOTIFY_RESULT": "Notifikasi LINE: {notified} menerima; tidak menerima: {names}",
+  "PAYROLL_NOTIFY_FAILED_ALERT": "Notifikasi LINE gagal untuk {count} orang. Balasan LINE:\n{detail}",
+  "AUDIT_ACTION_RESEND_PAYROLL_NOTICE": "Kirim ulang notifikasi slip"
 }

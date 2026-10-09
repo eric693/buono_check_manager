@@ -1707,6 +1707,7 @@ function initPayrollPublish() {
   on('pp-load', loadPayrollPublishStatus);
   on('pp-publish', publishPayrollMonth);
   on('pp-unpublish', unpublishPayrollMonth);
+  on('pp-resend', resendPayrollNotice);
   if (month) month.onchange = loadPayrollPublishStatus;
 }
 
@@ -1743,6 +1744,12 @@ function renderPayrollPublishStatus() {
   if (res.published) {
     status.textContent = ta('PAYROLL_PUBLISHED_STATUS', '已於 {time} 由 {by} 發放，員工看得到這個月的薪資單')
       .replace('{time}', res.publishedAt).replace('{by}', res.publishedBy);
+    // 發放時 LINE 通知的結果：沒收到的人（和 LINE 回的原因）要讓管理員看到
+    if (res.notNotified) {
+      status.textContent += '\n' + ta('PAYROLL_NOTIFY_RESULT', 'LINE 通知：{notified} 人收到；沒收到：{names}')
+        .replace('{notified}', res.notified || 0).replace('{names}', res.notNotified);
+      status.style.whiteSpace = 'pre-line';
+    }
     status.className = 'mb-3 p-3 rounded-lg text-sm bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200';
   } else {
     status.textContent = ta('PAYROLL_DRAFT_STATUS', '尚未發放（草稿）：員工目前看不到這個月的薪資單');
@@ -1795,6 +1802,8 @@ function renderPayrollPublishStatus() {
   publishBtn.style.display = res.published ? 'none' : '';
   publishBtn.disabled = !s.withPayslip;
   unpublishBtn.style.display = res.published ? '' : 'none';
+  const resendBtn = document.getElementById('pp-resend');
+  if (resendBtn) resendBtn.style.display = res.published ? '' : 'none';
   box.style.display = 'block';
 }
 
@@ -1816,12 +1825,7 @@ async function publishPayrollMonth() {
   try {
     const out = await callApifetch(`publishPayroll&yearMonth=${encodeURIComponent(res.yearMonth)}`, null);
     if (out.ok) {
-      let text = ta('PAYROLL_PUBLISHED_DONE', '已發放，{notified} 位員工收到 LINE 通知').replace('{notified}', out.notified);
-      if (out.notNotified && out.notNotified.length) {
-        text += ta('PAYROLL_PUBLISHED_NOT_NOTIFIED', '；沒有收到通知（沒有 LINE 或通知失敗）：{names}，請另外告知')
-          .replace('{names}', out.notNotified.join('、'));
-      }
-      showNotification(text, 'success');
+      showPayrollNotifyResult(out, ta('PAYROLL_PUBLISHED_DONE', '已發放，{notified} 位員工收到 LINE 通知'));
       await loadPayrollPublishStatus();
     } else {
       showNotification(out.msg || ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
@@ -1851,6 +1855,47 @@ async function deleteDraftPayslip(emp) {
   } catch (error) {
     console.error('刪除薪資單失敗:', error);
     showNotification(ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
+  }
+}
+
+/**
+ * 發放／重新通知之後：顯示幾人收到，沒收到的人與 LINE 回的原因（例如額度用完）
+ */
+function showPayrollNotifyResult(out, doneTemplate) {
+  let text = doneTemplate.replace('{notified}', out.notified);
+  if (out.notNotified && out.notNotified.length) {
+    text += ta('PAYROLL_PUBLISHED_NOT_NOTIFIED', '；沒有收到通知（沒有 LINE 或通知失敗）：{names}，請另外告知')
+      .replace('{names}', out.notNotified.join('、'));
+  }
+  const errors = (out.notifyErrors || []).filter(e => e.reason !== 'NOT_A_LINE_USER');
+  if (errors.length) {
+    const detail = errors.map(e => `${e.reason}${e.hint ? '（' + e.hint + '）' : ''}`).join('\n');
+    alert(ta('PAYROLL_NOTIFY_FAILED_ALERT', 'LINE 通知有 {count} 人沒送出，LINE 回覆的原因：\n{detail}')
+      .replace('{count}', errors.reduce((n, e) => n + e.count, 0)).replace('{detail}', detail));
+  }
+  showNotification(text, out.notified > 0 || !(out.notNotified && out.notNotified.length) ? 'success' : 'error');
+}
+
+async function resendPayrollNotice() {
+  const res = payrollPublishState;
+  if (!res || !res.published) return;
+  if (!confirm(ta('PAYROLL_RESEND_CONFIRM', '要重新用 LINE 通知 {month} 有薪資單的 {count} 位員工嗎？')
+    .replace('{month}', res.yearMonth).replace('{count}', res.summary.withPayslip))) return;
+  const btn = document.getElementById('pp-resend');
+  if (btn) btn.disabled = true;
+  try {
+    const out = await callApifetch(`resendPayrollNotice&yearMonth=${encodeURIComponent(res.yearMonth)}`, null);
+    if (out.ok) {
+      showPayrollNotifyResult(out, ta('PAYROLL_RESEND_DONE', '已重新通知，{notified} 位員工收到 LINE 通知'));
+      await loadPayrollPublishStatus();
+    } else {
+      showNotification(out.msg || ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
+    }
+  } catch (error) {
+    console.error('重新通知失敗:', error);
+    showNotification(ta('PAYROLL_PUBLISH_FAILED', '發放處理失敗'), 'error');
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 

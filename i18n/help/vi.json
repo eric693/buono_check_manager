@@ -437,7 +437,8 @@
         "Sau khi phát hành vẫn sửa được phiếu; nhân viên sẽ thấy \"Phiếu lương đã được cập nhật lúc …\".",
         "Nếu có lỗi lớn, bấm \"Thu hồi phát hành\" để tạm ẩn, sửa xong phát hành lại.",
         "Mỗi lần phát hành và thu hồi đều được ghi trong nhật ký thao tác ở tab quản trị.",
-        "Phiếu lương lưu do bấm nhầm tính thử hoặc tính hàng loạt chỉ là bản nháp, nhân viên không thấy. Nhấn «Xóa» ở dòng của nhân viên đó trong danh sách phát hành (phiếu nhập tay thì xóa ở mục «Phiếu lương nhập tay» phía trên). Tháng đã phát hành phải thu hồi trước mới xóa được."
+        "Phiếu lương lưu do bấm nhầm tính thử hoặc tính hàng loạt chỉ là bản nháp, nhân viên không thấy. Nhấn «Xóa» ở dòng của nhân viên đó trong danh sách phát hành (phiếu nhập tay thì xóa ở mục «Phiếu lương nhập tay» phía trên). Tháng đã phát hành phải thu hồi trước mới xóa được.",
+        "Nếu có người không nhận được thông báo LINE, màn hình sẽ hiện lý do LINE trả về (ví dụ tài khoản chính thức đã hết số tin nhắn miễn phí trong tháng). Khắc phục xong, nhấn «Gửi lại thông báo LINE», không cần thu hồi phát hành."
       ],
       "terms": [
         [

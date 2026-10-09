@@ -437,7 +437,8 @@
         "You can still edit payslips after release; staff will see \"This payslip was updated on …\".",
         "For a big mistake, press \"Withdraw release\": staff stop seeing the month until you release it again.",
         "Every release and withdrawal is recorded in the admin tab's audit log.",
-        "A payslip saved by an accidental trial or batch calculation is only a draft that staff cannot see. Press \"Delete\" on that employee's row in the release list (delete manual payslips in the \"Manual payslip\" section above). For a released month, withdraw the release first."
+        "A payslip saved by an accidental trial or batch calculation is only a draft that staff cannot see. Press \"Delete\" on that employee's row in the release list (delete manual payslips in the \"Manual payslip\" section above). For a released month, withdraw the release first.",
+        "If someone did not get the LINE notice, the screen shows the reason LINE gave (for example, the official account used up its free messages for the month). After fixing it, press \"Resend LINE notice\"; there is no need to withdraw the release."
       ],
       "terms": [
         [

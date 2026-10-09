@@ -15,7 +15,7 @@ const AUDIT_ACTION_KEYS = [
   'createQrToken', 'resetKioskKey', 'disableKiosk', 'saveShiftTemplates',
   'savePayrollAdjustments', 'createNoLineEmployee', 'createLoginLink',
   'saveManualPayslip', 'deleteManualPayslip', 'publishPayroll', 'unpublishPayroll',
-  'deleteSalaryConfig', 'deleteDraftPayslip'
+  'deleteSalaryConfig', 'deleteDraftPayslip', 'resendPayrollNotice'
 ];
 
 let auditLogInitialized = false;

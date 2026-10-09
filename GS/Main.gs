@@ -40,7 +40,8 @@ const ROUTE_ACCESS = {
   publishPayroll: 'admin',
   unpublishPayroll: 'admin',
   deleteSalaryConfig: 'admin',
-  deleteDraftPayslip: 'admin'
+  deleteDraftPayslip: 'admin',
+  resendPayrollNotice: 'admin'
 };
 
 /**
@@ -74,7 +75,8 @@ const DEPLOY_CHECKS = [
   ['LineNotification.gs', () => typeof sendLineNotification_ === 'function' &&
                                  String(sendLineNotification_).indexOf('isLineUserId_') !== -1],
   ['PayrollPublish.gs', () => typeof handlePublishPayroll === 'function' && typeof readPublishedPayslip_ === 'function' &&
-                                 typeof handleDeleteDraftPayslip === 'function'],
+                                 typeof handleDeleteDraftPayslip === 'function' &&
+                                 typeof handleResendPayrollNotice === 'function'],
   ['ManualPayslip.gs', () => typeof handleSaveManualPayslip === 'function' && typeof readManualPayslip_ === 'function' &&
                               typeof sheetNumber_ === 'function'],
   ['LoginLinks.gs', () => typeof handleRedeemLoginLink === 'function' && typeof createSessionForUser_ === 'function'],
@@ -103,7 +105,7 @@ const DEPLOY_CHECKS = [
 ];
 
 // 每次後端有更新就改這個日期，健康檢查會回報，從外面就知道正式區部署到哪一版
-const BACKEND_VERSION = '2026-10-09d';
+const BACKEND_VERSION = '2026-10-09e';
 
 function handleHealthCheck() {
   const problems = [];
@@ -335,6 +337,8 @@ function doGet(e) {
         return respond1(handlePublishPayroll(e.parameter));
       case "unpublishPayroll":
         return respond1(handleUnpublishPayroll(e.parameter));
+      case "resendPayrollNotice":
+        return respond1(handleResendPayrollNotice(e.parameter));
       case "deleteDraftPayslip":
         return respond1(handleDeleteDraftPayslip(e.parameter));
       case "deleteSalaryConfig":

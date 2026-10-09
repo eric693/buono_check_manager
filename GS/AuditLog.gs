@@ -243,7 +243,8 @@ const ADMIN_AUDIT_ACTIONS = {
   publishPayroll: '發放薪資條',
   unpublishPayroll: '撤回薪資條發放',
   deleteSalaryConfig: '刪除員工薪資設定',
-  deleteDraftPayslip: '刪除未發放的薪資單'
+  deleteDraftPayslip: '刪除未發放的薪資單',
+  resendPayrollNotice: '重新發送薪資條通知'
 };
 
 // 這些參數不寫進記錄：路由用的、登入憑證、個資
