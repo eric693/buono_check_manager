@@ -179,6 +179,7 @@
     "admin-view": {
       "intro": "Dành cho quản trị viên: thông báo, duyệt các đề nghị, thiết lập địa điểm chấm công, phân tích chấm công và xuất báo cáo.",
       "steps": [
+        "«Quản lý dữ liệu» cho phép xem và sửa bản ghi chấm công, giờ làm theo tháng, số ngày phép, bản ghi nghỉ phép và tăng ca, cùng các bảng dữ liệu ngay trên web mà không cần mở Google Sheets.",
         "'Cài đặt giờ làm việc' chỉnh giờ vào, giờ tan và nghỉ trưa chung toàn công ty — giờ nghỉ phép được tính theo khung này.",
         "Đăng thông báo ở \"Quản lý thông báo\"; việc quan trọng hãy đặt mức \"Quan trọng\".",
         "Xử lý đề nghị bổ sung chấm công và thẻ ảo ở \"Đề nghị chờ duyệt\"; làm thêm, nghỉ phép, nhật ký công việc có khu duyệt riêng.",
@@ -196,7 +197,8 @@
         "Tệp xuất ra chứa thông tin cá nhân và lương, không chuyển ra ngoài công ty.",
         "Sau khi đổi giờ làm việc, chỉ những đơn nghỉ gửi sau đó mới dùng số giờ mới; đơn đã duyệt không được tính lại.",
         "Liên kết máy chấm công như chìa khóa của máy tính bảng, đừng gửi cho nhân viên. Nếu mất máy hoặc lộ liên kết, hãy tạo liên kết mới hoặc bấm「Tắt máy chấm công」, liên kết cũ sẽ ngừng hoạt động ngay.",
-        "Nhật ký thao tác chỉ xem được, không sửa được; số CMND và tài khoản ngân hàng được che trong nhật ký."
+        "Nhật ký thao tác chỉ xem được, không sửa được; số CMND và tài khoản ngân hàng được che trong nhật ký.",
+        "Quản lý dữ liệu chỉ đọc/ghi bảng tính riêng của hệ thống này. Mọi thao tác thêm, sửa, xóa đều được ghi vào «Nhật ký thao tác» kèm nội dung trước khi sửa; sửa tăng ca đã duyệt sẽ tự tính lại lương tháng đó."
       ],
       "terms": [
         [

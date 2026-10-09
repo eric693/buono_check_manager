@@ -179,6 +179,7 @@
     "admin-view": {
       "intro": "Administrators only: announcements, approvals, punch locations, attendance analysis and report exports all live here.",
       "steps": [
+        "\"Data management\" lets you view and edit punch records, monthly hours, leave balances, leave and overtime records, and any data sheet right in the browser, without opening Google Sheets.",
         "Working Hours Settings adjusts the company-wide start, end and lunch times — leave hours are counted against that window.",
         "Publish announcements under \"Announcement management\"; set priority to \"Important\" so staff see it first.",
         "Handle make-up punch and virtual card requests under \"Pending requests\"; overtime, leave and work logs have their own approval sections.",
@@ -196,7 +197,8 @@
         "Exported files contain personal and salary data - do not forward them outside the company.",
         "After changing the working hours, only leave submitted afterwards uses the new figures; approved leave is not recalculated.",
         "The kiosk link works like a key for the tablet, so do not send it to employees. If the tablet is lost or the link leaks, create a new link or press \"Disable kiosk\" and the old one stops working immediately.",
-        "The activity log is read-only; ID numbers and bank accounts are masked in it."
+        "The activity log is read-only; ID numbers and bank accounts are masked in it.",
+        "Data management only reads and writes this system's own spreadsheet. Every add, edit and delete is written to the Action log with the previous values; editing approved overtime recalculates that month's pay."
       ],
       "terms": [
         [

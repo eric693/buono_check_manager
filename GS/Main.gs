@@ -41,7 +41,24 @@ const ROUTE_ACCESS = {
   unpublishPayroll: 'admin',
   deleteSalaryConfig: 'admin',
   deleteDraftPayslip: 'admin',
-  resendPayrollNotice: 'admin'
+  resendPayrollNotice: 'admin',
+  adminListPunches: 'admin',
+  adminAddPunch: 'admin',
+  adminUpdatePunch: 'admin',
+  adminDeletePunch: 'admin',
+  adminGetLeaveBalances: 'admin',
+  adminSetLeaveBalance: 'admin',
+  adminListLeaves: 'admin',
+  adminCancelLeave: 'admin',
+  adminListOvertime: 'admin',
+  adminUpdateOvertime: 'admin',
+  adminCancelOvertime: 'admin',
+  adminListSheets: 'admin',
+  adminBrowseSheet: 'admin',
+  adminMonthlyHours: 'admin',
+  adminUpdateSheetRow: 'admin',
+  adminAddSheetRow: 'admin',
+  adminDeleteSheetRow: 'admin'
 };
 
 /**
@@ -74,6 +91,8 @@ const DEPLOY_CHECKS = [
                              String(generateLinePunchToken_).indexOf('cleanupLinePunchTokens_') !== -1],
   ['LineNotification.gs', () => typeof sendLineNotification_ === 'function' &&
                                  String(sendLineNotification_).indexOf('isLineUserId_') !== -1],
+  ['RecordsAdmin.gs', () => typeof handleAdminListPunches === 'function' && typeof handleAdminBrowseSheet === 'function' &&
+                           typeof handleAdminMonthlyHours === 'function'],
   ['PayrollPublish.gs', () => typeof handlePublishPayroll === 'function' && typeof readPublishedPayslip_ === 'function' &&
                                  typeof handleDeleteDraftPayslip === 'function' &&
                                  typeof handleResendPayrollNotice === 'function'],
@@ -105,7 +124,7 @@ const DEPLOY_CHECKS = [
 ];
 
 // 每次後端有更新就改這個日期，健康檢查會回報，從外面就知道正式區部署到哪一版
-const BACKEND_VERSION = '2026-10-09e';
+const BACKEND_VERSION = '2026-10-09f';
 
 function handleHealthCheck() {
   const problems = [];
@@ -337,6 +356,40 @@ function doGet(e) {
         return respond1(handlePublishPayroll(e.parameter));
       case "unpublishPayroll":
         return respond1(handleUnpublishPayroll(e.parameter));
+      case "adminListPunches":
+        return respond1(handleAdminListPunches(e.parameter));
+      case "adminAddPunch":
+        return respond1(handleAdminAddPunch(e.parameter));
+      case "adminUpdatePunch":
+        return respond1(handleAdminUpdatePunch(e.parameter));
+      case "adminDeletePunch":
+        return respond1(handleAdminDeletePunch(e.parameter));
+      case "adminGetLeaveBalances":
+        return respond1(handleAdminGetLeaveBalances(e.parameter));
+      case "adminSetLeaveBalance":
+        return respond1(handleAdminSetLeaveBalance(e.parameter));
+      case "adminListLeaves":
+        return respond1(handleAdminListLeaves(e.parameter));
+      case "adminCancelLeave":
+        return respond1(handleAdminCancelLeave(e.parameter));
+      case "adminListOvertime":
+        return respond1(handleAdminListOvertime(e.parameter));
+      case "adminUpdateOvertime":
+        return respond1(handleAdminUpdateOvertime(e.parameter));
+      case "adminCancelOvertime":
+        return respond1(handleAdminCancelOvertime(e.parameter));
+      case "adminListSheets":
+        return respond1(handleAdminListSheets(e.parameter));
+      case "adminBrowseSheet":
+        return respond1(handleAdminBrowseSheet(e.parameter));
+      case "adminMonthlyHours":
+        return respond1(handleAdminMonthlyHours(e.parameter));
+      case "adminUpdateSheetRow":
+        return respond1(handleAdminUpdateSheetRow(e.parameter));
+      case "adminAddSheetRow":
+        return respond1(handleAdminAddSheetRow(e.parameter));
+      case "adminDeleteSheetRow":
+        return respond1(handleAdminDeleteSheetRow(e.parameter));
       case "resendPayrollNotice":
         return respond1(handleResendPayrollNotice(e.parameter));
       case "deleteDraftPayslip":
