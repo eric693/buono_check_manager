@@ -5,7 +5,7 @@
 
 const AUDIT_ACTION_KEYS = [
   'approveReview', 'rejectReview', 'reviewOvertime', 'reviewLeave', 'reviewWorklog', 'deleteWorklog',
-  'addLocation', 'updateUserRole', 'deleteUser', 'updateEmployeeName', 'deleteEmployeeBasicInfo',
+  'addLocation', 'updateLocation', 'deleteLocation', 'updateUserRole', 'deleteUser', 'updateEmployeeName', 'deleteEmployeeBasicInfo',
   'offboardEmployee', 'reinstateEmployee',
   'addShift', 'batchAddShifts', 'updateShift', 'deleteShift',
   'setEmployeeSalaryTW', 'copySalaryConfig', 'batchCalculateSalary', 'setBonusRecord',
