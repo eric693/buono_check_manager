@@ -1508,5 +1508,11 @@
   "PAYROLL_DELETE_DRAFT_CONFIRM": "ลบสลิปเดือน {month} ของ {name} หรือไม่\nยังไม่เผยแพร่ พนักงานจึงยังไม่เห็น สามารถสร้างใหม่ด้วยการคำนวณทดลองหรือคำนวณทั้งหมด",
   "PAYROLL_DRAFT_DELETED": "ลบสลิปของ {name} แล้ว",
   "AUDIT_ACTION_DELETE_SALARY_CONFIG": "ลบการตั้งค่าเงินเดือน",
-  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "ลบสลิปที่ยังไม่เผยแพร่"
+  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "ลบสลิปที่ยังไม่เผยแพร่",
+  "PAYROLL_RESEND_BTN": "ส่งแจ้งเตือน LINE อีกครั้ง",
+  "PAYROLL_RESEND_CONFIRM": "ส่งแจ้งเตือน LINE เดือน {month} ให้พนักงาน {count} คนที่มีสลิปอีกครั้งหรือไม่",
+  "PAYROLL_RESEND_DONE": "ส่งแจ้งเตือนใหม่แล้ว พนักงาน {notified} คนได้รับทาง LINE",
+  "PAYROLL_NOTIFY_RESULT": "แจ้งเตือน LINE: ได้รับ {notified} คน; ไม่ได้รับ: {names}",
+  "PAYROLL_NOTIFY_FAILED_ALERT": "ส่งแจ้งเตือน LINE ไม่สำเร็จ {count} คน LINE ตอบกลับว่า:\n{detail}",
+  "AUDIT_ACTION_RESEND_PAYROLL_NOTICE": "ส่งแจ้งเตือนสลิปอีกครั้ง"
 }

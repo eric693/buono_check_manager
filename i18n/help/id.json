@@ -437,7 +437,8 @@
         "Slip masih bisa diubah setelah rilis; karyawan akan melihat \"Slip ini diperbarui pada …\".",
         "Jika ada kesalahan besar, tekan \"Tarik rilis\" agar sementara tidak terlihat, lalu rilis lagi setelah diperbaiki.",
         "Setiap rilis dan penarikan tercatat di log tindakan pada tab admin.",
-        "Slip yang tersimpan karena salah menekan simulasi atau hitung massal hanyalah draf dan tidak terlihat oleh karyawan. Tekan «Hapus» di baris karyawan itu pada daftar rilis (slip manual dihapus di bagian «Slip gaji manual» di atas). Untuk bulan yang sudah dirilis, tarik rilisnya dulu."
+        "Slip yang tersimpan karena salah menekan simulasi atau hitung massal hanyalah draf dan tidak terlihat oleh karyawan. Tekan «Hapus» di baris karyawan itu pada daftar rilis (slip manual dihapus di bagian «Slip gaji manual» di atas). Untuk bulan yang sudah dirilis, tarik rilisnya dulu.",
+        "Jika ada yang tidak menerima notifikasi LINE, layar menampilkan alasan dari LINE (misalnya kuota pesan gratis akun resmi bulan ini habis). Setelah diperbaiki, tekan «Kirim ulang notifikasi LINE» tanpa perlu menarik rilis."
       ],
       "terms": [
         [

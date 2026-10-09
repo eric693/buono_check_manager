@@ -1449,5 +1449,11 @@
   "PAYROLL_DELETE_DRAFT_CONFIRM": "{name} の {month} 給与明細を削除しますか？\n未配布のため従業員には見えていません。試算や一括計算で作り直せます。",
   "PAYROLL_DRAFT_DELETED": "{name} の給与明細を削除しました",
   "AUDIT_ACTION_DELETE_SALARY_CONFIG": "給与設定を削除",
-  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "未配布の給与明細を削除"
+  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "未配布の給与明細を削除",
+  "PAYROLL_RESEND_BTN": "LINE 通知を再送",
+  "PAYROLL_RESEND_CONFIRM": "{month} の給与明細がある {count} 名に LINE 通知を再送しますか？",
+  "PAYROLL_RESEND_DONE": "再通知しました。{notified} 名が LINE で受信",
+  "PAYROLL_NOTIFY_RESULT": "LINE 通知：{notified} 名受信／未受信：{names}",
+  "PAYROLL_NOTIFY_FAILED_ALERT": "{count} 名に LINE 通知を送れませんでした。LINE の応答：\n{detail}",
+  "AUDIT_ACTION_RESEND_PAYROLL_NOTICE": "給与明細通知を再送"
 }

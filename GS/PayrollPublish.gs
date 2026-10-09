@@ -49,6 +49,7 @@ function getPayrollPublishInfo_(yearMonth) {
       publishedAt: data[i][2] || null,
       publishedBy: String(data[i][3] || ''),
       notified: Number(data[i][4]) || 0,
+      notNotified: String(data[i][5] || ''),
       row: i + 1
     };
   }
@@ -154,6 +155,8 @@ function handleGetPayrollMonthStatus(params) {
     published: info.published,
     publishedAt: info.publishedAt ? formatDateTime(new Date(info.publishedAt)) : '',
     publishedBy: info.publishedBy,
+    notified: info.notified,
+    notNotified: info.notNotified,
     employees: list,
     summary: {
       total: list.length,
@@ -202,29 +205,69 @@ function handlePublishPayroll(params) {
   }
 
   // 通知放在鎖外面：一個一個打 LINE API 要一點時間，不要卡住其他人
+  const result = notifyPayrollPublished_(yearMonth, recipients);
+  return Object.assign({ ok: true, yearMonth: yearMonth, recipients: recipients.length }, result);
+}
+
+/**
+ * 用 LINE 通知這個月有薪資單的員工，並把結果（含失敗原因）記在「薪資發放」那一列
+ */
+function notifyPayrollPublished_(yearMonth, recipients) {
   const [y, m] = yearMonth.split('-');
   // 連結帶上月份，點開就是這個月的薪資條（不然會先看到當月的「尚未發放」）
   const text = `💰 ${y} 年 ${Number(m)} 月薪資條已發放\n請到出勤管家「薪資」頁查看，確認無誤後按「簽收」。\n${LINE_REDIRECT_URL}salary.html?month=${yearMonth}`;
   let notified = 0;
   const notNotified = [];
+  const errors = {};
   const names = (typeof getEmployeeNameMap_ === 'function') ? getEmployeeNameMap_() : {};
   recipients.forEach(id => {
-    let ok = false;
+    let res = null;
     try {
-      ok = !!(sendLineNotification_(id, { type: 'text', text: text }) || {}).ok;
+      res = sendLineNotification_(id, { type: 'text', text: text }) || {};
     } catch (error) {
-      Logger.log(' 薪資發放通知失敗: ' + id + ' ' + error);
+      res = { ok: false, error: String(error && error.message || error) };
     }
-    if (ok) notified++;
-    else notNotified.push(names[id] || id);
+    if (res.ok) {
+      notified++;
+    } else {
+      notNotified.push(names[id] || id);
+      const reason = String(res.error || 'UNKNOWN');
+      errors[reason] = (errors[reason] || 0) + 1;
+      Logger.log(' 薪資發放通知失敗: ' + id + ' ' + reason);
+    }
   });
+  // LINE 回的失敗原因（例如額度用完、token 錯誤），給管理員看才知道要怎麼處理
+  const notifyErrors = Object.keys(errors).map(reason => ({ reason: reason, hint: lineNotifyErrorHint_(reason), count: errors[reason] }));
 
   const info = getPayrollPublishInfo_(yearMonth);
   if (info.row > 0) {
-    getPayrollPublishSheet_().getRange(info.row, 5, 1, 2).setValues([[notified, notNotified.join('、')]]);
+    const detail = notNotified.join('、') + (notifyErrors.length ? '（原因：' + notifyErrors.map(e => e.reason).join('；') + '）' : '');
+    getPayrollPublishSheet_().getRange(info.row, 5, 1, 2).setValues([[notified, detail]]);
   }
+  return { notified: notified, notNotified: notNotified, notifyErrors: notifyErrors };
+}
 
-  return { ok: true, yearMonth: yearMonth, recipients: recipients.length, notified: notified, notNotified: notNotified };
+/** LINE 錯誤訊息 → 中文的處理建議 */
+function lineNotifyErrorHint_(reason) {
+  const r = String(reason || '');
+  if (r === 'NOT_A_LINE_USER') return '這位員工沒有使用 LINE（用登入連結登入），請另外告知';
+  if (/monthly limit/i.test(r)) return 'LINE 官方帳號本月的免費訊息則數已用完，需到 LINE Official Account Manager 升級方案或等下個月';
+  if (/authorization|access token|invalid token/i.test(r)) return 'LINE Channel Access Token 無效或過期，請到 LINE Developers 重新發行並更新指令碼屬性 LINE_CHANNEL_ACCESS_TOKEN';
+  if (/not found|failed to send/i.test(r)) return '員工可能還沒把官方帳號加為好友或已封鎖';
+  return '';
+}
+
+/**
+ * API（管理員）：已發放的月份重新發送 LINE 通知（例如上次額度用完、處理好之後補發）
+ */
+function handleResendPayrollNotice(params) {
+  if (!requirePayrollAdmin_(params.token)) return { ok: false, code: 'PERMISSION_DENIED', msg: '需要管理員權限' };
+  const yearMonth = String(params.yearMonth || '').trim();
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(yearMonth)) return { ok: false, code: 'INVALID_YEAR_MONTH', msg: '年月格式錯誤' };
+  if (!isPayrollPublished_(yearMonth)) return { ok: false, code: 'PAYROLL_NOT_PUBLISHED', msg: '這個月還沒有發放' };
+  const recipients = Object.keys(readMonthlySalaryRowsForMonth_(yearMonth));
+  const result = notifyPayrollPublished_(yearMonth, recipients);
+  return Object.assign({ ok: true, yearMonth: yearMonth, recipients: recipients.length }, result);
 }
 
 /**

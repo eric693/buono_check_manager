@@ -1449,5 +1449,11 @@
   "PAYROLL_DELETE_DRAFT_CONFIRM": "{name}의 {month} 급여명세서를 삭제할까요?\n아직 발송 전이라 직원은 볼 수 없습니다. 시산이나 일괄 계산으로 다시 만들 수 있습니다.",
   "PAYROLL_DRAFT_DELETED": "{name}의 급여명세서를 삭제했습니다",
   "AUDIT_ACTION_DELETE_SALARY_CONFIG": "급여 설정 삭제",
-  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "발송 전 급여명세서 삭제"
+  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "발송 전 급여명세서 삭제",
+  "PAYROLL_RESEND_BTN": "LINE 알림 다시 보내기",
+  "PAYROLL_RESEND_CONFIRM": "{month} 급여명세서가 있는 직원 {count}명에게 LINE 알림을 다시 보낼까요?",
+  "PAYROLL_RESEND_DONE": "다시 알림: {notified}명이 LINE 알림을 받았습니다",
+  "PAYROLL_NOTIFY_RESULT": "LINE 알림: {notified}명 수신, 미수신: {names}",
+  "PAYROLL_NOTIFY_FAILED_ALERT": "{count}명에게 LINE 알림을 보내지 못했습니다. LINE 응답:\n{detail}",
+  "AUDIT_ACTION_RESEND_PAYROLL_NOTICE": "급여명세서 알림 재전송"
 }

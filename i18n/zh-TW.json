@@ -1489,5 +1489,11 @@
   "PAYROLL_DELETE_DRAFT_CONFIRM": "確定要刪除 {name} {month} 的薪資單嗎？\n這張還沒發放，員工看不到；之後可以再用試算或批次計算重新產生。",
   "PAYROLL_DRAFT_DELETED": "已刪除 {name} 的薪資單",
   "AUDIT_ACTION_DELETE_SALARY_CONFIG": "刪除員工薪資設定",
-  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "刪除未發放的薪資單"
+  "AUDIT_ACTION_DELETE_DRAFT_PAYSLIP": "刪除未發放的薪資單",
+  "PAYROLL_RESEND_BTN": "重新發送 LINE 通知",
+  "PAYROLL_RESEND_CONFIRM": "要重新用 LINE 通知 {month} 有薪資單的 {count} 位員工嗎？",
+  "PAYROLL_RESEND_DONE": "已重新通知，{notified} 位員工收到 LINE 通知",
+  "PAYROLL_NOTIFY_RESULT": "LINE 通知：{notified} 人收到；沒收到：{names}",
+  "PAYROLL_NOTIFY_FAILED_ALERT": "LINE 通知有 {count} 人沒送出，LINE 回覆的原因：\n{detail}",
+  "AUDIT_ACTION_RESEND_PAYROLL_NOTICE": "重新發送薪資條通知"
 }
