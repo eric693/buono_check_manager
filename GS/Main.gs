@@ -58,7 +58,9 @@ const ROUTE_ACCESS = {
   adminMonthlyHours: 'admin',
   adminUpdateSheetRow: 'admin',
   adminAddSheetRow: 'admin',
-  adminDeleteSheetRow: 'admin'
+  adminDeleteSheetRow: 'admin',
+  // 即時出勤數據（AttendanceDashboard.gs）
+  adminDailyAttendance: 'admin'
 };
 
 /**
@@ -71,6 +73,7 @@ const ROUTE_ACCESS = {
 const DEPLOY_CHECKS = [
   ['AdminTools.gs', () => typeof batchInitializeAllEmployeesLeave === 'function'],
   ['Attachments.gs', () => typeof getAttachmentSheet_ === 'function'],
+  ['AttendanceDashboard.gs', () => typeof handleAdminDailyAttendance === 'function'],
   ['AuditLog.gs', () => typeof logAdminAction_ === 'function' && typeof getSalaryAuditSheet_ === 'function'],
   ['Constants.gs', () => typeof getLeaveTypeInfo === 'function'],
   ['Dailysalary.gs', () => typeof calculateDailySalary === 'function'],
@@ -124,7 +127,7 @@ const DEPLOY_CHECKS = [
 ];
 
 // 每次後端有更新就改這個日期，健康檢查會回報，從外面就知道正式區部署到哪一版
-const BACKEND_VERSION = '2026-10-09f';
+const BACKEND_VERSION = '2026-10-11';
 
 function handleHealthCheck() {
   const problems = [];
@@ -396,6 +399,8 @@ function doGet(e) {
         return respond1(handleDeleteDraftPayslip(e.parameter));
       case "deleteSalaryConfig":
         return respond1(handleDeleteSalaryConfig(e.parameter));
+      case "adminDailyAttendance":
+        return respond1(handleAdminDailyAttendance(e.parameter));
       
       // ==================== 薪資系統 ====================
       case "setEmployeeSalaryTW":
