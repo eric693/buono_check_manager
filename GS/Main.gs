@@ -106,6 +106,7 @@ const DEPLOY_CHECKS = [
   ['LoginLinks.gs', () => typeof handleRedeemLoginLink === 'function' && typeof createSessionForUser_ === 'function'],
   ['Offboarding.gs', () => typeof handleOffboardEmployee === 'function' &&
                             String(handleAcknowledgePayslip).indexOf('isPayrollPublished_') !== -1],
+  ['MyToday.gs', () => typeof handleGetMyToday === 'function'],
   ['OvertimeOperations.gs', () => typeof initOvertimeSheet === 'function'],
   ['PayrollRules.gs', () => typeof applyPayrollRules_ === 'function' && typeof payrollAttendanceZh_ === 'function' &&
                              String(handleSavePayrollAdjustments).indexOf('PAYSLIP_IS_MANUAL') !== -1],
@@ -235,6 +236,8 @@ function doGet(e) {
         return respond1(handleGetAbnormalRecords(e.parameter));
       case "getAttendanceDetails":
         return respond1(handleGetAttendanceDetails(e.parameter));
+      case "getMyToday":
+        return respond1(handleGetMyToday(e.parameter));
       
       // ==================== 地點管理 ====================
       case "addLocation":
