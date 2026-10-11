@@ -19,6 +19,7 @@ const PRECACHE_URLS = [
   './manual.js',
   './style.css',
   './tailwind.salary.css',
+  './tailwind.index.css',
   './config.js',
   './api.js',
   './utils.js',
