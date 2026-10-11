@@ -60,7 +60,8 @@ const ROUTE_ACCESS = {
   adminAddSheetRow: 'admin',
   adminDeleteSheetRow: 'admin',
   // 即時出勤數據（AttendanceDashboard.gs）
-  adminDailyAttendance: 'admin'
+  adminDailyAttendance: 'admin',
+  adminPendingCounts: 'admin'
 };
 
 /**
@@ -74,7 +75,7 @@ const DEPLOY_CHECKS = [
   ['AdminTools.gs', () => typeof batchInitializeAllEmployeesLeave === 'function'],
   ['Attachments.gs', () => typeof getAttachmentSheet_ === 'function'],
   ['AttendanceArchive.gs', () => typeof getAttendanceValuesForRange_ === 'function' && typeof archiveOldAttendance === 'function'],
-  ['AttendanceDashboard.gs', () => typeof handleAdminDailyAttendance === 'function'],
+  ['AttendanceDashboard.gs', () => typeof handleAdminDailyAttendance === 'function' && typeof handleAdminPendingCounts === 'function'],
   ['AuditLog.gs', () => typeof logAdminAction_ === 'function' && typeof getSalaryAuditSheet_ === 'function'],
   ['Constants.gs', () => typeof getLeaveTypeInfo === 'function'],
   ['Dailysalary.gs', () => typeof calculateDailySalary === 'function'],
@@ -405,6 +406,8 @@ function doGet(e) {
         return respond1(handleDeleteSalaryConfig(e.parameter));
       case "adminDailyAttendance":
         return respond1(handleAdminDailyAttendance(e.parameter));
+      case "adminPendingCounts":
+        return respond1(handleAdminPendingCounts(e.parameter));
       
       // ==================== 薪資系統 ====================
       case "setEmployeeSalaryTW":
