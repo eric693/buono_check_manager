@@ -57,7 +57,10 @@ function writeEmployee_(profile) {
       // 更新其他資訊（email, 頭像等）
       sheet.getRange(i + 1, 2).setValue(profile.email || "");
       sheet.getRange(i + 1, 4).setValue(profile.pictureUrl);
-      sheet.getRange(i + 1, 8).setValue("啟用");
+      // 已辦理離職的人用 LINE 登入，不能被改回「啟用」（以前會，等於自動復職）
+      if (String(values[i][7] || '').trim() !== '離職') {
+        sheet.getRange(i + 1, 8).setValue("啟用");
+      }
       
       Logger.log(` 更新員工資料完成（保留原有權限：${values[i][5]}）`);
       return values[i];
@@ -454,7 +457,16 @@ function punchAdjusted(sessionToken, type, punchDate, lat, lng, note) {
       const row = allValues[i];
       if (String(row[userIdCol] || '').trim() !== user.userId) continue;
       if (asDate(row[dateCol]) !== dateOnly || String(row[typeCol] || '').trim() !== type) continue;
-      if (String(row[statusCol] || '').trim() !== '待審核') continue;
+      const rowStatus = String(row[statusCol] || '').trim();
+      // 已核准的同一張卡（同日、同類型、同時間）再申請一次，核准後就會多一筆打卡
+      if (rowStatus === '已核准' && timeCol >= 0 && asTime(row[timeCol]) === timeOnly) {
+        return {
+          ok: false,
+          code: "ERR_ADJUST_PUNCH_ALREADY_APPROVED",
+          msg: dateOnly + ' ' + timeOnly + ' 的補' + type + '卡已經核准過了'
+        };
+      }
+      if (rowStatus !== '待審核') continue;
       pendingSameType++;
       if (timeCol < 0 || asTime(row[timeCol]) === timeOnly) {
         Logger.log('防重複補打卡: ' + user.name + ' 在 ' + dateOnly + ' ' + timeOnly + ' 已有待審核的補' + type + '卡申請');
@@ -533,8 +545,8 @@ function getEmployeeNameMap_() {
  * 這裡一律換成目前的姓名，報表才會一致；找不到員工（例如已刪除）才用紀錄上的名字。
  */
 function getAttendanceRecords(monthParam, userIdParam) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ATTENDANCE);
-  const values = sheet.getDataRange().getValues().slice(1);
+  // 舊月份可能已經封存（AttendanceArchive.gs）
+  const values = getAttendanceValuesForRange_(...attendanceMonthRange_(monthParam)).slice(1);
   const nameMap = getEmployeeNameMap_();
   
   return values.filter(row => {
@@ -587,18 +599,27 @@ function getAttendanceDetails(monthParam, userIdParam) {
     //  建立日期集合（過濾掉無效日期）
     const allDates = new Set();
     
+    // 不指定員工（匯出全員報表）時，每人每天各一列；以前所有人同一天的打卡會併成一列，
+    // 名字只顯示第一個打卡的人。key 用「日期|員工ID」，指定員工時就是日期本身
+    const keyOf = (date, uid) => userIdParam ? date : date + '|' + String(uid || '').trim();
+    const keyUser = {};
+
     // 加入打卡記錄的日期
     records.forEach(r => {
       const dateKey = formatDate(r.date);
       if (dateKey) {
-        allDates.add(dateKey);
+        const key = keyOf(dateKey, r.userId);
+        allDates.add(key);
+        keyUser[key] = r.userId;
       }
     });
     
     //  加入請假記錄的日期（檢查日期格式）
     leaveRecords.forEach(r => {
       if (r.date && typeof r.date === 'string' && r.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        allDates.add(r.date);
+        const key = keyOf(r.date, r.employeeId);
+        allDates.add(key);
+        keyUser[key] = r.employeeId;
       } else {
         Logger.log(` 請假記錄日期格式錯誤: ${r.date}`);
       }
@@ -607,7 +628,9 @@ function getAttendanceDetails(monthParam, userIdParam) {
     // 加入加班記錄的日期
     overtimeRecords.forEach(r => {
       if (r.date && typeof r.date === 'string' && r.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        allDates.add(r.date);
+        const key = keyOf(r.date, r.employeeId);
+        allDates.add(key);
+        keyUser[key] = r.employeeId;
       }
     });
     
@@ -619,8 +642,8 @@ function getAttendanceDetails(monthParam, userIdParam) {
     // 初始化所有日期
     allDates.forEach(dateKey => {
       dailyRecords[dateKey] = {
-        date: dateKey,
-        userId: userIdParam,
+        date: dateKey.split('|')[0],
+        userId: userIdParam || keyUser[dateKey],
         name: '',
         record: [],
         reason: 'STATUS_NO_RECORD',
@@ -631,7 +654,7 @@ function getAttendanceDetails(monthParam, userIdParam) {
     
     // 填入打卡記錄
     records.forEach(r => {
-      const dateKey = formatDate(r.date);
+      const dateKey = keyOf(formatDate(r.date), r.userId);
       
       if (dailyRecords[dateKey]) {
         if (!dailyRecords[dateKey].name) {
@@ -650,7 +673,7 @@ function getAttendanceDetails(monthParam, userIdParam) {
     
     //  填入請假資料
     leaveRecords.forEach(leave => {
-      const dateKey = leave.date;
+      const dateKey = keyOf(leave.date, leave.employeeId);
       
       if (dailyRecords[dateKey]) {
         dailyRecords[dateKey].leave = {
@@ -673,7 +696,7 @@ function getAttendanceDetails(monthParam, userIdParam) {
     
     // 填入加班資料
     overtimeRecords.forEach(ot => {
-      const dateKey = ot.date;
+      const dateKey = keyOf(ot.date, ot.employeeId);
       
       if (dailyRecords[dateKey]) {
         dailyRecords[dateKey].overtime = {
@@ -729,7 +752,7 @@ function getAttendanceDetails(monthParam, userIdParam) {
       .filter(r => r.date) // 過濾掉沒有 date 的記錄
       .sort((a, b) => {
         if (!a.date || !b.date) return 0;
-        return a.date.localeCompare(b.date);
+        return a.date.localeCompare(b.date) || String(a.name).localeCompare(String(b.name));
       });
     
     Logger.log(` getAttendanceDetails 完成: ${result.length} 筆`);
@@ -961,27 +984,115 @@ function getApprovedOvertimeRecords(monthParam, userIdParam) {
 }
 
 // ==================== 地點管理 ====================
+//
+// 「打卡地點表」：A ID、B 地點名稱、C 緯度、D 經度、E 容許誤差（公尺）。
+// 打卡（punch）、LINE 打卡、QR 打卡都依位置讀 B～E，這裡不能改欄位順序。
+// 以前新增時 ID 留白，編輯、刪除要靠 ID 找列，所以讀取時會把空白的 ID 補上。
+
+const LOCATION_MIN_RADIUS = 30;
+const LOCATION_MAX_RADIUS = 2000;
+const LOCATION_DEFAULT_RADIUS = 200;
+const LOCATION_MAX_NAME = 50;
+
+/** 檢查並整理地點欄位；回傳 { ok, location } 或 { ok: false, code, msg } */
+function normalizeLocationInput_(name, lat, lng, radius) {
+  const cleanName = String(name || '').trim();
+  const latNum = Number(lat);
+  const lngNum = Number(lng);
+  if (!cleanName || cleanName.length > LOCATION_MAX_NAME) {
+    return { ok: false, code: 'ERR_INVALID_INPUT', msg: `地點名稱必填，最多 ${LOCATION_MAX_NAME} 字` };
+  }
+  if (lat === '' || lng === '' || !isFinite(latNum) || !isFinite(lngNum) ||
+      Math.abs(latNum) > 90 || Math.abs(lngNum) > 180 || (latNum === 0 && lngNum === 0)) {
+    return { ok: false, code: 'ERR_INVALID_INPUT', msg: '經緯度不正確' };
+  }
+  const r = parseInt(radius, 10);
+  const finalRadius = isNaN(r) ? LOCATION_DEFAULT_RADIUS : Math.max(LOCATION_MIN_RADIUS, Math.min(LOCATION_MAX_RADIUS, r));
+  return { ok: true, location: { name: cleanName, lat: latNum, lng: lngNum, radius: finalRadius } };
+}
+
+function newLocationId_() {
+  return 'LOC' + Utilities.getUuid().replace(/-/g, '').substring(0, 8).toUpperCase();
+}
+
+/**
+ * 讀出所有地點列（含列號），空白的 ID 補上後寫回。
+ * @returns {Array<{ row: number, id, name, lat, lng, radius }>}
+ */
+function readLocationRows_(sheet) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+  const range = sheet.getRange(2, 1, lastRow - 1, 5);
+  const values = range.getValues();
+  let filled = false;
+  values.forEach(row => {
+    if (row[1] && !String(row[0]).trim()) {
+      row[0] = newLocationId_();
+      filled = true;
+    }
+  });
+  if (filled) sheet.getRange(2, 1, values.length, 1).setValues(values.map(row => [row[0]]));
+
+  const list = [];
+  values.forEach((row, i) => {
+    if (!row[1]) return;
+    list.push({ row: i + 2, id: String(row[0]).trim(), name: String(row[1]),
+                lat: Number(row[2]) || 0, lng: Number(row[3]) || 0, radius: Number(row[4]) || 100 });
+  });
+  return list;
+}
+
+function withLocationLock_(fn) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_LOCATIONS);
+    if (!sheet) return { ok: false, code: 'ERR_NO_LOCATIONS', msg: '找不到打卡地點表' };
+    return fn(sheet);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 /**
  * 新增打卡地點
- * @param {string} name - 地點名稱
- * @param {number} lat - 緯度
- * @param {number} lng - 經度
  * @param {number} radius - 打卡範圍（公尺），預設 200，範圍 30-2000
  */
 function addLocation(name, lat, lng, radius) {
-  if (!name || !lat || !lng) {
-    return { ok: false, code: "ERR_INVALID_INPUT" };
-  }
-  
-  // 驗證 radius 參數，確保在合理範圍內
-  const validRadius = radius && !isNaN(radius) ? parseInt(radius) : 200;
-  const finalRadius = Math.max(30, Math.min(2000, validRadius)); // 限制在 30-2000 之間
-  
-  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_LOCATIONS);
-  sh.appendRow(["", name, lat, lng, finalRadius]);
-  
-  Logger.log(` 新增地點：${name}，範圍：${finalRadius}公尺`);
-  return { ok: true, code: "LOCATION_ADD_SUCCESS" };
+  const checked = normalizeLocationInput_(name, lat, lng, radius);
+  if (!checked.ok) return checked;
+  const loc = checked.location;
+  return withLocationLock_(sheet => {
+    const id = newLocationId_();
+    sheet.appendRow([id, loc.name, loc.lat, loc.lng, loc.radius]);
+    Logger.log(` 新增地點：${loc.name}，範圍：${loc.radius}公尺`);
+    return { ok: true, code: "LOCATION_ADD_SUCCESS", id: id };
+  });
+}
+
+/** 修改打卡地點（名稱、座標、範圍） */
+function updateLocation(id, name, lat, lng, radius) {
+  const checked = normalizeLocationInput_(name, lat, lng, radius);
+  if (!checked.ok) return checked;
+  const loc = checked.location;
+  return withLocationLock_(sheet => {
+    const found = readLocationRows_(sheet).find(l => l.id === String(id || '').trim());
+    if (!found) return { ok: false, code: 'ERR_LOCATION_NOT_FOUND', msg: '找不到這個地點，可能已被刪除，請重新整理' };
+    sheet.getRange(found.row, 2, 1, 4).setValues([[loc.name, loc.lat, loc.lng, loc.radius]]);
+    Logger.log(` 修改地點：${found.name} → ${loc.name}，範圍：${loc.radius}公尺`);
+    return { ok: true, code: 'LOCATION_UPDATE_SUCCESS' };
+  });
+}
+
+/** 刪除打卡地點 */
+function deleteLocation(id) {
+  return withLocationLock_(sheet => {
+    const found = readLocationRows_(sheet).find(l => l.id === String(id || '').trim());
+    if (!found) return { ok: false, code: 'ERR_LOCATION_NOT_FOUND', msg: '找不到這個地點，可能已被刪除，請重新整理' };
+    sheet.deleteRow(found.row);
+    Logger.log(` 刪除地點：${found.name}`);
+    return { ok: true, code: 'LOCATION_DELETE_SUCCESS', name: found.name };
+  });
 }
 
 /**
@@ -989,23 +1100,20 @@ function addLocation(name, lat, lng, radius) {
  */
 function getLocation() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_LOCATIONS);
-  const values = sheet.getDataRange().getValues();
-  
-  if (values.length === 0) {
-    return { ok: true, locations: [] };
+  if (!sheet) return { ok: true, locations: [] };
+
+  // 有空白 ID 要補時才鎖；平常只是讀
+  let rows;
+  const needsIds = sheet.getLastRow() >= 2 &&
+    sheet.getRange(2, 1, sheet.getLastRow() - 1, 2).getValues().some(r => r[1] && !String(r[0]).trim());
+  if (needsIds) {
+    const result = withLocationLock_(sh => ({ ok: true, rows: readLocationRows_(sh) }));
+    rows = result.rows || [];
+  } else {
+    rows = readLocationRows_(sheet);
   }
-  
-  const headers = values.shift();
-  const locations = values
-    .filter(row => row[1])
-    .map(row => ({
-      id: row[headers.indexOf('ID')] || '',
-      name: row[headers.indexOf('地點名稱')] || '',
-      lat: row[headers.indexOf('GPS(緯度)')] || 0,
-      lng: row[headers.indexOf('GPS(經度)')] || 0,
-      scope: row[headers.indexOf('容許誤差(公尺)')] || 100
-    }));
-  
+
+  const locations = rows.map(l => ({ id: l.id, name: l.name, lat: l.lat, lng: l.lng, scope: l.radius }));
   return { ok: true, locations: locations };
 }
 
@@ -1105,7 +1213,19 @@ function getReviewRequest() {
 /**
  *  更新審核狀態（完整修正版 - 從補打卡申請工作表讀取）
  */
-function updateReviewStatus(rowNumber, status, note) {
+// 同一筆申請按兩次核准（或兩位管理員同時按）會寫入兩筆一樣的打卡，
+// 讓那天的上下班次數對不上，被判成缺卡。鎖住整個審核，已審核過的不能再審。
+function updateReviewStatus(rowNumber, status, note, applicationId) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    return updateReviewStatusLocked_(rowNumber, status, note, applicationId);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function updateReviewStatusLocked_(rowNumber, status, note, expectedApplicationId) {
   try {
     Logger.log('═══════════════════════════════════════');
     Logger.log(' 開始審核補打卡');
@@ -1195,6 +1315,18 @@ function updateReviewStatus(rowNumber, status, note) {
     Logger.log('   類型: ' + punchType);
     Logger.log('   理由: ' + reason);
     
+    // 用列號指定是哪一筆：清單載入後有人在試算表刪列或排序，列號就會指到別筆申請。
+    // 前端會一起送申請ID，對不上就拒絕，不會核准到別人的補卡
+    if (expectedApplicationId && String(applicationId).trim() !== String(expectedApplicationId).trim()) {
+      return { ok: false, code: 'ERR_REVIEW_STALE', msg: '申請清單已變動，請重新整理後再審核' };
+    }
+
+    const currentStatus = String(record[statusCol - 1] || '').trim();
+    if (currentStatus !== '待審核') {
+      Logger.log(' 這筆申請已經審核過: ' + currentStatus);
+      return { ok: false, code: 'ERR_ALREADY_REVIEWED', msg: '這筆申請已經' + currentStatus + '，不能重複審核' };
+    }
+
     //  更新審核狀態
     const statusText = (status === "v") ? "已核准" : "已拒絕";
     
@@ -1248,7 +1380,21 @@ function updateReviewStatus(rowNumber, status, note) {
           reason || note || ''     // J: 裝置資訊（補打卡理由）
         ];
         
-        attendanceSheet.appendRow(row);
+        // 打卡紀錄裡已經有同一人、同一時間、同一種卡，就不再寫一次
+        const tz = Session.getScriptTimeZone();
+        const targetKey = Utilities.formatDate(punchDateTime, tz, 'yyyy-MM-dd HH:mm');
+        // 時間欄可能是日期，也可能是手動輸入的文字，兩種都要能比對
+        const alreadyPunched = attendanceSheet.getDataRange().getValues().slice(1).some(r => {
+          if (!r[0] || String(r[1]).trim() !== String(userId).trim() || String(r[4]).trim() !== String(punchType).trim()) return false;
+          const time = typeof r[0].getTime === 'function' ? r[0] : new Date(r[0]);
+          return !isNaN(time.getTime()) && Utilities.formatDate(time, tz, 'yyyy-MM-dd HH:mm') === targetKey;
+        });
+
+        if (alreadyPunched) {
+          Logger.log(' 打卡紀錄已有相同的' + punchType + '卡，略過寫入: ' + targetKey);
+        } else {
+          attendanceSheet.appendRow(row);
+        }
         
         Logger.log(' 已寫入出勤紀錄');
         Logger.log('   寫入內容: ' + JSON.stringify(row));
@@ -1455,8 +1601,7 @@ function getEmployeeMonthlyPunchData(employeeId, yearMonth) {
     Logger.log('   員工ID: ' + employeeId);
     Logger.log('   月份: ' + yearMonth);
     
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ATTENDANCE);
-    const values = sheet.getDataRange().getValues();
+    const values = getAttendanceValuesForRange_(...attendanceMonthRange_(yearMonth));
     
     if (values.length <= 1) {
       return { 
@@ -1730,7 +1875,7 @@ function setEmployeeBasicInfo(data) {
         data.employeeName || '',
         data.idNumber || '',
         data.address || '',
-        data.phone || '',
+        data.phone ? `'${data.phone}` : '',   // 加單引號，不然 09 開頭的 0 會被試算表吃掉
         data.birthDate || '',
         now,
         now
@@ -1927,9 +2072,12 @@ function checkSession_(sessionToken) {
         return { ok: false, code: "ERR_SESSION_EXPIRED" };
       }
       
-      // 延長 Session
-      const newExpiredAt = new Date(new Date().getTime() + SESSION_TTL_MS);
-      sh.getRange(i + 1, 4).setValue(newExpiredAt);
+      // 延長 Session：剩不到一半期限才寫回。以前每一次呼叫都寫一次試算表，
+      // 上下班尖峰全公司同時打卡時，這些寫入會互相排隊，拖慢打卡
+      const remaining = expiredAt ? new Date(expiredAt).getTime() - Date.now() : 0;
+      if (!(remaining > SESSION_TTL_MS / 2)) {
+        sh.getRange(i + 1, 4).setValue(new Date(Date.now() + SESSION_TTL_MS));
+      }
       
       // 查詢員工資料
       const employee = findEmployeeByLineUserId_(userId);

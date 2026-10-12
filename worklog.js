@@ -401,6 +401,7 @@ async function deleteWorklog(logId) {
  * 載入待審核的工作日誌
  */
 async function loadPendingWorklogs() {
+    if (typeof loadAdminPendingCounts === 'function') loadAdminPendingCounts();  // 管理員頁「審核」的數字跟著更新
     const loadingEl = document.getElementById('worklog-requests-loading');
     const emptyEl = document.getElementById('worklog-requests-empty');
     const listEl = document.getElementById('pending-worklog-list');
@@ -742,10 +743,11 @@ async function generateWorklogExcel(employeeName, yearMonth, worklogs) {
     ws['!cols'] = wscols;
     
     const wb = XLSX.utils.book_new();
-    const sheetName = `${month}${t('MONTH_WORKLOG') || '月工作日誌'}`;
+    // 年月用 2026-10 這種寫法，各語言都通用（Excel 分頁名稱最多 31 字）
+    const sheetName = `${year}-${String(month).padStart(2, '0')} ${t('WORKLOG')}`.slice(0, 31);
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
     
-    const fileName = `${employeeName}_${year}${t('YEAR') || '年'}${month}${t('MONTH') || '月'}_${t('WORKLOG') || '工作日誌'}.xlsx`;
+    const fileName = `${employeeName}_${year}-${String(month).padStart(2, '0')}_${t('WORKLOG')}.xlsx`;
     XLSX.writeFile(wb, fileName);
 }
 

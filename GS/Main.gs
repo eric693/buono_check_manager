@@ -9,6 +9,8 @@ const ROUTE_ACCESS = {
   approveReview: 'admin',
   rejectReview: 'admin',
   addLocation: 'admin',
+  updateLocation: 'admin',
+  deleteLocation: 'admin',
   updateEmployeeName: 'admin',
   getEmployeeSalaryTW: 'admin',
   setEmployeeSalaryTW: 'admin',
@@ -58,7 +60,10 @@ const ROUTE_ACCESS = {
   adminMonthlyHours: 'admin',
   adminUpdateSheetRow: 'admin',
   adminAddSheetRow: 'admin',
-  adminDeleteSheetRow: 'admin'
+  adminDeleteSheetRow: 'admin',
+  // 即時出勤數據（AttendanceDashboard.gs）
+  adminDailyAttendance: 'admin',
+  adminPendingCounts: 'admin'
 };
 
 /**
@@ -71,19 +76,25 @@ const ROUTE_ACCESS = {
 const DEPLOY_CHECKS = [
   ['AdminTools.gs', () => typeof batchInitializeAllEmployeesLeave === 'function'],
   ['Attachments.gs', () => typeof getAttachmentSheet_ === 'function'],
+  ['AttendanceArchive.gs', () => typeof getAttendanceValuesForRange_ === 'function' && typeof archiveOldAttendance === 'function'],
+  ['AttendanceDashboard.gs', () => typeof handleAdminDailyAttendance === 'function' && typeof handleAdminPendingCounts === 'function'],
   ['AuditLog.gs', () => typeof logAdminAction_ === 'function' && typeof getSalaryAuditSheet_ === 'function'],
   ['Constants.gs', () => typeof getLeaveTypeInfo === 'function'],
   ['Dailysalary.gs', () => typeof calculateDailySalary === 'function'],
   ['DatabaseSetup.gs', () => typeof setupLeaveSystemDatabase === 'function'],
-  ['DbOperations.gs', () => typeof isEmployeeRowMisaligned_ === 'function' && typeof writeSession_ === 'function' &&
+  ['DbOperations.gs', () => typeof isEmployeeRowMisaligned_ === 'function' && typeof deleteLocation === 'function' && typeof writeSession_ === 'function' &&
                             String(writeSession_).indexOf('createSessionForUser_') !== -1 &&
-                            String(punchAdjusted).indexOf('ERR_ADJUST_PUNCH_LIMIT') !== -1],
+                            String(punchAdjusted).indexOf('ERR_ADJUST_PUNCH_LIMIT') !== -1 &&
+                            typeof updateReviewStatusLocked_ === 'function' &&
+                            String(updateReviewStatusLocked_).indexOf('ERR_REVIEW_STALE') !== -1],
   ['EmployeeSheetRepair.gs', () => typeof readOriginalLockedNames_ === 'function'],
   ['Expense.gs', () => typeof handleReviewExpense === 'function'],
   ['Handlers.gs', () => typeof handleGetLoginUrl === 'function' && handleGetLoginUrl.length >= 1 &&
+                         String(handleGetProfile).indexOf('ERR_EMPLOYEE_LEFT') !== -1 &&
                          String(handleLinePunchWithToken).indexOf('checkPunchSequence_') !== -1 &&
                          String(handleLinePunchWithToken).indexOf('data.done') !== -1 &&
                          String(handleCalculateMonthlySalary).indexOf('readManualPayslip_') !== -1 &&
+                         typeof handleUpdateLocation === 'function' && String(handleAddLocation).indexOf('radius') !== -1 &&
                          String(handleSetEmployeeSalaryTW).indexOf("existing.data['到職日期']") !== -1],
   ['LeaveManagement.gs', () => typeof submitLeaveRequest === 'function'],
   ['LineApi.gs', () => typeof getLineUserInfo_ === 'function'],
@@ -101,6 +112,7 @@ const DEPLOY_CHECKS = [
   ['LoginLinks.gs', () => typeof handleRedeemLoginLink === 'function' && typeof createSessionForUser_ === 'function'],
   ['Offboarding.gs', () => typeof handleOffboardEmployee === 'function' &&
                             String(handleAcknowledgePayslip).indexOf('isPayrollPublished_') !== -1],
+  ['MyToday.gs', () => typeof handleGetMyToday === 'function'],
   ['OvertimeOperations.gs', () => typeof initOvertimeSheet === 'function'],
   ['PayrollRules.gs', () => typeof applyPayrollRules_ === 'function' && typeof payrollAttendanceZh_ === 'function' &&
                              String(handleSavePayrollAdjustments).indexOf('PAYSLIP_IS_MANUAL') !== -1],
@@ -124,7 +136,7 @@ const DEPLOY_CHECKS = [
 ];
 
 // 每次後端有更新就改這個日期，健康檢查會回報，從外面就知道正式區部署到哪一版
-const BACKEND_VERSION = '2026-10-09f';
+const BACKEND_VERSION = '2026-10-12b';
 
 function handleHealthCheck() {
   const problems = [];
@@ -137,6 +149,9 @@ function handleHealthCheck() {
     ok: problems.length === 0,
     version: BACKEND_VERSION,
     checked: DEPLOY_CHECKS.length,
+    // 打卡紀錄封存（AttendanceArchive.gs）：封存到哪天、每月自動封存有沒有裝
+    attendanceArchivedBefore: typeof attendanceArchivedBefore_ === 'function' ? (attendanceArchivedBefore_() || null) : null,
+    attendanceArchiveTrigger: typeof hasAttendanceArchiveTrigger_ === 'function' ? hasAttendanceArchiveTrigger_() : null,
     // 這些檔不存在、或還是舊版：請從 GitHub 複製最新的內容覆蓋
     missingOrOutdated: problems
   };
@@ -227,12 +242,18 @@ function doGet(e) {
         return respond1(handleGetAbnormalRecords(e.parameter));
       case "getAttendanceDetails":
         return respond1(handleGetAttendanceDetails(e.parameter));
+      case "getMyToday":
+        return respond1(handleGetMyToday(e.parameter));
       
       // ==================== 地點管理 ====================
       case "addLocation":
         return respond1(handleAddLocation(e.parameter));
       case "getLocations":
         return respond1(handleGetLocation());
+      case "updateLocation":
+        return respond1(handleUpdateLocation(e.parameter));
+      case "deleteLocation":
+        return respond1(handleDeleteLocation(e.parameter));
       
       case "setEmployeeBasicInfo":
         return respond1(handleSetEmployeeBasicInfo(e.parameter));
@@ -396,6 +417,10 @@ function doGet(e) {
         return respond1(handleDeleteDraftPayslip(e.parameter));
       case "deleteSalaryConfig":
         return respond1(handleDeleteSalaryConfig(e.parameter));
+      case "adminDailyAttendance":
+        return respond1(handleAdminDailyAttendance(e.parameter));
+      case "adminPendingCounts":
+        return respond1(handleAdminPendingCounts(e.parameter));
       
       // ==================== 薪資系統 ====================
       case "setEmployeeSalaryTW":

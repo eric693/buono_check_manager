@@ -74,6 +74,11 @@ function handleGetProfile(code) {
   try {
     const tokenResp = exchangeCodeForToken_(code);
     const profile = getLineUserInfo_(tokenResp);
+    // 已辦理離職的人不能再登入（離職時會作廢 session，但以前重新用 LINE 登入就又拿到新的）
+    const existing = findEmployeeByLineUserId_(profile.userId);
+    if (existing.ok && String(existing.status).trim() === '離職') {
+      return { ok: false, code: 'ERR_EMPLOYEE_LEFT', msg: '此帳號已辦理離職，無法登入' };
+    }
     const sToken = writeSession_(profile.userId);
     const employee = writeEmployee_(profile);
     
@@ -505,8 +510,17 @@ function handleGetAttendanceDetails(params) {
 // ==================== 地點管理相關 ====================
 
 function handleAddLocation(params) {
-  const { name, lat, lng } = params;
-  return addLocation(name, lat, lng);
+  const { name, lat, lng, radius } = params;
+  // 以前沒把 radius 傳下去，畫面上調的打卡範圍一律變成 200 公尺
+  return addLocation(name, lat, lng, radius);
+}
+
+function handleUpdateLocation(params) {
+  return updateLocation(params.id, params.name, params.lat, params.lng, params.radius);
+}
+
+function handleDeleteLocation(params) {
+  return deleteLocation(params.id);
 }
 
 function handleGetLocation() {
@@ -640,7 +654,7 @@ function handleApproveReview(params) {
   if (!recordId) {
     return { ok: false, msg: "缺少審核 ID" };
   }
-  return updateReviewStatus(recordId, "v", "核准");
+  return updateReviewStatus(recordId, "v", "核准", params.applicationId);
 }
 
 function handleRejectReview(params) {
@@ -648,7 +662,7 @@ function handleRejectReview(params) {
   if (!recordId) {
     return { ok: false, msg: "缺少審核 ID" };
   }
-  return updateReviewStatus(recordId, "x", "拒絕");
+  return updateReviewStatus(recordId, "x", "拒絕", params.applicationId);
 }
 
 // ==================== 加班功能相關 ====================

@@ -33,14 +33,7 @@
         <meta name="keywords" content="出勤,打卡,排班,薪資,加班,請假,考勤管理">
         <meta name="author" content="0J">
         
-        <script src="https://cdn.tailwindcss.com"></script>
         <script>
-            tailwind.config = {
-                darkMode: 'class',
-                theme: {
-                    extend: {}
-                }
-            }
             document.addEventListener('DOMContentLoaded', () => {
                 const toggleButton = document.getElementById('theme-toggle');
                 const htmlElement = document.documentElement;
@@ -106,7 +99,11 @@
                 color: white;
             }
         </style>
-    </head>
+            <!-- 事先編好的 Tailwind（tools/build-tailwind.sh 產生）。要放在所有樣式表最後面：
+             CDN 版會把樣式插在 head 最後，style.css 裡 .notification 之類的底色才會被 bg-red-500 蓋過。
+             改了主頁或它載入的 js 的 class 之後要重新產生，node tools/wiring-check.js 會提醒。 -->
+        <link rel="stylesheet" href="tailwind.index.css">
+</head>
     <body class="flex items-center justify-center min-h-screen p-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <div id="app-container" class="w-full max-w-md mx-auto">
             <!-- User Profile & Header -->
@@ -162,7 +159,8 @@
             <!-- Main App Content -->
             <div id="main-app" class="fade-in" style="display: none;">
                 <!-- Tab Navigation -->
-                <div class="flex justify-center space-x-2 mb-6 flex-wrap gap-y-2">
+                <!-- 上方分頁按鈕：手機改用底部導覽列（#bottom-nav），這排只在平板、電腦顯示 -->
+                <div class="hidden sm:flex justify-center space-x-2 mb-6 flex-wrap gap-y-2">
                     <button id="tab-dashboard-btn" data-i18n="TAB_DASHBOARD" class="py-2 px-4 rounded-full font-bold text-sm text-white bg-indigo-600 dark:bg-indigo-500">儀表板</button>
                     <button id="tab-monthly-btn" data-i18n="TAB_MONTHLY" class="py-2 px-4 rounded-full font-bold text-sm text-gray-600 bg-gray-200 dark:text-gray-300 dark:bg-gray-700">出勤記錄</button>
                     <button id="tab-location-btn" data-i18n="TAB_LOCATION" class="py-2 px-4 rounded-full font-bold text-sm text-gray-600 bg-gray-200 dark:text-gray-300 dark:bg-gray-700">定位</button>
@@ -183,8 +181,51 @@
 
                 </div>
                 
+                <!-- 手機底部導覽列：按了就觸發上方對應的分頁按鈕，切換邏輯不變（script.js syncBottomNav） -->
+                <nav id="bottom-nav" class="bottom-nav sm:hidden">
+                    <button type="button" class="bottom-nav-item active" data-nav-tab="dashboard">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/></svg>
+                        <span data-i18n="TAB_DASHBOARD">TAB_DASHBOARD</span>
+                    </button>
+                    <button type="button" class="bottom-nav-item" data-nav-tab="monthly">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg>
+                        <span data-i18n="TAB_MONTHLY">TAB_MONTHLY</span>
+                    </button>
+                    <button type="button" class="bottom-nav-item" data-nav-tab="leave">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12h3m12 0h3M12 3v3m0 12v3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1m0-12.8l-2.1 2.1m-8.6 8.6l-2.1 2.1M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        <span data-i18n="TAB_LEAVE">TAB_LEAVE</span>
+                    </button>
+                    <button type="button" class="bottom-nav-item" data-nav-tab="salary">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.7 0-3 .9-3 2s1.3 2 3 2 3 .9 3 2-1.3 2-3 2m0-8c1.1 0 2.1.4 2.6 1M12 8V7m0 1v8m0 0v1m0-1c-1.1 0-2.1-.4-2.6-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span data-i18n="TAB_SALARY">TAB_SALARY</span>
+                    </button>
+                    <button type="button" class="bottom-nav-item" id="bottom-nav-more-btn" aria-haspopup="true" aria-expanded="false">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                        <span data-i18n="NAV_MORE">更多</span>
+                    </button>
+                </nav>
+                <div id="bottom-nav-more" class="bottom-nav-more sm:hidden" style="display: none;">
+                    <button type="button" class="bottom-nav-more-item" data-nav-tab="location" data-i18n="TAB_LOCATION">TAB_LOCATION</button>
+                    <button type="button" class="bottom-nav-more-item" data-nav-tab="shift" data-i18n="TAB_SHIFT">TAB_SHIFT</button>
+                    <button type="button" class="bottom-nav-more-item" data-nav-tab="overtime" data-i18n="TAB_OVERTIME">TAB_OVERTIME</button>
+                    <button type="button" class="bottom-nav-more-item" data-nav-tab="expense" data-i18n="TAB_EXPENSE">TAB_EXPENSE</button>
+                    <button type="button" class="bottom-nav-more-item" data-nav-tab="worklog" data-i18n="TAB_WORKLOG">TAB_WORKLOG</button>
+                    <button type="button" class="bottom-nav-more-item" data-nav-tab="admin" data-i18n="TAB_ADMIN">TAB_ADMIN</button>
+                </div>
+
                 <!-- Dashboard View -->
                 <main id="dashboard-view" class="space-y-6">
+                    <!-- 今天：班表、狀態、下一張卡、今天的打卡、這週工時（my-today.js，資料來自 getMyToday） -->
+                    <div id="my-today-card" class="card p-6" style="display: none;">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-white">
+                                <span data-i18n="MY_TODAY_TITLE">今天</span>
+                                <span id="my-today-date" class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1"></span>
+                            </h2>
+                            <span id="my-today-status"></span>
+                        </div>
+                        <div id="my-today-body"></div>
+                    </div>
                     <!--  佈告欄區塊 -->
                     <div class="card p-6 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-2 border-indigo-200 dark:border-indigo-700">
                         <h2 data-i18n="ANNOUNCEMENT_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-4">
@@ -269,21 +310,21 @@
                             </div>
 
                             <div class="mt-3">
-                                <button id="adjust-today-btn"
+                                <button id="adjust-today-btn" data-i18n="ADJ_TODAY_TITLE"
                                         class="w-full px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow-md transition-colors">
                                      當日異常修正
                                 </button>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+                                <p data-i18n="ADJ_TODAY_BTN_HINT" class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
                                     忘記打卡或打錯類型？點此修正
                                 </p>
                             </div>
                             <div class="mt-3">
-                                <button id="history-adjust-btn"
+                                <button id="history-adjust-btn" data-i18n="ADJ_HISTORY_TITLE"
                                         class="w-full px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-lg shadow-md transition-colors">
                                     歷史補打卡
                                 </button>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-                                    補打本月內的漏卡記錄
+                                <p data-i18n="ADJ_HISTORY_BTN_HINT" class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+                                    補打上個月和本月的漏卡記錄
                                 </p>
                             </div>
                         </div>
@@ -318,7 +359,7 @@
                         </p>
                         
                         <!-- 載入狀態 -->
-                        <div id="basic-info-loading" 
+                        <div id="basic-info-loading" data-i18n="LOADING_DOTS"
                             class="text-center text-gray-500 dark:text-gray-400 py-4" 
                             style="display: none;">
                             正在載入...
@@ -350,7 +391,7 @@
                                     身分證字號 <span class="text-red-500">*</span>
                                 </label>
                                 <input type="text" 
-                                    id="employee-id-number" 
+                                    id="employee-id-number" data-i18n="PH_ID_NUMBER" 
                                     maxlength="10"
                                     placeholder="請輸入身分證字號"
                                     class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
@@ -364,7 +405,7 @@
                                     地址
                                 </label>
                                 <input type="text" 
-                                    id="employee-address" 
+                                    id="employee-address" data-i18n="PH_ADDRESS" 
                                     placeholder="請輸入地址"
                                     class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
                             </div>
@@ -377,7 +418,7 @@
                                     電話
                                 </label>
                                 <input type="tel" 
-                                    id="employee-phone" 
+                                    id="employee-phone" data-i18n="PH_PHONE" 
                                     placeholder="請輸入電話號碼"
                                     class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
                             </div>
@@ -406,7 +447,7 @@
                             <div id="basic-info-update-time" 
                                 class="text-xs text-gray-500 dark:text-gray-400 text-center" 
                                 style="display: none;">
-                                最後更新：<span id="update-time-text"></span>
+                                <span data-i18n="LAST_UPDATED_LABEL">最後更新：</span><span id="update-time-text"></span>
                             </div>
                         </div>
                     </div>
@@ -446,74 +487,42 @@
                 <!-- Monthly View -->
                 <section id="monthly-view" class="space-y-6" style="display: none;">
 
-                    <!--  本月統計區塊 -->
-                    <div class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg p-6 mb-6 border border-gray-200 dark:border-gray-700">
-                        <div class="flex items-center mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
-                            <div class="w-1 h-6 bg-indigo-600 dark:bg-indigo-400 rounded-full mr-3"></div>
-                            <h3 data-i18n="MONTHLY_STATS_TITLE" class="text-lg font-bold text-gray-800 dark:text-white">
-                                本月出勤統計
-                            </h3>
+                    <!-- 本月出勤統計：四格數字 + 有異常的日子（script.js updateMonthlyStats） -->
+                    <div class="card p-6">
+                        <h3 data-i18n="MONTHLY_STATS_TITLE" class="text-lg font-bold text-gray-800 dark:text-white mb-4">本月出勤統計</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div class="rounded-lg border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-900/20 p-3 text-center">
+                                <p data-i18n="STATS_ATTEND_DAYS" class="text-xs text-gray-500 dark:text-gray-400">出勤天數</p>
+                                <p class="mt-1"><span id="stats-attend-days-value" class="text-2xl font-semibold text-gray-800 dark:text-white">0</span><span data-i18n="UNIT_DAYS" class="text-xs text-gray-500 dark:text-gray-400 ml-1">天</span></p>
+                            </div>
+                            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-center">
+                                <p data-i18n="STATS_ABNORMAL_COUNT" class="text-xs text-gray-500 dark:text-gray-400">異常記錄</p>
+                                <p class="mt-1"><span id="stats-abnormal-count-value" class="text-2xl font-semibold text-gray-800 dark:text-white">0</span><span data-i18n="UNIT_RECORDS" class="text-xs text-gray-500 dark:text-gray-400 ml-1">筆</span></p>
+                            </div>
+                            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-center">
+                                <p data-i18n="STATS_LEAVE_DAYS" class="text-xs text-gray-500 dark:text-gray-400">請假</p>
+                                <p class="mt-1"><span id="stats-leave-days-value" class="text-2xl font-semibold text-gray-800 dark:text-white">0</span><span data-i18n="UNIT_DAYS" class="text-xs text-gray-500 dark:text-gray-400 ml-1">天</span></p>
+                            </div>
+                            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-center">
+                                <p data-i18n="STATS_OVERTIME_HOURS" class="text-xs text-gray-500 dark:text-gray-400">加班時數</p>
+                                <p class="mt-1"><span id="stats-overtime-hours-value" class="text-2xl font-semibold text-gray-800 dark:text-white">0</span><span data-i18n="UNIT_HOURS" class="text-xs text-gray-500 dark:text-gray-400 ml-1">小時</span></p>
+                            </div>
                         </div>
-                        
-                        <!-- 統計數據列表（四行垂直排列） -->
-                        <div class="space-y-3">
-                            
-                            <!--  出勤時數 - 隱藏 -->
-                            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/20 rounded-lg border border-green-200 dark:border-green-700/50 transition-all hover:shadow-md" 
-                                    style="display: none;">
-                                <span data-i18n="STATS_WORK_HOURS" class="text-sm font-medium text-gray-700 dark:text-gray-300">出勤時數</span>
-                                <div class="flex items-baseline">
-                                    <span id="stats-work-days-value" class="text-2xl font-bold text-green-600 dark:text-green-400">0</span>
-                                    <span data-i18n="UNIT_HOURS" class="text-sm font-medium text-green-500 dark:text-green-400 ml-1">小時</span>
-                                </div>
-                            </div>
-                           
-                            <!-- 異常記錄 -->
-                            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/20 rounded-lg border border-red-200 dark:border-red-700/50 transition-all hover:shadow-md">
-                                <span data-i18n="STATS_ABNORMAL_COUNT" class="text-sm font-medium text-gray-700 dark:text-gray-300">異常記錄</span>
-                                <div class="flex items-baseline">
-                                    <span id="stats-abnormal-count-value" class="text-2xl font-bold text-red-600 dark:text-red-400">0</span>
-                                    <span data-i18n="UNIT_RECORDS" class="text-sm font-medium text-red-500 dark:text-red-400 ml-1">筆</span>
-                                </div>
-                            </div>
-                            
-                            <!--  正常打卡時數 - 隱藏 -->
-                            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/20 rounded-lg border border-blue-200 dark:border-blue-700/50 transition-all hover:shadow-md" 
-                                    style="display: none;">
-                                <span data-i18n="STATS_NORMAL_HOURS" class="text-sm font-medium text-gray-700 dark:text-gray-300">正常打卡時數</span>
-                                <div class="flex items-baseline">
-                                    <span id="stats-normal-days-value" class="text-2xl font-bold text-blue-600 dark:text-blue-400">0</span>
-                                    <span data-i18n="UNIT_HOURS" class="text-sm font-medium text-blue-500 dark:text-blue-400 ml-1">小時</span>
-                                </div>
-                            </div>
-
-                            <!-- 加班時數 -->
-                            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/20 rounded-lg border border-orange-200 dark:border-orange-700/50 transition-all hover:shadow-md">
-                                <span data-i18n="STATS_OVERTIME_HOURS" class="text-sm font-medium text-gray-700 dark:text-gray-300">加班時數</span>
-                                <div class="flex items-baseline">
-                                    <span id="stats-overtime-hours-value" class="text-2xl font-bold text-orange-600 dark:text-orange-400">0</span>
-                                    <span data-i18n="UNIT_HOURS" class="text-sm font-medium text-orange-500 dark:text-orange-400 ml-1">小時</span>
-                                </div>
-                            </div>
+                        <!-- 有異常的日子：點一下直接打開那天 -->
+                        <div id="stats-abnormal-dates" class="mt-4" style="display: none;">
+                            <p data-i18n="STATS_ABNORMAL_HINT" class="text-xs text-gray-500 dark:text-gray-400 mb-2">有異常的日子，點一下查看當天紀錄：</p>
+                            <div id="stats-abnormal-dates-list" class="flex flex-wrap gap-2"></div>
                         </div>
                     </div>
 
                     <!-- 日曆卡片 -->
                     <div class="card p-6">
                         <div class="flex justify-between items-center mb-4">
-                            <button id="prev-month" class="text-gray-600 dark:text-gray-400 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">&lt;</button>
+                            <button id="prev-month" class="text-gray-600 dark:text-gray-400 px-3 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">&lt;</button>
                             <h3 id="month-title" class="font-bold text-xl text-gray-800 dark:text-white"></h3>
-                            <button id="next-month" class="text-gray-600 dark:text-gray-400 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">&gt;</button>
+                            <button id="next-month" class="text-gray-600 dark:text-gray-400 px-3 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">&gt;</button>
                         </div>
 
-                        <div class="mb-4">
-                            <button id="export-attendance-btn" 
-                                    data-i18n="EXPORT_ATTENDANCE_BTN"
-                                    class="w-full py-2 px-4 rounded-lg font-bold btn-secondary hover:opacity-90 transition-opacity">
-                                匯出本月出勤報表
-                            </button>
-                        </div>
-                        
                         <div class="grid grid-cols-7 text-center text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
                             <span data-i18n="WEEK_SUNDAY">日</span>
                             <span data-i18n="WEEK_MONDAY">一</span>
@@ -524,6 +533,23 @@
                             <span data-i18n="WEEK_SATURDAY">六</span>
                         </div>
                         <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
+
+                        <!-- 圖例：顏色對應 renderCalendarWithData 的 class -->
+                        <div class="flex flex-wrap gap-x-4 gap-y-2 mt-4 text-xs text-gray-600 dark:text-gray-400">
+                            <span class="flex items-center gap-1"><span class="cal-legend day-off"></span><span data-i18n="CAL_LEGEND_NORMAL">正常</span></span>
+                            <span class="flex items-center gap-1"><span class="cal-legend abnormal-day"></span><span data-i18n="CAL_LEGEND_ABNORMAL">缺卡</span></span>
+                            <span class="flex items-center gap-1"><span class="cal-legend pending-virtual"></span><span data-i18n="CAL_LEGEND_REPAIR_PENDING">補卡審核中</span></span>
+                            <span class="flex items-center gap-1"><span class="cal-legend approved-virtual"></span><span data-i18n="CAL_LEGEND_REPAIR_APPROVED">補卡通過</span></span>
+                            <span class="flex items-center gap-1"><span class="cal-legend pending-adjustment"></span><span data-i18n="CAL_LEGEND_OTHER">其他待處理</span></span>
+                            <span class="flex items-center gap-1"><span class="cal-dot cal-dot-leave"></span><span data-i18n="CAL_LEGEND_LEAVE">請假</span></span>
+                            <span class="flex items-center gap-1"><span class="cal-dot cal-dot-overtime"></span><span data-i18n="CAL_LEGEND_OVERTIME">加班</span></span>
+                        </div>
+
+                        <button id="export-attendance-btn"
+                                data-i18n="EXPORT_ATTENDANCE_BTN"
+                                class="w-full mt-4 py-2 px-4 rounded-lg text-sm font-semibold border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            匯出本月出勤報表
+                        </button>
                     </div>
                     
                     <!--  新增：每日記錄卡片 -->
@@ -709,7 +735,7 @@
                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     加班原因
                                 </label>
-                                <textarea id="overtime-reason" 
+                                <textarea id="overtime-reason" data-i18n="PH_OVERTIME_REASON" 
                                           rows="3" 
                                           class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" 
                                           placeholder="請說明加班原因..."></textarea>
@@ -799,7 +825,7 @@
                                 </label>
                                 <select id="leave-type" 
                                         class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="">請選擇請假類型</option>
+                                    <option value="" data-i18n-option="SELECT_LEAVE_TYPE">請選擇請假類型</option>
                                     <option value="ANNUAL_LEAVE" data-i18n-option="ANNUAL_LEAVE">特休假</option>
                                     <option value="COMP_TIME_OFF" data-i18n-option="COMP_TIME_OFF">加班補休假</option>
                                     <option value="PERSONAL_LEAVE" data-i18n-option="PERSONAL_LEAVE">事假</option>
@@ -824,22 +850,22 @@
                                 </h3>
                                 <div class="grid grid-cols-2 gap-2">
                                     <button type="button" 
-                                            onclick="quickSelectTimeRange('1h')"
+                                            onclick="quickSelectTimeRange('1h')" data-i18n="LEAVE_QUICK_1H"
                                             class="px-3 py-2 text-sm bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-gray-500 transition-colors">
                                         1 小時
                                     </button>
                                     <button type="button" 
-                                            onclick="quickSelectTimeRange('2h')"
+                                            onclick="quickSelectTimeRange('2h')" data-i18n="LEAVE_QUICK_2H"
                                             class="px-3 py-2 text-sm bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-gray-500 transition-colors">
                                         2 小時
                                     </button>
                                     <button type="button" 
-                                            onclick="quickSelectTimeRange('4h')"
+                                            onclick="quickSelectTimeRange('4h')" data-i18n="LEAVE_QUICK_HALF"
                                             class="px-3 py-2 text-sm bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-gray-500 transition-colors">
                                         半天 (4小時)
                                     </button>
                                     <button type="button" 
-                                            onclick="quickSelectTimeRange('8h')"
+                                            onclick="quickSelectTimeRange('8h')" data-i18n="LEAVE_QUICK_FULL"
                                             class="px-3 py-2 text-sm bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-gray-500 transition-colors">
                                         全天 (8小時)
                                     </button>
@@ -900,7 +926,7 @@
                                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     請假原因
                                 </label>
-                                <textarea id="leave-reason" 
+                                <textarea id="leave-reason" data-i18n="PH_LEAVE_REASON" 
                                         rows="3" 
                                         class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" 
                                         placeholder="請說明請假原因..."></textarea>
@@ -1110,7 +1136,7 @@
                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     工作內容 <span class="text-red-500">*</span>
                                 </label>
-                                <textarea id="worklog-content" 
+                                <textarea id="worklog-content" data-i18n="PH_WORKLOG_CONTENT" 
                                           rows="6" 
                                           placeholder="請詳細描述今日工作內容...&#10;例如：&#10;1. 完成客戶 A 專案需求分析&#10;2. 與團隊討論下週開發計畫&#10;3. 撰寫技術文件..."
                                           class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"></textarea>
@@ -1160,15 +1186,47 @@
                 </section>
                 <!-- Admin View -->
                 <section id="admin-view" class="space-y-6" style="display: none;">
-                    <!-- 資料管理：打卡紀錄、假期餘額（不用打開試算表） -->
-                    <div class="card p-6">
+                    <!-- 管理員頁子分頁：只顯示、只載入選中那一組的卡片（script.js showAdminGroup） -->
+                    <nav id="admin-group-tabs" class="admin-group-tabs flex gap-2 overflow-x-auto pb-1">
+                        <button type="button" data-admin-tab="today" data-i18n="ADMIN_GROUP_TODAY" class="admin-group-btn">今日</button>
+                        <button type="button" data-admin-tab="review" class="admin-group-btn"><span data-i18n="ADMIN_GROUP_REVIEW">審核</span><span id="admin-pending-badge" class="admin-badge" style="display: none;"></span></button>
+                        <button type="button" data-admin-tab="people" data-i18n="ADMIN_GROUP_PEOPLE" class="admin-group-btn">人員</button>
+                        <button type="button" data-admin-tab="settings" data-i18n="ADMIN_GROUP_SETTINGS" class="admin-group-btn">設定</button>
+                        <button type="button" data-admin-tab="reports" data-i18n="ADMIN_GROUP_REPORTS" class="admin-group-btn">報表</button>
+                    </nav>
+                    <!-- 即時出勤數據：一週日期列 + 六格統計，點一格看名單（attendance-dashboard.js） -->
+                    <div data-admin-group="today" id="att-dash-card" class="card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 data-i18n="ATT_DASH_TITLE" class="text-xl font-bold text-gray-800 dark:text-white">即時出勤數據</h2>
+                            <div class="flex items-center gap-2">
+                                <span id="att-dash-loading" class="text-xs text-gray-400" style="display: none;" data-i18n="LOADING">載入中...</span>
+                                <button type="button" onclick="attDashGoToday()" data-i18n="ATT_DASH_TODAY"
+                                        class="px-3 py-1 rounded-lg text-sm font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-indigo-900/30">今天</button>
+                                <button type="button" onclick="loadAttendanceDashboard()" data-i18n="ATT_DASH_REFRESH"
+                                        class="px-3 py-1 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">重新整理</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 mb-3">
+                            <button type="button" onclick="attDashShiftWeek(-1)" aria-label="‹"
+                                    class="px-2 py-4 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">‹</button>
+                            <div id="att-dash-week" class="grid grid-cols-7 gap-1 flex-1"></div>
+                            <button type="button" onclick="attDashShiftWeek(1)" aria-label="›"
+                                    class="px-2 py-4 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">›</button>
+                        </div>
+                        <div id="att-dash-summary" class="text-xs text-gray-500 dark:text-gray-400 mb-3"></div>
+                        <div id="att-dash-tiles" class="grid grid-cols-2 gap-3 transition-opacity"></div>
+                        <p data-i18n="ATT_DASH_TAP_HINT" class="text-xs text-gray-400 dark:text-gray-500 mt-2">點一格就會在下面列出是誰。</p>
+                        <div id="att-dash-detail" class="mt-3 border-t border-gray-100 dark:border-gray-700 pt-3"></div>
+                    </div>
+                    <!-- 資料管理：打卡紀錄、工時、假期、請假、加班、所有資料表（records.html，不用打開試算表） -->
+                    <div data-admin-group="today" class="card p-6">
                         <h2 data-i18n="RECORDS_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-2">資料管理</h2>
                         <p data-i18n="RECORDS_ENTRY_DESC" class="text-gray-500 dark:text-gray-400 mb-4">查詢和修改打卡紀錄、假期餘額、請假和加班紀錄，也可以查看其他資料表。不用再打開 Google 試算表。</p>
                         <button type="button" onclick="window.location.href='records.html'" data-i18n="RECORDS_ENTRY_BTN"
                                 class="w-full py-3 px-4 rounded-lg font-bold btn-primary">進入資料管理</button>
                     </div>
                     <!--  工作時段設定 -->
-                    <div class="card p-6">
+                    <div data-admin-group="settings" class="card p-6">
                         <h2 data-i18n="WORK_SCHEDULE_TITLE"
                             class="text-xl font-bold text-gray-800 dark:text-white mb-2">
                             工作時段設定
@@ -1232,7 +1290,7 @@
                     </div>
 
                     <!--  公告管理 -->
-                    <div class="card p-6">
+                    <div data-admin-group="settings" class="card p-6">
                         <h2 data-i18n="ADMIN_ANNOUNCEMENT_MANAGEMENT" 
                             class="text-xl font-bold text-gray-800 dark:text-white mb-2">
                              公告管理
@@ -1269,7 +1327,7 @@
                         
                         <div id="admin-announcements-list" class="space-y-3"></div>
                     </div>
-                    <div class="card p-6">
+                    <div data-admin-group="review" class="card p-6">
                         <h2 data-i18n="PENDING_REQUESTS_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-1">待審核請求</h2>
                         <p data-i18n="PENDING_REQUESTS_DESCRIPTION" class="text-gray-500 dark:text-gray-400 mb-4">請處理員工提出的補打卡或虛擬卡請求。</p>
                         <div id="pending-requests-container">
@@ -1283,7 +1341,7 @@
                     </div>
                     
                     <!--  新增：管理員匯出所有員工報表 -->
-                    <div class="card p-6">
+                    <div data-admin-group="reports" class="card p-6">
                         <h2 data-i18n="ADMIN_EXPORT_TITLE" 
                             class="text-xl font-bold text-gray-800 dark:text-white mb-2">
                             匯出報表
@@ -1315,7 +1373,7 @@
                         </div>
                     </div>
                     <!-- 費用申請審核 -->
-                    <div class="card p-6">
+                    <div data-admin-group="review" class="card p-6">
                         <h2 data-i18n="EXPENSE_PENDING_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-2">待審核費用申請</h2>
                         <p data-i18n="EXPENSE_PENDING_DESCRIPTION" class="text-gray-500 dark:text-gray-400 mb-4">審核員工的預支與報銷申請</p>
                         <div id="expense-pending-empty" class="text-center text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 p-4 rounded-lg" style="display: none;">
@@ -1325,7 +1383,7 @@
                     </div>
 
                     <!-- 操作紀錄 -->
-                    <div id="admin-audit-section" class="card p-6">
+                    <div data-admin-group="reports" id="admin-audit-section" class="card p-6">
                         <h2 data-i18n="AUDIT_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-1">操作紀錄</h2>
                         <p data-i18n="AUDIT_DESCRIPTION" class="text-gray-500 dark:text-gray-400 mb-4">查詢審核、權限、員工、排班與設定的變更，是誰在什麼時候做的。</p>
 
@@ -1353,7 +1411,7 @@
                     </div>
 
                     <!--  加班審核區塊 -->
-                    <div class="card p-6 mt-6">
+                    <div data-admin-group="review" class="card p-6 mt-6">
                         <h2 data-i18n="OVERTIME_PENDING_TITLE" 
                             class="text-xl font-bold text-gray-800 dark:text-white mb-2">
                             待審核加班申請
@@ -1382,7 +1440,7 @@
                     </div>
                     
                     <!--  請假審核區塊 -->
-                    <div class="card p-6 mt-6">
+                    <div data-admin-group="review" class="card p-6 mt-6">
                         <h2 data-i18n="LEAVE_PENDING_TITLE" 
                             class="text-xl font-bold text-gray-800 dark:text-white mb-2">
                             待審核請假申請
@@ -1410,8 +1468,26 @@
                         </div>
                     </div>
                     
-                    <div class="card p-6 mt-6">
-                        <h2 data-i18n="ADD_LOCATION_TITLE" 
+                    <!-- 已設定的打卡地點：編輯、刪除（location-picker.js） -->
+                    <div data-admin-group="settings" class="card p-6 mt-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <h2 data-i18n="LOCATION_LIST_TITLE"
+                                class="text-xl font-bold text-gray-800 dark:text-white">
+                                打卡地點
+                            </h2>
+                            <button type="button" id="refresh-locations-btn" data-i18n="BTN_REFRESH"
+                                    class="px-3 py-1.5 text-sm rounded-lg btn-secondary">重新整理</button>
+                        </div>
+                        <p data-i18n="LOCATION_LIST_DESCRIPTION"
+                           class="text-gray-500 dark:text-gray-400 mb-4">
+                            員工要在這些地點的範圍內才能打卡。
+                        </p>
+                        <div id="location-list-status" class="text-sm text-gray-500 dark:text-gray-400"></div>
+                        <ul id="location-list" class="space-y-2"></ul>
+                    </div>
+
+                    <div data-admin-group="settings" class="card p-6 mt-6" id="location-form-card">
+                        <h2 data-i18n="ADD_LOCATION_TITLE" id="location-form-title"
                             class="text-xl font-bold text-gray-800 dark:text-white mb-2">
                             新增打卡地點
                         </h2>
@@ -1529,13 +1605,17 @@
                                         disabled>
                                     新增地點
                                 </button>
+                                <button type="button" id="cancel-edit-location-btn" data-i18n="LOCATION_CANCEL_EDIT"
+                                        class="w-full py-3 px-4 rounded-lg font-bold btn-secondary" style="display: none;">
+                                    取消編輯
+                                </button>
                             </div>
                         </div>
                     </div>
                     <!-- 在管理員頁面的適當位置加入 -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+                    <div data-admin-group="people" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
                         <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
+                            <h2 data-i18n="USERS_TITLE" class="text-2xl font-bold text-gray-800 dark:text-white">
                                  用戶管理
                             </h2>
                             <div class="flex flex-wrap gap-2 justify-end">
@@ -1543,7 +1623,7 @@
                                         class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition-colors">
                                     新增員工（不用 LINE）
                                 </button>
-                                <button id="refresh-users-btn" 
+                                <button id="refresh-users-btn" data-i18n="BTN_REFRESH"
                                         class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors">
                                      重新整理
                                 </button>
@@ -1556,7 +1636,7 @@
                             <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-sm text-blue-600 dark:text-blue-400 font-medium">總用戶數</p>
+                                        <p data-i18n="USERS_TOTAL" class="text-sm text-blue-600 dark:text-blue-400 font-medium">總用戶數</p>
                                         <p id="total-users-count" class="text-3xl font-bold text-blue-700 dark:text-blue-300">0</p>
                                     </div>
                                 </div>
@@ -1565,7 +1645,7 @@
                             <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-sm text-purple-600 dark:text-purple-400 font-medium">管理員</p>
+                                        <p data-i18n="ROLE_ADMIN" class="text-sm text-purple-600 dark:text-purple-400 font-medium">管理員</p>
                                         <p id="admin-users-count" class="text-3xl font-bold text-purple-700 dark:text-purple-300">0</p>
                                     </div>
                                 </div>
@@ -1574,7 +1654,7 @@
                             <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-sm text-green-600 dark:text-green-400 font-medium">一般員工</p>
+                                        <p data-i18n="USERS_EMPLOYEES" class="text-sm text-green-600 dark:text-green-400 font-medium">一般員工</p>
                                         <p id="employee-users-count" class="text-3xl font-bold text-green-700 dark:text-green-300">0</p>
                                     </div>
                                 </div>
@@ -1584,7 +1664,7 @@
                         <!-- 搜尋框 -->
                         <div class="mb-4">
                             <input type="text" 
-                                id="search-users-input" 
+                                id="search-users-input" data-i18n="USERS_SEARCH_PH" 
                                 placeholder=" 搜尋用戶名稱或部門..." 
                                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                         </div>
@@ -1592,20 +1672,20 @@
                         <!-- Loading 狀態 -->
                         <div id="users-loading" class="text-center py-8" style="display: none;">
                             <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                            <p class="mt-2 text-gray-600 dark:text-gray-400">載入中...</p>
+                            <p data-i18n="LOADING_DOTS" class="mt-2 text-gray-600 dark:text-gray-400">載入中...</p>
                         </div>
 
                         <!-- 空狀態 -->
                         <div id="users-empty" class="text-center py-8 text-gray-500 dark:text-gray-400" style="display: none;">
                             <p class="text-4xl mb-2"></p>
-                            <p>沒有找到用戶</p>
+                            <p data-i18n="USERS_EMPTY">沒有找到用戶</p>
                         </div>
 
                         <!-- 用戶列表 -->
                         <div id="users-list" class="space-y-3"></div>
                     </div>
                     <!-- 員工打卡分析區塊 -->
-                    <div class="card p-6 mt-6">
+                    <div data-admin-group="reports" class="card p-6 mt-6">
                         <h2 data-i18n="ADMIN_PUNCH_ANALYSIS_TITLE" 
                             class="text-xl font-bold text-gray-800 dark:text-white mb-2">
                             員工打卡分析
@@ -1696,7 +1776,7 @@
                     </div>
 
                     <!-- 管理員頁面中加入工作日誌審核區塊 -->
-                    <div class="card p-6 mt-6">
+                    <div data-admin-group="review" class="card p-6 mt-6">
                         <h2 data-i18n="WORKLOG_PENDING_TITLE" 
                             class="text-xl font-bold text-gray-800 dark:text-white mb-2">
                              待審核工作日誌
@@ -1725,7 +1805,7 @@
                     </div>
 
                     <!-- 管理員匯出工作日誌報表 -->
-                    <div class="card p-6 mt-6">
+                    <div data-admin-group="reports" class="card p-6 mt-6">
                         <h2 data-i18n="WORKLOG_EXPORT_TITLE" 
                             class="text-xl font-bold text-gray-800 dark:text-white mb-2">
                             匯出工作日誌報表
@@ -1745,8 +1825,8 @@
                                 </label>
                                 <select id="worklog-export-employee" 
                                         class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="">請選擇員工</option>
-                                    <option value="ALL">全部員工</option> 
+                                    <option value="" data-i18n-option="SELECT_EMPLOYEE_PLACEHOLDER">請選擇員工</option>
+                                    <option value="ALL" data-i18n-option="ALL_EMPLOYEES">全部員工</option> 
                                 </select>
                             </div>
                             
@@ -1772,7 +1852,7 @@
                         </div>
                     </div>
                     <!-- QR Code 打卡管理 -->
-                    <div class="card p-6 mt-6">
+                    <div data-admin-group="settings" class="card p-6 mt-6">
                         <h2 data-i18n="QR_ADMIN_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-2">QR Code 打卡管理</h2>
                         <p data-i18n="QR_ADMIN_DESC" class="text-gray-500 dark:text-gray-400 mb-4">產生限時 QR Code，讓員工掃描打卡，無需 GPS 定位。</p>
 
@@ -1869,7 +1949,7 @@
                     </div>
 
                     <!-- 平板打卡：公司平板常駐顯示自動更新的 QR Code -->
-                    <div id="kiosk-admin-section" class="card p-6 mt-6">
+                    <div data-admin-group="settings" id="kiosk-admin-section" class="card p-6 mt-6">
                         <h2 data-i18n="KIOSK_ADMIN_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-2">平板打卡</h2>
                         <p data-i18n="KIOSK_ADMIN_DESC" class="text-gray-500 dark:text-gray-400 mb-4">在公司平板開啟打卡頁後放著即可，畫面會同時顯示上班、下班 QR Code，每 30 秒自動更新，不必每天重新產生。</p>
 
@@ -1896,7 +1976,7 @@
                         <button id="kiosk-disable-btn" data-i18n="KIOSK_DISABLE_BTN" class="mt-4 w-full py-2 px-4 rounded-lg font-bold btn-warning" style="display:none;">停用平板打卡</button>
                     </div>
 
-                    <div class="card p-6 mt-6">
+                    <div data-admin-group="settings" class="card p-6 mt-6">
                         <h2 data-i18n="API_TEST_TITLE" class="text-xl font-bold text-gray-800 dark:text-white mb-2">API 測試區</h2>
                         <p data-i18n="API_TEST_DESCRIPTION" class="text-gray-500 dark:text-gray-400 mb-4">點擊下方按鈕以測試新的 API 功能。</p>
                         <div>
@@ -1936,24 +2016,17 @@
         <script src="worktime.js"></script>
         <script src="help.js"></script>
         <script src="script.js"></script>
+        <script src="my-today.js"></script>
         <script src="announcements.js"></script>
-        <script src="audit-log.js"></script>
-        <script src="expense.js"></script>
         <script src="users.js"></script>
         <script src="punch-adjust.js"></script>
         <script src="qr-punch.js"></script>
-        <script src="attachments.js"></script>
         <script src="location-picker.js"></script>
-        <script src="analytics.js"></script>
         <script src="biometric.js"></script>
-        <script src="reports.js"></script>
         <!--  加班與請假功能 -->
-        <script src="overtime.js"></script>
-        <script src="leave.js"></script>
-        <script src="payslip.js"></script>
-        <script src="salary.js"></script>
-        <script src="worklog.js"></script>
         <script src="pwa.js"></script>
+        <!-- reports、attachments、overtime、leave、payslip、salary、worklog、expense、attendance-dashboard、analytics、audit-log
+             切到分頁時才載入（libs.js MODULE_SCRIPTS） -->
         
     </body>
 </html>
