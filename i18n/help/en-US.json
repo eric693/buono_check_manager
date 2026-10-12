@@ -11,6 +11,7 @@
     "dashboard-view": {
       "intro": "The page you open first every day: announcements, punch buttons, your personal profile, and any attendance exceptions the system found.",
       "steps": [
+        "The \"Today\" card at the top shows today's shift, the punches you have made, which punch is next, any leave today, and your hours for each day this week. It refreshes after every punch.",
         "Tap \"Punch In\" when you arrive and \"Punch Out\" before you leave; both the time and your GPS location are recorded.",
         "On a split shift, punch out before your break and punch in when you come back; up to two pairs a day.",
         "Besides the buttons, you can punch by typing in LINE or by scanning the QR code on the company tablet (LINE's own QR scanner works best). If you scan with the phone camera and that browser is not logged in yet, you are taken to LINE login and the punch is recorded right after.",
@@ -180,6 +181,7 @@
       "intro": "Administrators only: announcements, approvals, punch locations, attendance analysis and report exports all live here.",
       "steps": [
         "\"Data management\" lets you view and edit punch records, monthly hours, leave balances, leave and overtime records, and any data sheet right in the browser, without opening Google Sheets.",
+        "\"Live attendance\": pick a day to see clock-ins (arrived / expected), missing punches, late arrivals, leave, clock-outs and overtime; tap a box for the list of names. When someone says they could not punch, check Data management → All sheets → 打卡失敗紀錄 for the reason (for example out of range or wrong order).",
         "Working Hours Settings adjusts the company-wide start, end and lunch times — leave hours are counted against that window.",
         "Publish announcements under \"Announcement management\"; set priority to \"Important\" so staff see it first.",
         "Handle make-up punch and virtual card requests under \"Pending requests\"; overtime, leave and work logs have their own approval sections.",

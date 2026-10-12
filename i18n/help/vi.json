@@ -11,6 +11,7 @@
     "dashboard-view": {
       "intro": "Trang mở đầu mỗi ngày: thông báo, nút chấm công, thông tin cá nhân và các bất thường chấm công do hệ thống phát hiện.",
       "steps": [
+        "Thẻ «Hôm nay» ở trên cùng hiển thị ca hôm nay, các lần đã chấm công, lần chấm tiếp theo, nghỉ phép hôm nay và số giờ từng ngày trong tuần. Thẻ tự cập nhật sau mỗi lần chấm công.",
         "Đến nơi làm việc bấm \"Chấm công vào\", trước khi về bấm \"Chấm công ra\"; hệ thống ghi cả thời gian và vị trí GPS.",
         "Ca gãy: chấm \"ra\" trước khi nghỉ và chấm \"vào\" khi quay lại; tối đa 2 cặp mỗi ngày.",
         "Ngoài nút bấm, có thể chấm công bằng cách nhắn trong LINE hoặc quét mã QR trên máy tính bảng của công ty (nên dùng trình quét QR của LINE). Nếu quét bằng camera điện thoại mà trình duyệt đó chưa đăng nhập, hệ thống sẽ chuyển đến đăng nhập LINE và chấm công ngay sau đó.",
@@ -180,6 +181,7 @@
       "intro": "Dành cho quản trị viên: thông báo, duyệt các đề nghị, thiết lập địa điểm chấm công, phân tích chấm công và xuất báo cáo.",
       "steps": [
         "«Quản lý dữ liệu» cho phép xem và sửa bản ghi chấm công, giờ làm theo tháng, số ngày phép, bản ghi nghỉ phép và tăng ca, cùng các bảng dữ liệu ngay trên web mà không cần mở Google Sheets.",
+        "«Chấm công trực tiếp»: chọn một ngày để xem số người đã vào ca (đã đến / dự kiến), chưa chấm, đi muộn, nghỉ phép, ra ca và tăng ca; bấm vào ô để xem danh sách. Khi nhân viên báo không chấm công được, xem lý do ở «Quản lý dữ liệu → Tất cả bảng → 打卡失敗紀錄» (ví dụ ngoài phạm vi, sai thứ tự).",
         "'Cài đặt giờ làm việc' chỉnh giờ vào, giờ tan và nghỉ trưa chung toàn công ty — giờ nghỉ phép được tính theo khung này.",
         "Đăng thông báo ở \"Quản lý thông báo\"; việc quan trọng hãy đặt mức \"Quan trọng\".",
         "Xử lý đề nghị bổ sung chấm công và thẻ ảo ở \"Đề nghị chờ duyệt\"; làm thêm, nghỉ phép, nhật ký công việc có khu duyệt riêng.",
