@@ -11,6 +11,7 @@
     "dashboard-view": {
       "intro": "Halaman yang dibuka pertama setiap hari: pengumuman, tombol absen, data pribadi, dan kejanggalan absensi yang terdeteksi sistem.",
       "steps": [
+        "Kartu «Hari ini» di atas menampilkan shift hari ini, absen yang sudah dilakukan, absen berikutnya, cuti hari ini, dan jam kerja tiap hari minggu ini. Kartu diperbarui setiap selesai absen.",
         "Setibanya di tempat kerja tekan \"Absen masuk\", sebelum pulang tekan \"Absen pulang\"; waktu dan lokasi GPS dicatat bersamaan.",
         "Shift terpisah: absen keluar sebelum istirahat dan absen masuk saat kembali; maksimal dua pasang sehari.",
         "Selain tombol, Anda bisa absen dengan mengetik di LINE atau memindai QR di tablet kantor (sebaiknya pakai pemindai QR di LINE). Jika memindai dengan kamera ponsel dan browser itu belum login, Anda diarahkan ke login LINE dan absen langsung tercatat setelahnya.",
@@ -180,6 +181,7 @@
       "intro": "Khusus admin: pengumuman, persetujuan berbagai pengajuan, pengaturan lokasi absen, analisis absensi, dan ekspor laporan.",
       "steps": [
         "«Manajemen data» memungkinkan melihat dan mengubah catatan absen, jam kerja bulanan, sisa cuti, catatan cuti dan lembur, serta semua sheet data langsung di browser tanpa membuka Google Sheets.",
+        "«Kehadiran langsung»: pilih tanggal untuk melihat jumlah absen masuk (hadir / seharusnya), belum absen, terlambat, cuti, absen pulang, dan lembur; ketuk kotak untuk daftar nama. Jika ada yang tidak bisa absen, cek alasannya di «Manajemen data → Semua sheet → 打卡失敗紀錄» (misalnya di luar jangkauan atau urutan salah).",
         "'Pengaturan Jam Kerja' menyetel jam masuk, pulang, dan istirahat seluruh perusahaan — jam cuti dihitung terhadap rentang itu.",
         "Terbitkan pengumuman di \"Manajemen pengumuman\"; untuk hal penting setel tingkat kepentingan ke \"Penting\".",
         "Proses pengajuan perbaikan absensi dan kartu virtual di \"Pengajuan menunggu\"; lembur, cuti, dan catatan kerja punya bagian persetujuan sendiri.",
