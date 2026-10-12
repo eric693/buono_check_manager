@@ -1624,7 +1624,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         generalButtonState(button, 'processing', loadingText);
         
         try {
-            const res = await callApifetch(`${endpoint}&id=${recordId}`);
+            const res = await callApifetch(`${endpoint}&id=${recordId}&applicationId=${encodeURIComponent(request.applicationId || '')}`);
             
             if (res.ok) {
                 const translationKey = action === 'approve' ? 'REQUEST_APPROVED' : 'REQUEST_REJECTED';
