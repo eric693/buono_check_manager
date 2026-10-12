@@ -1878,5 +1878,6 @@
   "RULE_MAX_RESTDAY": "Rest day daily limit (hours)",
   "RULE_MAX_HOLIDAY": "Public holiday daily limit (hours)",
   "SALARY_BATCH_SUMMARY": ": {ok} succeeded, {failed} failed ({total} in total)",
-  "SALARY_STATUS_MANUAL": "Manual entry"
+  "SALARY_STATUS_MANUAL": "Manual entry",
+  "BTN_REFRESH": "Refresh"
 }

@@ -1904,5 +1904,6 @@
   "RULE_MAX_RESTDAY": "休息日每日上限 (小時)",
   "RULE_MAX_HOLIDAY": "國定假日每日上限 (小時)",
   "SALARY_BATCH_SUMMARY": "：{ok} 成功、{failed} 失敗（共 {total} 位）",
-  "SALARY_STATUS_MANUAL": "手動輸入"
+  "SALARY_STATUS_MANUAL": "手動輸入",
+  "BTN_REFRESH": "重新整理"
 }
