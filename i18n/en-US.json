@@ -1942,5 +1942,20 @@
   "AUDIT_ACTION_UPDATE_LOCATION": "Edit punch location",
   "AUDIT_ACTION_DELETE_LOCATION": "Delete punch location",
   "AUDIT_ACTION_RELEASE_PAYROLL": "Release payslips",
-  "AUDIT_ACTION_UNRELEASE_PAYROLL": "Undo payslip release"
+  "AUDIT_ACTION_UNRELEASE_PAYROLL": "Undo payslip release",
+  "SALARY_TYPE_DAILY": "Daily wage",
+  "SALARY_TYPE_DAILY_OPTION": "Daily wage (full / half day)",
+  "SALARY_TYPE_HINT_DAILY": "Paid per day worked: a day that reaches the full-day hours counts as one day, the half-day hours as half a day (set the hours in Payroll rules)",
+  "SALARY_BASE_HINT_DAILY": "Enter the pay for one full day; a half day is paid half of it",
+  "NOTIF_DAILY_WAGE_POSITIVE": "Enter the daily wage (must be greater than 0)",
+  "SALARY_DAILY_INFO": "Daily {rate} × {full} full days + {half} half days",
+  "SALARY_DAILY_STATS_TITLE": "Daily wage days",
+  "DAILY_RATE_LABEL": "Daily wage",
+  "DAILY_FULL_DAYS": "Full days",
+  "DAILY_HALF_DAYS": "Half days",
+  "DAILY_RULE_HINT": "A day with {full}+ punched hours counts as a full day, {half}+ hours as a half day (half the daily wage); under {half} hours is not paid.",
+  "DAILY_MANUAL_HINT": "(Adjusted by hand; punches give {full} full and {half} half days)",
+  "DAILY_DAYS_AUTO_HINT": "Leave blank to count from punches; a number you enter is used instead.",
+  "PAYROLL_RULE_DAILY_FULL_HOURS": "Daily wage: full-day hours",
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "Daily wage: half-day hours"
 }

@@ -625,6 +625,7 @@ function displayEmployeeSalary(rawData) {
     const salaryType = data.salaryType || '月薪';
     const isHourly  = salaryType === '時薪';
     const isWeekly  = salaryType === '週薪';
+    const isDaily   = salaryType === '日薪';
     
     // 應發總額與實發金額
     safeSet('gross-salary', formatCurrency(data.grossSalary));  // ← 改這裡
@@ -663,6 +664,18 @@ function displayEmployeeSalary(rawData) {
                 baseSalaryEl.parentElement.appendChild(info);
             }
             info.textContent = t('SALARY_WEEKLY_INFO', { rate: weeklyRate, weeks: weekCount });
+        }
+    } else if (isDaily) {
+        safeSet('detail-base-salary', formatCurrency(data.baseSalary));
+        const baseSalaryEl = document.getElementById('detail-base-salary');
+        if (baseSalaryEl && baseSalaryEl.parentElement) {
+            let info = baseSalaryEl.parentElement.querySelector('.salary-type-info');
+            if (!info) {
+                info = document.createElement('div');
+                info.className = 'salary-type-info text-xs text-teal-600 dark:text-teal-400 mt-1';
+                baseSalaryEl.parentElement.appendChild(info);
+            }
+            info.textContent = dailyWageText(data);
         }
     } else {
         safeSet('detail-base-salary', formatCurrency(data.baseSalary));
@@ -1021,6 +1034,10 @@ async function handleSalaryConfigSubmit(e) {
         showNotification(t('NOTIF_WEEKLY_SALARY_POSITIVE'), 'error');
         return;
     }
+    if (salaryType === '日薪' && (isNaN(baseSalary) || baseSalary <= 0)) {
+        showNotification(t('NOTIF_DAILY_WAGE_POSITIVE'), 'error');
+        return;
+    }
 
     //  固定津貼（6項）
     const positionAllowance = toNumber(safeGetValue('config-position-allowance'));  //  改這裡
@@ -1219,6 +1236,7 @@ function displaySalaryCalculation(rawData, container) {
     const ruleItems = payrollRuleItems(data);
     
     const isHourly = data.salaryType === '時薪';
+    const daily = dailyWageInfo(data);   // 日薪：整日／半日天數
     
     //  修正：讀取四種加班費 + 國定假日出勤薪資
     const weekdayOvertimePay = parseFloat(data.weekdayOvertimePay) || 0;
@@ -1284,6 +1302,31 @@ function displaySalaryCalculation(rawData, container) {
                             <p class="text-xs text-purple-500">${tHtml('SALARY_WH_BASE_FORMULA')}</p>
                         </div>
                     </div>
+                </div>
+            ` : ''}
+            
+            ${daily ? `
+                <div class="bg-teal-50 dark:bg-teal-900/20 border-2 border-teal-200 dark:border-teal-700 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold text-teal-800 dark:text-teal-300 mb-3">${tHtml('SALARY_DAILY_STATS_TITLE')}</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div>
+                            <p class="text-sm text-teal-600 dark:text-teal-400">${tHtml('DAILY_RATE_LABEL')}</p>
+                            <p class="text-2xl font-bold text-teal-800 dark:text-teal-200">${formatCurrency(daily.rate)}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-teal-600 dark:text-teal-400">${tHtml('DAILY_FULL_DAYS')}</p>
+                            <p class="text-2xl font-bold text-teal-800 dark:text-teal-200">${daily.fullDays}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-teal-600 dark:text-teal-400">${tHtml('DAILY_HALF_DAYS')}</p>
+                            <p class="text-2xl font-bold text-teal-800 dark:text-teal-200">${daily.halfDays}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-teal-600 dark:text-teal-400">${tHtml('SALARY_BASE')}</p>
+                            <p class="text-xl font-bold text-teal-800 dark:text-teal-200">${formatCurrency(data.baseSalary)}</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-teal-700 dark:text-teal-300 mt-3">${tHtml('DAILY_RULE_HINT', { full: daily.fullDayHours, half: daily.halfDayHours })}${daily.manual ? ' ' + tHtml('DAILY_MANUAL_HINT', { full: daily.autoFullDays, half: daily.autoHalfDays }) : ''}</p>
                 </div>
             ` : ''}
             
@@ -1585,6 +1628,20 @@ function renderPayrollAdjustPanel(data, panel, container) {
                     <span class="text-xs text-gray-500 dark:text-gray-400">${tHtml('PAYROLL_ATTENDANCE_AUTO_HINT')}</span>
                 </label>
             </div>
+            ${data.salaryType === '日薪' ? `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <label class="block text-sm">
+                    <span>${tHtml('DAILY_FULL_DAYS')}</span>
+                    <input type="number" min="0" max="31" step="1" class="form-input w-full pa-full-days" value="${escapeHtml(String(valueOf(adj.dailyFullDays)))}"
+                           placeholder="${escapeHtml(String((dailyWageInfo(data) || {}).autoFullDays ?? ''))}">
+                </label>
+                <label class="block text-sm">
+                    <span>${tHtml('DAILY_HALF_DAYS')}</span>
+                    <input type="number" min="0" max="31" step="1" class="form-input w-full pa-half-days" value="${escapeHtml(String(valueOf(adj.dailyHalfDays)))}"
+                           placeholder="${escapeHtml(String((dailyWageInfo(data) || {}).autoHalfDays ?? ''))}">
+                </label>
+                <span class="text-xs text-gray-500 dark:text-gray-400 md:col-span-2">${tHtml('DAILY_DAYS_AUTO_HINT')}</span>
+            </div>` : ''}
             <div class="text-sm font-semibold mb-2">${tHtml('PAYROLL_MANUAL_ITEMS')}</div>
             <div class="pa-items space-y-2 mb-2"></div>
             <button type="button" class="ghost-btn pa-add-item mb-3">${tHtml('PAYROLL_ADD_ITEM')}</button>
@@ -1625,6 +1682,8 @@ function renderPayrollAdjustPanel(data, panel, container) {
             salesBonus: numberOrNull(panel.querySelector('.pa-sales')) || 0,
             advanceDeduction: numberOrNull(panel.querySelector('.pa-advance')),
             attendanceBonus: numberOrNull(panel.querySelector('.pa-attendance')),
+            dailyFullDays: panel.querySelector('.pa-full-days') ? numberOrNull(panel.querySelector('.pa-full-days')) : null,
+            dailyHalfDays: panel.querySelector('.pa-half-days') ? numberOrNull(panel.querySelector('.pa-half-days')) : null,
             manualItems: Array.from(list.querySelectorAll('.pa-item')).map(row => ({
                 type: row.querySelector('.pa-item-type').value,
                 name: row.querySelector('.pa-item-name').value.trim(),
@@ -1842,6 +1901,7 @@ const SALARY_VALUE_KEYS = {
     '月薪': 'SALARY_TYPE_MONTHLY',
     '時薪': 'SALARY_TYPE_HOURLY',
     '週薪': 'SALARY_TYPE_WEEKLY',
+    '日薪': 'SALARY_TYPE_DAILY',
     '已計算': 'SALARY_STATUS_CALCULATED',
     '手動輸入': 'SALARY_STATUS_MANUAL',   // 手動薪資單（ManualPayslip.gs）
     '已發放': 'BONUS_STATUS_PAID',
@@ -2431,12 +2491,14 @@ function onSalaryTypeChange() {
     const hintMap = {
         '月薪': t('SALARY_TYPE_HINT_MONTHLY'),
         '時薪': t('SALARY_TYPE_HINT_HOURLY'),
-        '週薪': t('SALARY_TYPE_HINT_WEEKLY')
+        '週薪': t('SALARY_TYPE_HINT_WEEKLY'),
+        '日薪': t('SALARY_TYPE_HINT_DAILY')
     };
     const baseHintMap = {
         '月薪': t('SALARY_BASE_HINT_MONTHLY'),
         '時薪': t('SALARY_BASE_HINT_HOURLY'),
-        '週薪': t('SALARY_BASE_HINT_WEEKLY')
+        '週薪': t('SALARY_BASE_HINT_WEEKLY'),
+        '日薪': t('SALARY_BASE_HINT_DAILY')
     };
 
     if (hint) hint.textContent = hintMap[type] || '';

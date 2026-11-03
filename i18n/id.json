@@ -1917,5 +1917,20 @@
   "RULE_MAX_RESTDAY": "Batas harian hari istirahat (jam)",
   "RULE_MAX_HOLIDAY": "Batas harian libur nasional (jam)",
   "SALARY_BATCH_SUMMARY": ": {ok} berhasil, {failed} gagal (total {total})",
-  "SALARY_STATUS_MANUAL": "Input manual"
+  "SALARY_STATUS_MANUAL": "Input manual",
+  "SALARY_TYPE_DAILY": "Upah harian",
+  "SALARY_TYPE_DAILY_OPTION": "Upah harian (penuh / setengah hari)",
+  "SALARY_TYPE_HINT_DAILY": "Dihitung dari jam absen tiap hari: mencapai batas hari penuh dihitung 1 hari, batas setengah hari dihitung setengah (atur di «Aturan penggajian»)",
+  "SALARY_BASE_HINT_DAILY": "Masukkan upah satu hari penuh; setengah hari dibayar separuhnya",
+  "NOTIF_DAILY_WAGE_POSITIVE": "Masukkan upah harian (harus lebih dari 0)",
+  "SALARY_DAILY_INFO": "Harian {rate} × {full} hari penuh + {half} setengah hari",
+  "SALARY_DAILY_STATS_TITLE": "Hari upah harian",
+  "DAILY_RATE_LABEL": "Upah harian",
+  "DAILY_FULL_DAYS": "Hari penuh",
+  "DAILY_HALF_DAYS": "Setengah hari",
+  "DAILY_RULE_HINT": "Hari dengan {full}+ jam dihitung penuh, {half}+ jam setengah hari (separuh upah); kurang dari {half} jam tidak dibayar.",
+  "DAILY_MANUAL_HINT": "(Diubah manual; menurut absen {full} hari penuh, {half} setengah hari)",
+  "DAILY_DAYS_AUTO_HINT": "Kosongkan untuk dihitung dari absen; jika diisi, angka itu yang dipakai.",
+  "PAYROLL_RULE_DAILY_FULL_HOURS": "Harian: batas hari penuh (jam)",
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "Harian: batas setengah hari (jam)"
 }

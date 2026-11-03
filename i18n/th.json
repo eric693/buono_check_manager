@@ -1976,5 +1976,20 @@
   "RULE_MAX_RESTDAY": "เพดานต่อวัน วันหยุดพัก (ชม.)",
   "RULE_MAX_HOLIDAY": "เพดานต่อวัน วันหยุดราชการ (ชม.)",
   "SALARY_BATCH_SUMMARY": ": สำเร็จ {ok} ล้มเหลว {failed} (ทั้งหมด {total} คน)",
-  "SALARY_STATUS_MANUAL": "กรอกเอง"
+  "SALARY_STATUS_MANUAL": "กรอกเอง",
+  "SALARY_TYPE_DAILY": "ค่าจ้างรายวัน",
+  "SALARY_TYPE_DAILY_OPTION": "รายวัน (เต็มวัน / ครึ่งวัน)",
+  "SALARY_TYPE_HINT_DAILY": "คิดตามชั่วโมงลงเวลาแต่ละวัน: ถึงเกณฑ์เต็มวันนับ 1 วัน ถึงเกณฑ์ครึ่งวันนับครึ่งวัน (ตั้งเกณฑ์ใน «กฎการคิดเงินเดือน»)",
+  "SALARY_BASE_HINT_DAILY": "กรอกค่าจ้างเต็มวัน ครึ่งวันคิดครึ่งหนึ่ง",
+  "NOTIF_DAILY_WAGE_POSITIVE": "กรอกค่าจ้างรายวัน (ต้องมากกว่า 0)",
+  "SALARY_DAILY_INFO": "รายวัน {rate} × เต็มวัน {full} วัน + ครึ่งวัน {half} วัน",
+  "SALARY_DAILY_STATS_TITLE": "จำนวนวันค่าจ้างรายวัน",
+  "DAILY_RATE_LABEL": "ค่าจ้างรายวัน",
+  "DAILY_FULL_DAYS": "จำนวนวันเต็มวัน",
+  "DAILY_HALF_DAYS": "จำนวนวันครึ่งวัน",
+  "DAILY_RULE_HINT": "วันที่ลงเวลาครบ {full} ชม. นับเต็มวัน ครบ {half} ชม. นับครึ่งวัน (ครึ่งหนึ่งของค่าจ้าง) ไม่ถึง {half} ชม. ไม่นับ",
+  "DAILY_MANUAL_HINT": "(ปรับด้วยมือแล้ว ตามการลงเวลาคือเต็มวัน {full} วัน ครึ่งวัน {half} วัน)",
+  "DAILY_DAYS_AUTO_HINT": "เว้นว่างจะคำนวณจากการลงเวลา ถ้ากรอกจะใช้ตามที่กรอก",
+  "PAYROLL_RULE_DAILY_FULL_HOURS": "รายวัน: เกณฑ์เต็มวัน (ชม.)",
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "รายวัน: เกณฑ์ครึ่งวัน (ชม.)"
 }

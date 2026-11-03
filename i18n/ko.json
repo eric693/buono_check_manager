@@ -1917,5 +1917,20 @@
   "RULE_MAX_RESTDAY": "휴무일 하루 상한 (시간)",
   "RULE_MAX_HOLIDAY": "공휴일 하루 상한 (시간)",
   "SALARY_BATCH_SUMMARY": ": 성공 {ok}, 실패 {failed} (총 {total}명)",
-  "SALARY_STATUS_MANUAL": "수동 입력"
+  "SALARY_STATUS_MANUAL": "수동 입력",
+  "SALARY_TYPE_DAILY": "일급",
+  "SALARY_TYPE_DAILY_OPTION": "일급(종일/반일)",
+  "SALARY_TYPE_HINT_DAILY": "매일 출퇴근 근무시간으로 계산: 종일 기준시간을 채우면 하루, 반일 기준이면 반나절(기준은 「급여 규칙」에서 설정)",
+  "SALARY_BASE_HINT_DAILY": "하루(종일) 급여를 입력하세요. 반일은 절반으로 계산됩니다",
+  "NOTIF_DAILY_WAGE_POSITIVE": "일급을 입력하세요(0보다 커야 합니다)",
+  "SALARY_DAILY_INFO": "일급 {rate} × 종일 {full}일 + 반일 {half}일",
+  "SALARY_DAILY_STATS_TITLE": "일급 일수",
+  "DAILY_RATE_LABEL": "일급",
+  "DAILY_FULL_DAYS": "종일 일수",
+  "DAILY_HALF_DAYS": "반일 일수",
+  "DAILY_RULE_HINT": "출퇴근 근무시간 {full}시간 이상은 종일, {half}시간 이상은 반일(일급의 절반), {half}시간 미만은 계산하지 않습니다.",
+  "DAILY_MANUAL_HINT": "(수동 조정됨. 출퇴근 기준으로는 종일 {full}일, 반일 {half}일)",
+  "DAILY_DAYS_AUTO_HINT": "비워 두면 출퇴근 기록으로 자동 계산하고, 입력하면 그 일수로 계산합니다.",
+  "PAYROLL_RULE_DAILY_FULL_HOURS": "일급 종일 기준(시간)",
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "일급 반일 기준(시간)"
 }

@@ -149,6 +149,17 @@ function normalizePayrollAdjustments_(input) {
   if (!advance.ok) return advance;
   const attendance = money(src.attendanceBonus, '全勤獎金');
   if (!attendance.ok) return attendance;
+  // 日薪的整日／半日天數（留白 = 依打卡自動判斷）
+  const days = (value, label) => {
+    if (value === null || value === undefined || value === '') return { ok: true, value: null };
+    const n = Number(value);
+    if (!isFinite(n) || n < 0 || n > 31 || Math.floor(n) !== n) return { ok: false, msg: `${label}要是 0～31 的整數` };
+    return { ok: true, value: n };
+  };
+  const fullDays = days(src.dailyFullDays, '整日天數');
+  if (!fullDays.ok) return fullDays;
+  const halfDays = days(src.dailyHalfDays, '半日天數');
+  if (!halfDays.ok) return halfDays;
 
   const rawItems = Array.isArray(src.manualItems) ? src.manualItems : [];
   if (rawItems.length > PAYROLL_MAX_MANUAL_ITEMS) {
@@ -174,6 +185,8 @@ function normalizePayrollAdjustments_(input) {
       salesBonus: sales.value || 0,
       advanceDeduction: advance.value,       // null = 用已核准的預支申請自動帶入
       attendanceBonus: attendance.value,     // null = 依規則判斷
+      dailyFullDays: fullDays.value,         // 日薪：null = 依打卡判斷
+      dailyHalfDays: halfDays.value,
       manualItems: manualItems,
       note: note
     }
@@ -374,7 +387,7 @@ function evaluateBirthdayGift_(amount, rules, employeeId, config, yearMonth) {
 function applyPayrollRules_(data, config, adjustments) {
   const rules = getPayrollRules_();
   const isFullTime = data.salaryType === '月薪';
-  const isPartTime = data.salaryType === '時薪';
+  const isPartTime = data.salaryType === '時薪' || data.salaryType === '日薪';   // 日薪照兼職的規則
   if (!isFullTime && !isPartTime) return data;
 
   const employeeId = data.employeeId;
@@ -487,10 +500,14 @@ function applyPayrollRules_(data, config, adjustments) {
     salesBonus: salesBonus,
     advanceDeduction: adj.advanceDeduction === undefined ? null : adj.advanceDeduction,
     attendanceBonus: adj.attendanceBonus === undefined ? null : adj.attendanceBonus,
+    dailyFullDays: adj.dailyFullDays === undefined ? null : adj.dailyFullDays,
+    dailyHalfDays: adj.dailyHalfDays === undefined ? null : adj.dailyHalfDays,
     manualItems: manualItems,
     note: adj.note || '',
-    // 給前端翻譯用：從試算表讀回的薪資單也能依語系顯示全勤／生日說明（存檔時才會用到，讀回時會被忽略）
-    messages: { attendance: attendanceInfo, birthday: birthdayMessage }
+    // 給前端翻譯用：從試算表讀回的薪資單也能依語系顯示全勤／生日說明（存檔時才會用到，讀回時會被忽略）。
+    // 日薪的天數也放這裡，員工看已發放的薪資單才看得到整日／半日各幾天
+    messages: Object.assign({ attendance: attendanceInfo, birthday: birthdayMessage },
+                            data.dailyWage ? { dailyWage: data.dailyWage } : {})
   };
   data.payrollRulesApplied = !!rules.enabled;
   data.grossSalary = Math.round(gross);

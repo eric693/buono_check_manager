@@ -1973,5 +1973,20 @@
   "RULE_MAX_RESTDAY": "Giới hạn mỗi ngày nghỉ (giờ)",
   "RULE_MAX_HOLIDAY": "Giới hạn mỗi ngày lễ (giờ)",
   "SALARY_BATCH_SUMMARY": ": {ok} thành công, {failed} thất bại (tổng {total})",
-  "SALARY_STATUS_MANUAL": "Nhập thủ công"
+  "SALARY_STATUS_MANUAL": "Nhập thủ công",
+  "SALARY_TYPE_DAILY": "Lương ngày",
+  "SALARY_TYPE_DAILY_OPTION": "Lương ngày (cả ngày / nửa ngày)",
+  "SALARY_TYPE_HINT_DAILY": "Tính theo giờ chấm công mỗi ngày: đủ ngưỡng cả ngày tính 1 ngày, đủ ngưỡng nửa ngày tính nửa ngày (đặt ngưỡng trong «Quy tắc tính lương»)",
+  "SALARY_BASE_HINT_DAILY": "Nhập lương cho một ngày đủ; nửa ngày tính một nửa",
+  "NOTIF_DAILY_WAGE_POSITIVE": "Nhập lương ngày (phải lớn hơn 0)",
+  "SALARY_DAILY_INFO": "Lương ngày {rate} × {full} ngày đủ + {half} nửa ngày",
+  "SALARY_DAILY_STATS_TITLE": "Số ngày lương",
+  "DAILY_RATE_LABEL": "Lương ngày",
+  "DAILY_FULL_DAYS": "Số ngày đủ",
+  "DAILY_HALF_DAYS": "Số nửa ngày",
+  "DAILY_RULE_HINT": "Ngày có từ {full} giờ trở lên tính cả ngày, từ {half} giờ tính nửa ngày (nửa lương ngày); dưới {half} giờ không tính.",
+  "DAILY_MANUAL_HINT": "(Đã chỉnh tay; theo chấm công là {full} ngày đủ, {half} nửa ngày)",
+  "DAILY_DAYS_AUTO_HINT": "Để trống thì tự tính theo chấm công; nhập số thì dùng số đó.",
+  "PAYROLL_RULE_DAILY_FULL_HOURS": "Lương ngày: ngưỡng cả ngày (giờ)",
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "Lương ngày: ngưỡng nửa ngày (giờ)"
 }

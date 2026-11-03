@@ -1501,7 +1501,7 @@ function getEmployeeMonthlyLeave(employeeId, yearMonth) {
  * @param {string} yearMonth - 年月 (YYYY-MM)
  * @returns {Object} 薪資計算結果
  */
-function calculateHourlySalary(employeeId, yearMonth) {
+function calculateHourlySalary(employeeId, yearMonth, hourlyRateOverride) {
   try {
     Logger.log(` 開始計算時薪薪資: ${employeeId}, ${yearMonth}`);
     
@@ -1513,7 +1513,8 @@ function calculateHourlySalary(employeeId, yearMonth) {
     }
     
     const config = salaryConfig.data;
-    const hourlyRate = parseFloat(config['基本薪資']) || 0; // 時薪
+    // 日薪人員借用這支算加班、勞健保、所得稅，時薪用「日薪 ÷ 8」（見 calculateDailyWageSalary_）
+    const hourlyRate = hourlyRateOverride || parseFloat(config['基本薪資']) || 0; // 時薪
     
     Logger.log(` 時薪: $${hourlyRate}`);
     
@@ -2207,6 +2208,9 @@ function calculateMonthlySalary(employeeId, yearMonth, payrollAdjustments) {
     } else if (salaryType === '週薪') {
       Logger.log('使用週薪計算邏輯');
       return calculateWeeklySalary(employeeId, yearMonth);
+    } else if (salaryType === '日薪') {
+      Logger.log('使用日薪計算邏輯');
+      result = calculateDailyWageSalary_(employeeId, yearMonth, config, payrollAdjustments);
     } else {
       Logger.log('使用月薪計算邏輯');
       result = calculateMonthlySalaryInternal(employeeId, yearMonth);
@@ -3364,6 +3368,71 @@ function recalculateEricOnly() {
   Logger.log('\n 完成');
 }
 
+
+// ==================== 日薪計算 ====================
+
+/**
+ * 日薪：基本薪資欄填的是「一天的薪資」。每天依打卡工時（扣掉排班休息）判斷：
+ *   滿 dailyFullDayHours 小時算整日、滿 dailyHalfDayHours 小時算半日（日薪的一半）、不到半日不計。
+ * 門檻在「計薪規則」設定；管理員可以在這張薪資單的計薪調整直接改整日／半日天數。
+ *
+ * 加班費、勞健保、所得稅、自訂項目跟時薪人員一樣算（時薪 = 日薪 ÷ 8），
+ * 請假不另外扣錢：日薪本來就只算有上班的天數。
+ */
+function countDailyWageDays_(attendance, rules) {
+  let full = 0, half = 0;
+  (attendance || []).forEach(r => {
+    const hours = Number(r.workHours) || 0;
+    if (hours >= rules.dailyFullDayHours) full++;
+    else if (hours >= rules.dailyHalfDayHours && hours > 0) half++;
+  });
+  return { full: full, half: half };
+}
+
+function calculateDailyWageSalary_(employeeId, yearMonth, config, payrollAdjustments) {
+  const dailyRate = parseFloat(config['基本薪資']) || 0;
+  const result = calculateHourlySalary(employeeId, yearMonth, dailyRate / 8);
+  if (!result || !result.success || !result.data) return result;
+
+  const rules = (typeof getPayrollRules_ === 'function') ? getPayrollRules_() : DEFAULT_PAYROLL_RULES;
+  const thresholds = {
+    dailyFullDayHours: Number(rules.dailyFullDayHours) || DEFAULT_PAYROLL_RULES.dailyFullDayHours,
+    dailyHalfDayHours: Number(rules.dailyHalfDayHours) || DEFAULT_PAYROLL_RULES.dailyHalfDayHours
+  };
+  const auto = countDailyWageDays_(getEmployeeMonthlyAttendanceInternal(employeeId, yearMonth), thresholds);
+
+  // 管理員改過天數就用管理員的（null = 依打卡自動判斷）
+  const adj = payrollAdjustments ||
+              (typeof readSavedPayrollAdjustments_ === 'function' ? readSavedPayrollAdjustments_(employeeId, yearMonth) : null) || {};
+  const fullDays = (adj.dailyFullDays !== null && adj.dailyFullDays !== undefined) ? adj.dailyFullDays : auto.full;
+  const halfDays = (adj.dailyHalfDays !== null && adj.dailyHalfDays !== undefined) ? adj.dailyHalfDays : auto.half;
+
+  const data = result.data;
+  const basePay = Math.round(fullDays * dailyRate + halfDays * dailyRate / 2);
+  const deductionsBefore = (Number(data.grossSalary) || 0) - (Number(data.netSalary) || 0);
+  const gross = (Number(data.grossSalary) || 0) - (Number(data.baseSalary) || 0) + basePay;
+  const incomeTax = calculateIncomeTax_(gross);
+  const deductions = deductionsBefore - (Number(data.leaveDeduction) || 0) - (Number(data.incomeTax) || 0) + incomeTax;
+
+  data.salaryType = '日薪';
+  data.dailyRate = dailyRate;
+  data.dailyFullDays = fullDays;
+  data.dailyHalfDays = halfDays;
+  data.dailyWage = {
+    rate: dailyRate, fullDays: fullDays, halfDays: halfDays,
+    autoFullDays: auto.full, autoHalfDays: auto.half,
+    fullDayHours: thresholds.dailyFullDayHours, halfDayHours: thresholds.dailyHalfDayHours,
+    manual: fullDays !== auto.full || halfDays !== auto.half
+  };
+  data.baseSalary = basePay;
+  data.leaveDeduction = 0;
+  data.sickLeaveDeduction = 0;
+  data.personalLeaveDeduction = 0;
+  data.incomeTax = incomeTax;
+  data.grossSalary = Math.round(gross);
+  data.netSalary = Math.round(gross - deductions);
+  return result;
+}
 
 // ==================== 週薪計算 ====================
 

@@ -46,7 +46,9 @@ const PAYROLL_RULE_FIELDS = [
   { key: 'mealMinHours',            labelKey: 'PAYROLL_RULE_MEAL_MIN_HOURS',   fallback: '餐費門檻（小時）', step: '0.5' },
   { key: 'fullTimeBirthdayGift',    labelKey: 'PAYROLL_RULE_FT_BIRTHDAY',      fallback: '正職生日禮金', step: '1' },
   { key: 'partTimeBirthdayGift',    labelKey: 'PAYROLL_RULE_PT_BIRTHDAY',      fallback: '兼職生日禮金', step: '1' },
-  { key: 'birthdayMinTenureMonths', labelKey: 'PAYROLL_RULE_BIRTHDAY_TENURE',  fallback: '生日禮金到職滿（月）', step: '1' }
+  { key: 'birthdayMinTenureMonths', labelKey: 'PAYROLL_RULE_BIRTHDAY_TENURE',  fallback: '生日禮金到職滿（月）', step: '1' },
+  { key: 'dailyFullDayHours',       labelKey: 'PAYROLL_RULE_DAILY_FULL_HOURS', fallback: '日薪整日門檻（小時）', step: '0.5' },
+  { key: 'dailyHalfDayHours',       labelKey: 'PAYROLL_RULE_DAILY_HALF_HOURS', fallback: '日薪半日門檻（小時）', step: '0.5' }
 ];
 
 /**

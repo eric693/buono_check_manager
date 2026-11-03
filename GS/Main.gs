@@ -115,7 +115,8 @@ const DEPLOY_CHECKS = [
   ['MyToday.gs', () => typeof handleGetMyToday === 'function'],
   ['OvertimeOperations.gs', () => typeof initOvertimeSheet === 'function'],
   ['PayrollRules.gs', () => typeof applyPayrollRules_ === 'function' && typeof payrollAttendanceZh_ === 'function' &&
-                             String(handleSavePayrollAdjustments).indexOf('PAYSLIP_IS_MANUAL') !== -1],
+                             String(handleSavePayrollAdjustments).indexOf('PAYSLIP_IS_MANUAL') !== -1 &&
+                             String(normalizePayrollAdjustments_).indexOf('dailyFullDays') !== -1],
   ['PunchRules.gs', () => typeof checkPunchSequence_ === 'function' && typeof computeDayWorkFromPunches_ === 'function' &&
                            typeof logPunchFailure_ === 'function'],
   ['QrPunch.gs', () => typeof qrPunch === 'function' && String(qrPunch).indexOf('checkPunchSequence_') !== -1],
@@ -123,20 +124,21 @@ const DEPLOY_CHECKS = [
                                  String(saveMonthlySalary).indexOf('PAYSLIP_IS_MANUAL') !== -1 &&
                                  typeof ensureMonthlySalaryNumberFormats_ === 'function' &&
                                  String(getMySalary).indexOf('readPublishedPayslip_') !== -1 &&
-                                 String(setEmployeeSalaryTW).indexOf('deleteRow') !== -1],
+                                 String(setEmployeeSalaryTW).indexOf('deleteRow') !== -1 &&
+                                 typeof calculateDailyWageSalary_ === 'function'],
   ['SalaryTools.gs', () => typeof listPayableEmployees_ === 'function' &&
                             String(handleBatchCalculateSalary).indexOf('readManualPayslip_') !== -1 &&
                             typeof handleDeleteSalaryConfig === 'function'],
   ['ShiftManagement.gs', () => typeof shiftRowBreakMinutes_ === 'function'],
   ['ShiftTemplates.gs', () => typeof computeNetWorkMinutes_ === 'function' && typeof handleSaveShiftTemplates === 'function'],
-  ['SystemSettings.gs', () => typeof validatePayrollRules_ === 'function'],
+  ['SystemSettings.gs', () => typeof validatePayrollRules_ === 'function' && DEFAULT_PAYROLL_RULES.dailyFullDayHours > 0],
   ['Utils.gs', () => typeof getParam === 'function' && typeof getSheetValues_ === 'function'],
   ['WorklogHandlers.gs', () => typeof handleSubmitWorklog === 'function'],
   ['WorklogOperations.gs', () => typeof getWorklogSheet === 'function']
 ];
 
 // 每次後端有更新就改這個日期，健康檢查會回報，從外面就知道正式區部署到哪一版
-const BACKEND_VERSION = '2026-10-12b';
+const BACKEND_VERSION = '2026-11-03a';
 
 function handleHealthCheck() {
   const problems = [];

@@ -323,7 +323,8 @@
         "Bonus kehadiran penuh waktu: per bulan boleh terlambat ≤5 menit 1 kali dan lupa absen 2 kali; terlambat lebih dari 5 menit, cuti pribadi/sakit/rawat inap, atau mangkir membatalkannya (angka bisa diubah).",
         "Uang makan: jumlah hari dengan 8+ jam (penuh waktu jam nyata, paruh waktu jam terjadwal) × 110. Hadiah ulang tahun perlu ulang tahun bulan ini dan masa kerja 3+ bulan (tanggal masuk dari pengaturan gaji).",
         "Tarif lembur per jam karyawan bulanan = (gaji pokok + uang makan + tunjangan jabatan) ÷ 30 ÷ 8. Pengali default sesuai UU Ketenagakerjaan dan bisa diubah di tarif lembur.",
-        "Untuk menghapus pengaturan ganda atau yang tidak dipakai, pilih karyawan di daftar kiri lalu tekan «Hapus pengaturan gaji karyawan ini» di bagian bawah formulir. Slip yang sudah tersimpan tetap ada. Baris ganda untuk karyawan yang sama juga digabung otomatis saat menyimpan berikutnya."
+        "Untuk menghapus pengaturan ganda atau yang tidak dipakai, pilih karyawan di daftar kiri lalu tekan «Hapus pengaturan gaji karyawan ini» di bagian bawah formulir. Slip yang sudah tersimpan tetap ada. Baris ganda untuk karyawan yang sama juga digabung otomatis saat menyimpan berikutnya.",
+        "«Upah harian»: isi upah satu hari penuh sebagai gaji pokok. Tiap hari dinilai dari jam absen: mencapai batas hari penuh (bawaan 8 jam) dihitung 1 hari, batas setengah hari (bawaan 4 jam) dihitung setengah dengan separuh upah. Ubah batas di «Aturan penggajian». Bonus kehadiran, uang makan, dan hadiah ulang tahun mengikuti aturan paruh waktu; cuti tidak dipotong lagi."
       ],
       "terms": [
         [
@@ -368,7 +369,8 @@
         "Absensi yang hilang membuat jam karyawan per jam jadi kurang, jadi bereskan dulu antrean koreksi absensi.",
         "Kosongkan potongan kasbon untuk memakai kasbon yang disetujui bulan ini; kosongkan bonus kehadiran untuk mengikuti aturan, atau isi jumlah untuk menimpanya.",
         "Penyesuaian disimpan di slip dan dipakai lagi setiap dihitung ulang, termasuk saat karyawan membuka slipnya sendiri.",
-        "Jika bulan itu slip manual, layar ini hanya menampilkannya dan mengarahkan ke \"Slip gaji manual\" di bawah; tidak dihitung ulang."
+        "Jika bulan itu slip manual, layar ini hanya menampilkannya dan mengarahkan ke \"Slip gaji manual\" di bawah; tidak dihitung ulang.",
+        "Untuk staf upah harian, hasil menampilkan jumlah hari penuh dan setengah hari. Untuk menghitung lain (misalnya lupa absen), isi jumlah hari di «Penyesuaian gaji» lalu simpan; kosongkan untuk kembali menghitung dari absen."
       ],
       "terms": [
         [
