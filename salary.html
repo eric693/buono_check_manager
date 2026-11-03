@@ -1553,6 +1553,7 @@
                                     <option value="月薪" data-i18n-option="SALARY_TYPE_MONTHLY">月薪</option>
                                     <option value="時薪" data-i18n-option="SALARY_TYPE_HOURLY">時薪</option>
                                     <option value="週薪" data-i18n-option="SALARY_TYPE_WEEKLY_OPTION">週薪（週領，免勞健保）</option>
+                                    <option value="日薪" data-i18n-option="SALARY_TYPE_DAILY_OPTION">日薪（整日／半日）</option>
                                 </select>
                                 <span id="salary-type-hint" class="form-hint"></span>
                             </div>
@@ -2492,7 +2493,7 @@
                 return;
             }
 
-            if (salaryType === '時薪') {
+            if (salaryType === '時薪' || salaryType === '日薪') {
                 insuredSalary = 11100;
                 
                 //  修正：如果欄位已有值（使用者手動輸入），則保留；否則使用預設值
@@ -2523,7 +2524,7 @@
             
             // 月薪未達 88,000 元，不扣繳所得稅
             // （大部分公司不會在月薪中預扣所得稅，除非月薪很高）
-            if (salaryType !== '時薪' && baseSalary >= 88000) {
+            if (salaryType !== '時薪' && salaryType !== '日薪' && baseSalary >= 88000) {
                 // 依扣繳級距表計算（實務上很少用到）
                 if (baseSalary >= 88000 && baseSalary < 176000) {
                     incomeTax = Math.round((baseSalary - 88000) * 0.05);
@@ -3304,7 +3305,7 @@
             const laborFeeEl = document.getElementById('config-labor-fee');
             const healthFeeEl = document.getElementById('config-health-fee');
 
-            if (salaryType === '時薪') {
+            if (salaryType === '時薪' || salaryType === '日薪') {
                 insuredSalary = 11100;
                 
                 //  修正：欄位為空或為0時，都使用預設值
@@ -3345,7 +3346,7 @@
             const pensionSelf = Math.round(insuredSalary * (pensionRate / 100));
             
             let incomeTax = 0;
-            if (salaryType !== '時薪' && baseSalary >= 88000) {
+            if (salaryType !== '時薪' && salaryType !== '日薪' && baseSalary >= 88000) {
                 if (baseSalary >= 88000 && baseSalary < 176000) {
                     incomeTax = Math.round((baseSalary - 88000) * 0.05);
                 } else if (baseSalary >= 176000) {
@@ -3434,7 +3435,7 @@
                 const netSalary = grossSalary - totalDeductions;
                 
                 // 投保薪資（僅供參考）
-                const isHourly = salaryType === '時薪';
+                const isHourly = salaryType === '時薪' || salaryType === '日薪';
                 const insuredSalary = isHourly ? 11100 : getInsuredSalary(baseSalary).insured;
                 
                 console.log(' 試算結果:');

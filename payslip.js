@@ -67,6 +67,30 @@ function payrollSavedMessages(data) {
 }
 
 /**
+ * 日薪的整日／半日天數：計算結果直接帶 dailyWage；從「月薪資記錄」讀回的在「計薪調整」JSON 的 messages 裡。
+ * 不是日薪回傳 null
+ */
+function dailyWageInfo(data) {
+    if (!data) return null;
+    if (data.salaryType !== '日薪' && data['薪資類型'] !== '日薪') return null;
+    if (data.dailyWage) return data.dailyWage;
+    try {
+        const saved = JSON.parse(data['計薪調整'] || 'null');
+        if (saved && saved.messages && saved.messages.dailyWage) return saved.messages.dailyWage;
+    } catch (error) {
+        console.warn('計薪調整格式錯誤:', error);
+    }
+    return null;
+}
+
+/** 「日薪 $1,600 × 整日 10 天 + 半日 2 天」 */
+function dailyWageText(data) {
+    const info = dailyWageInfo(data);
+    if (!info) return '';
+    return t('SALARY_DAILY_INFO', { rate: payslipMoney(info.rate), full: info.fullDays, half: info.halfDays });
+}
+
+/**
  * 計薪規則加上的項目（餐費、生日禮金、銷售獎金、預支、手動加減項目）。
  * 計算結果用英文欄位；從「月薪資記錄」讀回來的是中文欄名，兩種都要認得。
  * 薪資單、試算結果、員工自己的薪資頁都用這一份，三邊才會一致。
@@ -238,6 +262,10 @@ function buildPayslipHtml(rawData) {
     ${hourlyRate ? `
     <tr>
       <td>${escapeHtml(t('HOURLY_RATE_LABEL'))}</td><td colspan="3">${escapeHtml(t('PAYSLIP_PER_HOUR', { amount: payslipMoney(hourlyRate) }))}</td>
+    </tr>` : ''}
+    ${dailyWageInfo(data) ? `
+    <tr>
+      <td>${escapeHtml(t('DAILY_RATE_LABEL'))}</td><td colspan="3">${escapeHtml(dailyWageText(data))}</td>
     </tr>` : ''}
   </table>
   

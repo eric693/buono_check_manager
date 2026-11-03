@@ -1968,5 +1968,20 @@
   "AUDIT_ACTION_UPDATE_LOCATION": "修改打卡地點",
   "AUDIT_ACTION_DELETE_LOCATION": "刪除打卡地點",
   "AUDIT_ACTION_RELEASE_PAYROLL": "發放薪資條",
-  "AUDIT_ACTION_UNRELEASE_PAYROLL": "取消發放薪資條"
+  "AUDIT_ACTION_UNRELEASE_PAYROLL": "取消發放薪資條",
+  "SALARY_TYPE_DAILY": "日薪",
+  "SALARY_TYPE_DAILY_OPTION": "日薪（整日／半日）",
+  "SALARY_TYPE_HINT_DAILY": "依每天打卡工時計薪：滿整日門檻算一天、滿半日門檻算半天（門檻在「計薪規則」設定）",
+  "SALARY_BASE_HINT_DAILY": "請輸入一天（整日）的薪資，半日自動算一半",
+  "NOTIF_DAILY_WAGE_POSITIVE": "請輸入日薪金額（必須大於 0）",
+  "SALARY_DAILY_INFO": "日薪 {rate} × 整日 {full} 天 + 半日 {half} 天",
+  "SALARY_DAILY_STATS_TITLE": "日薪天數",
+  "DAILY_RATE_LABEL": "日薪",
+  "DAILY_FULL_DAYS": "整日天數",
+  "DAILY_HALF_DAYS": "半日天數",
+  "DAILY_RULE_HINT": "一天打卡工時滿 {full} 小時算整日、滿 {half} 小時算半日（日薪的一半），不到 {half} 小時不計。",
+  "DAILY_MANUAL_HINT": "（已手動調整，依打卡判斷是整日 {full} 天、半日 {half} 天）",
+  "DAILY_DAYS_AUTO_HINT": "留白就依打卡工時自動判斷；填了就以你填的天數計算。",
+  "PAYROLL_RULE_DAILY_FULL_HOURS": "日薪整日門檻（小時）",
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "日薪半日門檻（小時）"
 }

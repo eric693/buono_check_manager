@@ -1917,5 +1917,20 @@
   "RULE_MAX_RESTDAY": "休息日の1日上限（時間）",
   "RULE_MAX_HOLIDAY": "祝日の1日上限（時間）",
   "SALARY_BATCH_SUMMARY": "：成功 {ok}、失敗 {failed}（計 {total} 人）",
-  "SALARY_STATUS_MANUAL": "手動入力"
+  "SALARY_STATUS_MANUAL": "手動入力",
+  "SALARY_TYPE_DAILY": "日給",
+  "SALARY_TYPE_DAILY_OPTION": "日給（全日／半日）",
+  "SALARY_TYPE_HINT_DAILY": "毎日の打刻時間で計算：全日の基準時間に達すれば1日、半日の基準なら半日（基準は「給与ルール」で設定）",
+  "SALARY_BASE_HINT_DAILY": "1日（全日）の給与を入力してください。半日はその半額です",
+  "NOTIF_DAILY_WAGE_POSITIVE": "日給を入力してください（0より大きい値）",
+  "SALARY_DAILY_INFO": "日給 {rate} × 全日 {full} 日 + 半日 {half} 日",
+  "SALARY_DAILY_STATS_TITLE": "日給の日数",
+  "DAILY_RATE_LABEL": "日給",
+  "DAILY_FULL_DAYS": "全日の日数",
+  "DAILY_HALF_DAYS": "半日の日数",
+  "DAILY_RULE_HINT": "打刻時間が{full}時間以上で全日、{half}時間以上で半日（日給の半額）、{half}時間未満は計算しません。",
+  "DAILY_MANUAL_HINT": "（手動で調整済み。打刻による判定は全日 {full} 日、半日 {half} 日）",
+  "DAILY_DAYS_AUTO_HINT": "空欄なら打刻時間から自動判定、入力すればその日数で計算します。",
+  "PAYROLL_RULE_DAILY_FULL_HOURS": "日給 全日の基準（時間）",
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "日給 半日の基準（時間）"
 }

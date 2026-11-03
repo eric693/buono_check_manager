@@ -323,7 +323,8 @@
         "Full-time attendance bonus: one late arrival within 5 minutes and 2 missed punches are allowed per month; being more than 5 minutes late, personal/sick/hospital leave or an unexcused absence cancels it (the numbers are adjustable).",
         "Meal pay: days with 8+ hours (actual hours for full-time, scheduled hours for part-time) × NT$110. The birthday gift needs a birthday this month and 3+ months of employment (hire date from the salary settings).",
         "Overtime hourly rate for monthly staff = (base + meal allowance + position allowance) ÷ 30 ÷ 8. The multipliers default to the Labor Standards Act and can be changed under overtime rates.",
-        "To remove a duplicate or unneeded setting, pick the employee on the left and press \"Delete this employee's salary setting\" at the bottom of the form. Saved payslips are kept. Duplicate rows for the same employee are also merged into one the next time you save."
+        "To remove a duplicate or unneeded setting, pick the employee on the left and press \"Delete this employee's salary setting\" at the bottom of the form. Saved payslips are kept. Duplicate rows for the same employee are also merged into one the next time you save.",
+        "\"Daily wage\": enter the pay for one full day as the base salary. Each day is judged from punched hours: reaching the full-day hours (default 8) counts as a day, the half-day hours (default 4) as half a day, paid at half the daily wage. Change the hours in Payroll rules. Daily-wage staff follow the part-time rules for attendance bonus, meal and birthday pay, and leave is not deducted separately."
       ],
       "terms": [
         [
@@ -368,7 +369,8 @@
         "Missing punches make hourly staff's hours too low, so clear the punch-correction queue first.",
         "Leave the advance blank to use this month's approved advance requests; leave the attendance bonus blank to follow the payroll rules, or enter an amount to override.",
         "Adjustments are kept on the payslip and reused on every recalculation, including when the employee opens their own payslip.",
-        "If the month has a manual payslip, this screen only shows it and points you to \"Manual payslip\" below; it is not recalculated."
+        "If the month has a manual payslip, this screen only shows it and points you to \"Manual payslip\" below; it is not recalculated.",
+        "For daily-wage staff the result lists how many full and half days were counted. To count differently (for example a missed punch), enter the full and half days under Payroll adjustments and save; leave them blank to go back to counting from punches."
       ],
       "terms": [
         [

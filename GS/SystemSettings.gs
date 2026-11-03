@@ -317,7 +317,10 @@ const DEFAULT_PAYROLL_RULES = {
   // 生日禮金：生日在當月，且到職滿 birthdayMinTenureMonths 個月
   fullTimeBirthdayGift: 1200,
   partTimeBirthdayGift: 600,
-  birthdayMinTenureMonths: 3
+  birthdayMinTenureMonths: 3,
+  // 日薪：一天打卡工時滿 dailyFullDayHours 算整日、滿 dailyHalfDayHours 算半日（日薪的一半）
+  dailyFullDayHours: 8,
+  dailyHalfDayHours: 4
 };
 
 function validatePayrollRules_(input) {
@@ -327,7 +330,8 @@ function validatePayrollRules_(input) {
     fullTimeAttendanceBonus: [0, 100000], lateGraceMinutes: [0, 120], lateGraceTimes: [0, 31],
     maxMissedPunches: [0, 62], partTimeAttendanceBonus: [0, 100000], partTimeAttendanceHours: [0, 400],
     mealPerDay: [0, 10000], mealMinHours: [0, 24], fullTimeBirthdayGift: [0, 100000],
-    partTimeBirthdayGift: [0, 100000], birthdayMinTenureMonths: [0, 120]
+    partTimeBirthdayGift: [0, 100000], birthdayMinTenureMonths: [0, 120],
+    dailyFullDayHours: [1, 24], dailyHalfDayHours: [0.5, 24]
   };
   for (const key of Object.keys(limits)) {
     const raw = (input[key] === undefined || input[key] === null || input[key] === '') ? DEFAULT_PAYROLL_RULES[key] : input[key];
@@ -337,6 +341,9 @@ function validatePayrollRules_(input) {
       return { ok: false, msg: `計薪規則「${key}」要介於 ${min}～${max}` };
     }
     rules[key] = value;
+  }
+  if (rules.dailyHalfDayHours > rules.dailyFullDayHours) {
+    return { ok: false, msg: '日薪的半日時數不能大於整日時數' };
   }
   return { ok: true, payrollRules: rules };
 }
