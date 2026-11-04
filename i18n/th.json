@@ -1991,5 +1991,9 @@
   "DAILY_MANUAL_HINT": "(ปรับด้วยมือแล้ว ตามการลงเวลาคือเต็มวัน {full} วัน ครึ่งวัน {half} วัน)",
   "DAILY_DAYS_AUTO_HINT": "เว้นว่างจะคำนวณจากการลงเวลา ถ้ากรอกจะใช้ตามที่กรอก",
   "PAYROLL_RULE_DAILY_FULL_HOURS": "รายวัน: เกณฑ์เต็มวัน (ชม.)",
-  "PAYROLL_RULE_DAILY_HALF_HOURS": "รายวัน: เกณฑ์ครึ่งวัน (ชม.)"
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "รายวัน: เกณฑ์ครึ่งวัน (ชม.)",
+  "RPT_IN_TIME_2": "เข้างาน (รอบ 2)",
+  "RPT_OUT_TIME_2": "ออกงาน (รอบ 2)",
+  "RPT_ALL_PUNCHES": "การลงเวลาทั้งหมด",
+  "RPT_PUNCH_NOT_COUNTED": " (ยังไม่อนุมัติ ไม่นับ)"
 }

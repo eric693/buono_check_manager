@@ -7,9 +7,73 @@ function reportColumns() {
         date: t('RPT_DATE'), weekday: t('RPT_WEEKDAY'),
         inTime: t('RPT_IN_TIME'), inPlace: t('RPT_IN_PLACE'),
         outTime: t('RPT_OUT_TIME'), outPlace: t('RPT_OUT_PLACE'),
+        inTime2: t('RPT_IN_TIME_2'), outTime2: t('RPT_OUT_TIME_2'),
+        allPunches: t('RPT_ALL_PUNCHES'),
         workHours: t('RPT_WORK_HOURS'), hoursDecimal: t('RPT_HOURS_DECIMAL'),
         status: t('RPT_STATUS'), notes: t('RPT_NOTES')
     };
+}
+
+/**
+ * 一天的打卡整理成報表用的欄位。
+ *
+ * 以前只取第一張上班卡、第一張下班卡：兩頭班（上班 → 下班休息 → 上班 → 下班）的第二段
+ * 整個不見，工時也只是那兩張卡相減。現在：
+ *   ・依時間把算數的卡（一般打卡、已核准的補打卡）配成工作段，第一段、第二段各自一組欄位
+ *   ・「全部打卡」列出當天每一張卡，配不起來的也看得到
+ *   ・工時用後端算好的（跟薪資同一套規則，扣排班的休息）；舊版後端沒有這個值才自己算
+ */
+function reportDayInfo(record) {
+    const punches = (record.record || []).slice().sort((a, b) => String(a.time).localeCompare(String(b.time)));
+    const counted = punches.filter(p => p.note !== '補打卡' || p.audit === 'v');
+    const segments = [];
+    let open = null;
+    counted.forEach(p => {
+        if (p.type === '上班') {
+            if (!open) open = p;
+        } else if (open) {
+            segments.push({ in: open, out: p });
+            open = null;
+        }
+    });
+    if (open) segments.push({ in: open, out: null });
+    // 只有下班卡（忘了打上班）也要看得到
+    if (!segments.length && counted.length) segments.push({ in: null, out: counted.find(p => p.type === '下班') || null });
+
+    let hours = parseFloat(record.workHours);
+    if (isNaN(hours)) {
+        hours = 0;
+        segments.forEach(seg => {
+            if (!seg.in || !seg.out) return;
+            const diff = (new Date(`${record.date} ${seg.out.time}`) - new Date(`${record.date} ${seg.in.time}`)) / 3600000;
+            if (diff > 0) hours += diff;
+        });
+    }
+
+    const typeLabel = type => type === '上班' ? t('PUNCH_IN') : t('PUNCH_OUT');
+    const allPunches = punches.map(p => {
+        const pending = p.note === '補打卡' && p.audit !== 'v' ? t('RPT_PUNCH_NOT_COUNTED') : '';
+        return `${typeLabel(p.type)} ${p.time}${pending}`;
+    }).join('、');
+    const notes = [...new Set(punches.filter(p => p.note && p.note !== '系統虛擬卡').map(p => p.note))].join('; ');
+    const firstIn = counted.find(p => p.type === '上班');
+    const lastOut = counted.filter(p => p.type === '下班').pop();
+
+    return {
+        seg1: segments[0] || null,
+        seg2: segments[1] || null,
+        inPlace: firstIn ? firstIn.location : '',
+        outPlace: lastOut ? lastOut.location : '',
+        allPunches: allPunches,
+        hours: hours,
+        notes: notes
+    };
+}
+
+function reportTime(punch, withSeconds) {
+    if (!punch) return '-';
+    const time = String(punch.time || '');
+    return withSeconds && /^\d{1,2}:\d{2}$/.test(time) ? `${time}:00` : time;
 }
 
 /**
@@ -55,43 +119,20 @@ async function exportAllEmployeesReport(monthKey) {
                 };
             }
             
-            // 找出上班和下班的記錄
-            const punchIn = record.record ? record.record.find(r => r.type === '上班') : null;
-            const punchOut = record.record ? record.record.find(r => r.type === '下班') : null;
-            
-            // 計算工時
-            let workHours = '-';
-            if (punchIn && punchOut) {
-                try {
-                    const inTime = new Date(`${record.date} ${punchIn.time}`);
-                    const outTime = new Date(`${record.date} ${punchOut.time}`);
-                    const diffMs = outTime - inTime;
-                    const diffHours = (diffMs / (1000 * 60 * 60)).toFixed(2);
-                    workHours = diffHours > 0 ? diffHours : '-';
-                } catch (e) {
-                    console.error('計算工時失敗:', e);
-                    workHours = '-';
-                }
-            }
-            
+            const day = reportDayInfo(record);
             const statusText = t(record.reason) || record.reason;
-            
-            const notes = record.record
-                ? record.record
-                    .filter(r => r.note && r.note !== '系統虛擬卡')
-                    .map(r => r.note)
-                    .join('; ')
-                : '';
             
             employeeData[userId].records.push({
                 [col.date]: record.date,
-                [col.inTime]: punchIn?.time || '-',
-                [col.inPlace]: punchIn?.location || '-',
-                [col.outTime]: punchOut?.time || '-',
-                [col.outPlace]: punchOut?.location || '-',
-                [col.workHours]: workHours,
+                [col.inTime]: reportTime(day.seg1 && day.seg1.in),
+                [col.outTime]: reportTime(day.seg1 && day.seg1.out),
+                [col.inTime2]: reportTime(day.seg2 && day.seg2.in),
+                [col.outTime2]: reportTime(day.seg2 && day.seg2.out),
+                [col.inPlace]: day.inPlace || '-',
+                [col.workHours]: day.hours > 0 ? day.hours.toFixed(2) : '-',
                 [col.status]: statusText,
-                [col.notes]: notes || '-'
+                [col.allPunches]: day.allPunches || '-',
+                [col.notes]: day.notes || '-'
             });
         });
         
@@ -106,16 +147,21 @@ async function exportAllEmployeesReport(monthKey) {
             const wscols = [
                 { wch: 12 },  // 日期
                 { wch: 10 },  // 上班時間
-                { wch: 20 },  // 上班地點
                 { wch: 10 },  // 下班時間
-                { wch: 20 },  // 下班地點
+                { wch: 12 },  // 上班時間（第二段）
+                { wch: 12 },  // 下班時間（第二段）
+                { wch: 16 },  // 地點
                 { wch: 10 },  // 工作時數
                 { wch: 15 },  // 狀態
-                { wch: 30 }   // 備註
+                { wch: 48 },  // 全部打卡
+                { wch: 20 }   // 備註
             ];
             ws['!cols'] = wscols;
             
-            const sheetName = employee.name.substring(0, 31);
+            // Excel 分頁名稱不能有 : \ / ? * [ ]、最多 31 字、不能重複（同名的兩個人以前會讓整份匯出失敗）
+            const base = (String(employee.name || userId).replace(/[:\\\/?*\[\]]/g, ' ').trim() || 'Sheet').substring(0, 28);
+            let sheetName = base;
+            for (let n = 2; wb.SheetNames.includes(sheetName); n++) sheetName = `${base} (${n})`.substring(0, 31);
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
         }
         
@@ -177,43 +223,20 @@ async function exportAttendanceReport(date) {
         const col = reportColumns();
         
         res.records.forEach(record => {
-            // 找出上班和下班的記錄
-            const punchIn = record.record.find(r => r.type === '上班');
-            const punchOut = record.record.find(r => r.type === '下班');
-            
-            // 計算工時
-            let workHours = '-';
-            if (punchIn && punchOut) {
-                try {
-                    const inTime = new Date(`${record.date} ${punchIn.time}`);
-                    const outTime = new Date(`${record.date} ${punchOut.time}`);
-                    const diffMs = outTime - inTime;
-                    const diffHours = (diffMs / (1000 * 60 * 60)).toFixed(2);
-                    workHours = diffHours > 0 ? diffHours : '-';
-                } catch (e) {
-                    console.error('計算工時失敗:', e);
-                    workHours = '-';
-                }
-            }
-            
-            // 翻譯狀態
+            const day = reportDayInfo(record);
             const statusText = t(record.reason) || record.reason;
-            
-            // 處理備註
-            const notes = record.record
-                .filter(r => r.note && r.note !== '系統虛擬卡')
-                .map(r => r.note)
-                .join('; ');
             
             exportData.push({
                 [col.date]: record.date,
-                [col.inTime]: punchIn?.time || '-',
-                [col.inPlace]: punchIn?.location || '-',
-                [col.outTime]: punchOut?.time || '-',
-                [col.outPlace]: punchOut?.location || '-',
-                [col.workHours]: workHours,
+                [col.inTime]: reportTime(day.seg1 && day.seg1.in),
+                [col.outTime]: reportTime(day.seg1 && day.seg1.out),
+                [col.inTime2]: reportTime(day.seg2 && day.seg2.in),
+                [col.outTime2]: reportTime(day.seg2 && day.seg2.out),
+                [col.inPlace]: day.inPlace || '-',
+                [col.workHours]: day.hours > 0 ? day.hours.toFixed(2) : '-',
                 [col.status]: statusText,
-                [col.notes]: notes || '-'
+                [col.allPunches]: day.allPunches || '-',
+                [col.notes]: day.notes || '-'
             });
         });
         
@@ -224,12 +247,14 @@ async function exportAttendanceReport(date) {
         const wscols = [
             { wch: 12 },  // 日期
             { wch: 10 },  // 上班時間
-            { wch: 20 },  // 上班地點
             { wch: 10 },  // 下班時間
-            { wch: 20 },  // 下班地點
+            { wch: 12 },  // 上班時間（第二段）
+            { wch: 12 },  // 下班時間（第二段）
+            { wch: 16 },  // 地點
             { wch: 10 },  // 工作時數
             { wch: 15 },  // 狀態
-            { wch: 30 }   // 備註
+            { wch: 48 },  // 全部打卡
+            { wch: 20 }   // 備註
         ];
         ws['!cols'] = wscols;
         
@@ -305,80 +330,28 @@ async function exportEmployeePunchReport() {
         const col = reportColumns();
         
         res.records.forEach(record => {
-            // 找出上班和下班的記錄
-            const punchInRecord = record.record ? record.record.find(r => r.type === '上班') : null;
-            const punchOutRecord = record.record ? record.record.find(r => r.type === '下班') : null;
-            
-            // 計算工時
+            const day = reportDayInfo(record);
             let workHours = '-';
-            let workHoursDecimal = 0;
-            let overtimeHours = 0;
-            let hasOvertime = false;
-
-            if (punchInRecord && punchOutRecord) {
-                try {
-                    // 使用完整的日期時間來計算
-                    const inTime = new Date(`${record.date} ${punchInRecord.time}`);
-                    const outTime = new Date(`${record.date} ${punchOutRecord.time}`);
-                    const diffMs = outTime - inTime;
-                    
-                    if (diffMs > 0) {
-                        // 計算總工時（小時）
-                        const totalHours = diffMs / (1000 * 60 * 60);
-                        
-                        // 扣除午休 1 小時
-                        const lunchBreak = 1;
-                        const netWorkHours = totalHours - lunchBreak;
-                        
-                        // 計算加班時數（超過標準工時 8 小時的部分）
-                        const standardWorkHours = 8;
-                        overtimeHours = Math.max(0, netWorkHours - standardWorkHours);
-                        
-                        // 格式化顯示
-                        workHoursDecimal = netWorkHours;
-                        const hours = Math.floor(netWorkHours);
-                        const minutes = Math.round((netWorkHours - hours) * 60);
-                        workHours = t('RPT_HOURS_MINUTES', { h: hours, m: minutes });
-                        
-                        // 標記是否有加班
-                        hasOvertime = overtimeHours > 0.5; // 超過 30 分鐘才算加班
-                        
-                        console.log(`工時計算:`, {
-                            date: record.date,
-                            總時長: totalHours.toFixed(2),
-                            扣除午休: lunchBreak,
-                            淨工時: netWorkHours.toFixed(2),
-                            加班時數: overtimeHours.toFixed(2)
-                        });
-                    }
-                } catch (e) {
-                    console.error('計算工時失敗:', e);
-                    workHours = t('RPT_CALC_ERROR');
-                }
+            if (day.hours > 0) {
+                const hours = Math.floor(day.hours);
+                const minutes = Math.round((day.hours - hours) * 60);
+                workHours = t('RPT_HOURS_MINUTES', { h: hours, m: minutes });
             }
-                        
-            // 翻譯狀態
             const statusText = t(record.reason) || record.reason;
-            
-            // 處理備註
-            const notes = record.record
-                ? record.record
-                    .filter(r => r.note && r.note !== '系統虛擬卡')
-                    .map(r => r.note)
-                    .join('; ')
-                : '';
             
             exportData.push({
                 [col.date]: record.date,
                 [col.weekday]: getDayOfWeek(record.date),
-                [col.inTime]: punchInRecord ? `${punchInRecord.time}:00` : '-',
-                [col.inPlace]: punchInRecord?.location || '-',
-                [col.outTime]: punchOutRecord ? `${punchOutRecord.time}:00` : '-',
-                [col.outPlace]: punchOutRecord?.location || '-',
+                [col.inTime]: reportTime(day.seg1 && day.seg1.in, true),
+                [col.outTime]: reportTime(day.seg1 && day.seg1.out, true),
+                [col.inTime2]: reportTime(day.seg2 && day.seg2.in, true),
+                [col.outTime2]: reportTime(day.seg2 && day.seg2.out, true),
+                [col.inPlace]: day.inPlace || '-',
                 [col.workHours]: workHours,
-                [col.hoursDecimal]: workHoursDecimal > 0 ? workHoursDecimal.toFixed(2) : '-',
+                [col.hoursDecimal]: day.hours > 0 ? day.hours.toFixed(2) : '-',
                 [col.status]: statusText,
-                [col.notes]: notes || '-'
+                [col.allPunches]: day.allPunches || '-',
+                [col.notes]: day.notes || '-'
             });
         });
         
@@ -397,9 +370,10 @@ async function exportEmployeePunchReport() {
             [col.date]: t('RPT_SUMMARY'),
             [col.weekday]: '',
             [col.inTime]: '',
-            [col.inPlace]: '',
             [col.outTime]: '',
-            [col.outPlace]: '',
+            [col.inTime2]: '',
+            [col.outTime2]: '',
+            [col.inPlace]: '',
             [col.workHours]: t('RPT_TOTAL_DAYS', { n: totalDays }),
             [col.hoursDecimal]: totalWorkHours.toFixed(2),
             [col.status]: t('RPT_AVERAGE', { n: avgWorkHours }),
@@ -414,13 +388,15 @@ async function exportEmployeePunchReport() {
             { wch: 12 },  // 日期
             { wch: 8 },   // 星期
             { wch: 12 },  // 上班時間
-            { wch: 25 },  // 上班地點
             { wch: 12 },  // 下班時間
-            { wch: 25 },  // 下班地點
+            { wch: 14 },  // 上班時間（第二段）
+            { wch: 14 },  // 下班時間（第二段）
+            { wch: 16 },  // 地點
             { wch: 15 },  // 工作時數
             { wch: 12 },  // 工時（小時）
             { wch: 18 },  // 狀態
-            { wch: 30 }   // 備註
+            { wch: 48 },  // 全部打卡
+            { wch: 20 }   // 備註
         ];
         ws['!cols'] = wscols;
         

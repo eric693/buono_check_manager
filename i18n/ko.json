@@ -1932,5 +1932,9 @@
   "DAILY_MANUAL_HINT": "(수동 조정됨. 출퇴근 기준으로는 종일 {full}일, 반일 {half}일)",
   "DAILY_DAYS_AUTO_HINT": "비워 두면 출퇴근 기록으로 자동 계산하고, 입력하면 그 일수로 계산합니다.",
   "PAYROLL_RULE_DAILY_FULL_HOURS": "일급 종일 기준(시간)",
-  "PAYROLL_RULE_DAILY_HALF_HOURS": "일급 반일 기준(시간)"
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "일급 반일 기준(시간)",
+  "RPT_IN_TIME_2": "출근(2번째)",
+  "RPT_OUT_TIME_2": "퇴근(2번째)",
+  "RPT_ALL_PUNCHES": "전체 출퇴근 기록",
+  "RPT_PUNCH_NOT_COUNTED": "(미승인, 미반영)"
 }

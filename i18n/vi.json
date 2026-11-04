@@ -1988,5 +1988,9 @@
   "DAILY_MANUAL_HINT": "(Đã chỉnh tay; theo chấm công là {full} ngày đủ, {half} nửa ngày)",
   "DAILY_DAYS_AUTO_HINT": "Để trống thì tự tính theo chấm công; nhập số thì dùng số đó.",
   "PAYROLL_RULE_DAILY_FULL_HOURS": "Lương ngày: ngưỡng cả ngày (giờ)",
-  "PAYROLL_RULE_DAILY_HALF_HOURS": "Lương ngày: ngưỡng nửa ngày (giờ)"
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "Lương ngày: ngưỡng nửa ngày (giờ)",
+  "RPT_IN_TIME_2": "Vào ca (lần 2)",
+  "RPT_OUT_TIME_2": "Ra ca (lần 2)",
+  "RPT_ALL_PUNCHES": "Tất cả lần chấm công",
+  "RPT_PUNCH_NOT_COUNTED": " (chưa duyệt, không tính)"
 }

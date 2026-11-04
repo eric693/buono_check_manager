@@ -2323,7 +2323,34 @@ async function exportAllSalaryExcel() {
         
         hideExportProgress();
         
-        //  修正：正確判斷成功
+        // 新版後端直接回傳資料：在瀏覽器產生 Excel，不在雲端硬碟留下公開的薪資檔
+        if (result.ok && Array.isArray(result.rows) && Array.isArray(result.headers)) {
+            await ensureLib('xlsx');
+            const ws = XLSX.utils.aoa_to_sheet([result.headers, ...result.rows]);
+            // 銀行代碼、帳號存成文字，Excel 才不會吃掉前面的 0
+            result.headers.forEach((h, c) => {
+                if (h !== '銀行代碼' && h !== '銀行帳號') return;
+                result.rows.forEach((row, r) => {
+                    const ref = XLSX.utils.encode_cell({ r: r + 1, c: c });
+                    if (ws[ref] && row[c] !== '' && row[c] !== null) ws[ref] = { t: 's', v: String(row[c]) };
+                });
+            });
+            ws['!cols'] = result.headers.map(h => ({ wch: Math.max(8, String(h).length * 2 + 2) }));
+            ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '薪資明細');
+            XLSX.writeFile(wb, `${result.fileName || ('薪資總表_' + yearMonth)}.xlsx`);
+            showNotification(
+                t('SALARY_EXPORT_SUCCESS_MSG', {
+                    file: result.fileName || t('SALARY_EXPORT_DEFAULT_NAME'),
+                    count: result.recordCount || 0
+                }),
+                'success'
+            );
+            return;
+        }
+        
+        //  舊版後端：開啟雲端硬碟的下載連結
         if (result.ok && result.fileUrl) {
             // 成功：開啟下載連結
             const url = safeHttpUrl(result.fileUrl);

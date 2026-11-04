@@ -443,7 +443,25 @@ function getMonthlySalarySheetEnhanced() {
 const MONTHLY_SALARY_HOUR_COLUMNS = ['時薪', '工作時數', '總加班時數', '病假時數', '事假時數'];
 const MONTHLY_SALARY_TEXT_COLUMNS = ['薪資單ID', '員工ID', '員工姓名', '年月', '薪資類型', '銀行代碼', '銀行帳號',
                                      '狀態', '備註', '建立時間', MONTHLY_CUSTOM_DETAIL_COLUMN, '全勤說明', '薪資單備註', '計薪調整'];
-const MONTHLY_SALARY_FORMAT_VERSION = '1';
+const MONTHLY_SALARY_FORMAT_VERSION = '2';
+
+/**
+ * 銀行代碼補回前面的 0。代碼都是 3 碼（台銀 004、郵局 700、國泰 013…），
+ * 但試算表會把「007」這種文字當數字存，變成 7。
+ */
+function normalizeBankCode_(value) {
+  const text = String(value === null || value === undefined ? '' : value).trim();
+  return /^\d{1,2}$/.test(text) ? text.padStart(3, '0') : text;
+}
+
+/** 銀行代碼、帳號兩格設成純文字，前面的 0 才不會被吃掉（設定表的 M、N 欄） */
+function setBankColumnsAsText_(sheet, row, firstCol) {
+  try {
+    sheet.getRange(row, firstCol, 1, 2).setNumberFormat('@');
+  } catch (error) {
+    Logger.log(' 設定銀行欄位文字格式失敗: ' + error);
+  }
+}
 
 /**
  * 把金額、時數欄固定成數字格式。
@@ -461,6 +479,11 @@ function ensureMonthlySalaryNumberFormats_(sheet) {
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
     const rows = Math.max(sheet.getMaxRows() - 1, 1);
     headers.forEach((header, i) => {
+      // 銀行代碼、帳號：純文字，前面的 0 才會留著
+      if (header === '銀行代碼' || header === '銀行帳號') {
+        sheet.getRange(2, i + 1, rows, 1).setNumberFormat('@');
+        return;
+      }
       if (!header || MONTHLY_SALARY_TEXT_COLUMNS.indexOf(header) !== -1) return;
       const format = MONTHLY_SALARY_HOUR_COLUMNS.indexOf(header) !== -1 ? '0.00' : '#,##0';
       sheet.getRange(2, i + 1, rows, 1).setNumberFormat(format);
@@ -573,7 +596,7 @@ function setEmployeeSalaryTW(salaryData) {
       toNumber(salaryData.otherAllowances) || 0,       // L: 其他津貼
       
       // M-P: 銀行資訊 (4欄)
-      String(salaryData.bankCode || "").trim(),          // M: 銀行代碼
+      normalizeBankCode_(salaryData.bankCode),          // M: 銀行代碼（補回前面的 0）
       String(salaryData.bankAccount || "").trim(),       // N: 銀行帳號
       salaryData.hireDate || "",                         // O: 到職日期
       String(salaryData.paymentDay || "5").trim(),       // P: 發薪日
@@ -616,6 +639,7 @@ function setEmployeeSalaryTW(salaryData) {
     }
     
     if (rowIndex > 0) {
+      setBankColumnsAsText_(sheet, rowIndex, 13);
       sheet.getRange(rowIndex, 1, 1, row.length).setValues([row]);
       Logger.log(` 更新員工薪資設定: ${salaryData.employeeName} (列 ${rowIndex})`);
       // 同一個人重複的設定列（以前測試時留下的）一起清掉，只留這一列；從下往上刪，列號才不會跑掉
@@ -623,7 +647,9 @@ function setEmployeeSalaryTW(salaryData) {
         if (String(data[i][0]).trim() === String(salaryData.employeeId).trim()) sheet.deleteRow(i + 1);
       }
     } else {
-      sheet.appendRow(row);
+      const newRow = sheet.getLastRow() + 1;
+      setBankColumnsAsText_(sheet, newRow, 13);
+      sheet.getRange(newRow, 1, 1, row.length).setValues([row]);
       Logger.log(` 新增員工薪資設定: ${salaryData.employeeName}`);
     }
     
@@ -677,6 +703,8 @@ function getEmployeeSalaryTW(employeeId) {
         headers.forEach((header, index) => {
           salaryConfig[header] = data[i][index];
         });
+        if (salaryConfig['銀行代碼'] !== undefined) salaryConfig['銀行代碼'] = normalizeBankCode_(salaryConfig['銀行代碼']);
+        if (salaryConfig['銀行帳號'] !== undefined && salaryConfig['銀行帳號'] !== '') salaryConfig['銀行帳號'] = String(salaryConfig['銀行帳號']);
         
         return { success: true, data: salaryConfig };
       }
@@ -986,8 +1014,8 @@ function saveMonthlySalary(salaryData) {
       salaryData.netSalary || salaryData['實發金額'] || 0,               // AJ (col 36)
       
       // === 銀行資訊（2欄：AK-AL）===
-      salaryData.bankCode || salaryData['銀行代碼'] || "",               // AK (col 37)
-      salaryData.bankAccount || salaryData['銀行帳號'] || "",            // AL (col 38)
+      normalizeBankCode_(salaryData.bankCode || salaryData['銀行代碼'] || ""),   // AK (col 37)
+      String(salaryData.bankAccount || salaryData['銀行帳號'] || ""),            // AL (col 38)
       
       // === 系統欄位（3欄：AM-AO）===
       salaryData.status || salaryData['狀態'] || "已計算",               // AM (col 39)
@@ -2783,62 +2811,59 @@ function exportAllSalaryExcel() {
       return jsonResponse(false, null, `${yearMonth} 沒有薪資記錄`, 'NO_RECORDS_FOR_MONTH');
     }
     
-    // 建立新的試算表
-    const spreadsheet = SpreadsheetApp.create(`薪資總表_${yearMonth}`);
-    const sheet = spreadsheet.getActiveSheet();
-    sheet.setName('薪資明細');
-    
-    // 標題直接用「月薪資記錄」自己的第一列。以前這裡另外寫了一份 35 欄的標題，
-    // 跟實際欄位差了好幾格（少了國定假日出勤薪資、早退扣款…），匯出來整排對不上。
-    // 「計薪調整」是給系統重算用的 JSON，不匯出。
+    // 標題直接用「月薪資記錄」自己的第一列；「計薪調整」是給系統重算用的 JSON，不匯出。
     const sourceHeaders = salarySheet.getRange(1, 1, 1, salarySheet.getLastColumn()).getValues()[0]
                                      .map(h => String(h).trim());
     const exportColumns = [];
     sourceHeaders.forEach((h, i) => {
       if (h && h !== PAYROLL_ADJUSTMENTS_COLUMN) exportColumns.push(i);
     });
+    const adjustCol = sourceHeaders.indexOf(PAYROLL_ADJUSTMENTS_COLUMN);
+    const typeCol = sourceHeaders.indexOf('薪資類型');
+    const hasDaily = records.some(row => String(row[typeCol] || '').trim() === '日薪');
+
+    // 以前是另外建一份 Google 試算表、設成「知道連結的人都能看」再給下載連結：
+    // 全公司的薪資與銀行帳號變成公開檔案，而且每匯出一次就在雲端硬碟多一份。
+    // 改成把資料傳回去，由瀏覽器直接產生 Excel，不留任何檔案。
+    //
+    // 金額欄有些被試算表設成日期格式，讀出來是日期（例如 1900/1/1），一律轉回數字；
+    // 年月、時間欄才保留成文字。
+    const textDateColumns = { '年月': 'yyyy-MM', '建立時間': 'yyyy-MM-dd HH:mm', '簽收時間': 'yyyy-MM-dd HH:mm' };
+    const tz = 'Asia/Taipei';
     const headers = exportColumns.map(i => sourceHeaders[i]);
-    
-    // 寫入標題列
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    
-    // 格式化標題列
-    const headerRange = sheet.getRange(1, 1, 1, headers.length);
-    headerRange.setBackground('#4a5568');
-    headerRange.setFontColor('#ffffff');
-    headerRange.setFontWeight('bold');
-    headerRange.setHorizontalAlignment('center');
-    
-    // 寫入資料
-    if (records.length > 0) {
-      const dataToWrite = records.map(row => exportColumns.map(i => row[i] === undefined ? '' : row[i]));
-      
-      sheet.getRange(2, 1, dataToWrite.length, headers.length).setValues(dataToWrite);
-      Logger.log(` 已寫入 ${dataToWrite.length} 筆資料`);
-    }
-    
-    // 自動調整欄寬
-    for (let i = 1; i <= headers.length; i++) {
-      sheet.autoResizeColumn(i);
-    }
-    
-    // 凍結標題列
-    sheet.setFrozenRows(1);
-    
-    // 取得下載連結
-    const fileId = spreadsheet.getId();
-    const downloadUrl = getSpreadsheetExportUrl_(spreadsheet);
-    
-    Logger.log(' Excel 已生成');
-    Logger.log(' 檔案 ID: ' + fileId);
-    Logger.log(' 下載連結: ' + downloadUrl);
-    
+    if (hasDaily) headers.push('整日天數', '半日天數');
+
+    const rows = records.map(row => {
+      const out = exportColumns.map(i => {
+        const header = sourceHeaders[i];
+        const value = row[i];
+        if (value === undefined || value === null) return '';
+        const isDate = value instanceof Date || Object.prototype.toString.call(value) === '[object Date]';
+        if (isDate) {
+          if (textDateColumns[header]) return Utilities.formatDate(value, tz, textDateColumns[header]);
+          return (typeof sheetNumber_ === 'function') ? sheetNumber_(value) : Number(value) || 0;
+        }
+        if (header === '銀行代碼') return normalizeBankCode_(value);
+        if (header === '銀行帳號') return String(value);
+        return value;
+      });
+      if (hasDaily) {
+        let daily = null;
+        try {
+          const saved = adjustCol === -1 ? null : JSON.parse(String(row[adjustCol] || '') || 'null');
+          daily = saved && saved.messages && saved.messages.dailyWage;
+        } catch (error) { daily = null; }
+        out.push(daily ? daily.fullDays : '', daily ? daily.halfDays : '');
+      }
+      return out;
+    });
+
     return jsonResponse(true, {
-      fileUrl: downloadUrl,
-      fileId: fileId,
       fileName: `薪資總表_${yearMonth}`,
-      recordCount: records.length
-    }, '薪資總表已生成');
+      recordCount: rows.length,
+      headers: headers,
+      rows: rows
+    }, '薪資總表已產生');
     
   } catch (error) {
     Logger.log(' exportAllSalaryExcel 錯誤: ' + error.toString());

@@ -1278,9 +1278,15 @@ function convertToCSV(data) {
         shift.note || ''
     ]);
     
+    // 儲存格裡的雙引號要變兩個，否則備註有 " 整列就錯位；= + - @ 開頭加單引號，避免 Excel 當公式執行
+    const cellText = cell => {
+        let text = String(cell ?? '');
+        if (/^[=+\-@]/.test(text)) text = "'" + text;
+        return `"${text.replace(/"/g, '""')}"`;
+    };
     const csvContent = [headers, ...rows]
-        .map(row => row.map(cell => `"${cell}"`).join(','))
-        .join('\n');
+        .map(row => row.map(cellText).join(','))
+        .join('\r\n');
     
     return '\ufeff' + csvContent;
 }

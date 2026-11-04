@@ -1983,5 +1983,9 @@
   "DAILY_MANUAL_HINT": "（已手動調整，依打卡判斷是整日 {full} 天、半日 {half} 天）",
   "DAILY_DAYS_AUTO_HINT": "留白就依打卡工時自動判斷；填了就以你填的天數計算。",
   "PAYROLL_RULE_DAILY_FULL_HOURS": "日薪整日門檻（小時）",
-  "PAYROLL_RULE_DAILY_HALF_HOURS": "日薪半日門檻（小時）"
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "日薪半日門檻（小時）",
+  "RPT_IN_TIME_2": "上班時間（第二段）",
+  "RPT_OUT_TIME_2": "下班時間（第二段）",
+  "RPT_ALL_PUNCHES": "全部打卡",
+  "RPT_PUNCH_NOT_COUNTED": "（未核准，不計）"
 }

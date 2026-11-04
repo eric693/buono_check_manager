@@ -86,7 +86,8 @@ const DEPLOY_CHECKS = [
                             String(writeSession_).indexOf('createSessionForUser_') !== -1 &&
                             String(punchAdjusted).indexOf('ERR_ADJUST_PUNCH_LIMIT') !== -1 &&
                             typeof updateReviewStatusLocked_ === 'function' &&
-                            String(updateReviewStatusLocked_).indexOf('ERR_REVIEW_STALE') !== -1],
+                            String(updateReviewStatusLocked_).indexOf('ERR_REVIEW_STALE') !== -1 &&
+                            String(getAttendanceDetails).indexOf('computeDayWorkFromPunches_') !== -1],
   ['EmployeeSheetRepair.gs', () => typeof readOriginalLockedNames_ === 'function'],
   ['Expense.gs', () => typeof handleReviewExpense === 'function'],
   ['Handlers.gs', () => typeof handleGetLoginUrl === 'function' && handleGetLoginUrl.length >= 1 &&
@@ -125,7 +126,8 @@ const DEPLOY_CHECKS = [
                                  typeof ensureMonthlySalaryNumberFormats_ === 'function' &&
                                  String(getMySalary).indexOf('readPublishedPayslip_') !== -1 &&
                                  String(setEmployeeSalaryTW).indexOf('deleteRow') !== -1 &&
-                                 typeof calculateDailyWageSalary_ === 'function'],
+                                 typeof calculateDailyWageSalary_ === 'function' &&
+                                 typeof normalizeBankCode_ === 'function' && String(exportAllSalaryExcel).indexOf('rows: rows') !== -1],
   ['SalaryTools.gs', () => typeof listPayableEmployees_ === 'function' &&
                             String(handleBatchCalculateSalary).indexOf('readManualPayslip_') !== -1 &&
                             typeof handleDeleteSalaryConfig === 'function'],
@@ -134,11 +136,11 @@ const DEPLOY_CHECKS = [
   ['SystemSettings.gs', () => typeof validatePayrollRules_ === 'function' && DEFAULT_PAYROLL_RULES.dailyFullDayHours > 0],
   ['Utils.gs', () => typeof getParam === 'function' && typeof getSheetValues_ === 'function'],
   ['WorklogHandlers.gs', () => typeof handleSubmitWorklog === 'function'],
-  ['WorklogOperations.gs', () => typeof getWorklogSheet === 'function']
+  ['WorklogOperations.gs', () => typeof getWorklogSheet === 'function' && String(getAllWorklogReport).indexOf('getEmployeeNameMap_') !== -1]
 ];
 
 // 每次後端有更新就改這個日期，健康檢查會回報，從外面就知道正式區部署到哪一版
-const BACKEND_VERSION = '2026-11-03a';
+const BACKEND_VERSION = '2026-11-04b';
 
 function handleHealthCheck() {
   const problems = [];
@@ -545,11 +547,13 @@ function doGet(e) {
             Logger.log(' 解析後的結果: ' + JSON.stringify(resultJson));
             
             if (resultJson.ok) {
+              // 資料直接回給瀏覽器產生 Excel（見 SalaryManagement.gs 的 exportAllSalaryExcel）
               return respond1({ 
                 ok: true, 
-                fileUrl: resultJson.data.fileUrl,
                 fileName: resultJson.data.fileName,
                 recordCount: resultJson.data.recordCount,
+                headers: resultJson.data.headers,
+                rows: resultJson.data.rows,
                 msg: '匯出成功'
               });
             } else {

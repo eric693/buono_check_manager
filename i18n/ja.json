@@ -1932,5 +1932,9 @@
   "DAILY_MANUAL_HINT": "（手動で調整済み。打刻による判定は全日 {full} 日、半日 {half} 日）",
   "DAILY_DAYS_AUTO_HINT": "空欄なら打刻時間から自動判定、入力すればその日数で計算します。",
   "PAYROLL_RULE_DAILY_FULL_HOURS": "日給 全日の基準（時間）",
-  "PAYROLL_RULE_DAILY_HALF_HOURS": "日給 半日の基準（時間）"
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "日給 半日の基準（時間）",
+  "RPT_IN_TIME_2": "出勤（2回目）",
+  "RPT_OUT_TIME_2": "退勤（2回目）",
+  "RPT_ALL_PUNCHES": "すべての打刻",
+  "RPT_PUNCH_NOT_COUNTED": "（未承認・計算外）"
 }
