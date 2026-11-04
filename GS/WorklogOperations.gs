@@ -538,7 +538,8 @@ function getAllWorklogReport(yearMonth) {
         worklogs.push({
           id: data[i][0],
           userId: data[i][1],
-          userName: data[i][2],
+          // 用目前的姓名（員工改過真實姓名後，舊日誌上存的還是當時的 LINE 名稱）
+          userName: (typeof getEmployeeNameMap_ === 'function' && getEmployeeNameMap_()[String(data[i][1]).trim()]) || data[i][2],
           department: data[i][3],
           date: formattedDate,
           hours: parseFloat(data[i][5]) || 0,

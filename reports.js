@@ -158,7 +158,10 @@ async function exportAllEmployeesReport(monthKey) {
             ];
             ws['!cols'] = wscols;
             
-            const sheetName = employee.name.substring(0, 31);
+            // Excel 分頁名稱不能有 : \ / ? * [ ]、最多 31 字、不能重複（同名的兩個人以前會讓整份匯出失敗）
+            const base = (String(employee.name || userId).replace(/[:\\\/?*\[\]]/g, ' ').trim() || 'Sheet').substring(0, 28);
+            let sheetName = base;
+            for (let n = 2; wb.SheetNames.includes(sheetName); n++) sheetName = `${base} (${n})`.substring(0, 31);
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
         }
         
