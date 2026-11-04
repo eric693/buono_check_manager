@@ -1932,5 +1932,9 @@
   "DAILY_MANUAL_HINT": "(Diubah manual; menurut absen {full} hari penuh, {half} setengah hari)",
   "DAILY_DAYS_AUTO_HINT": "Kosongkan untuk dihitung dari absen; jika diisi, angka itu yang dipakai.",
   "PAYROLL_RULE_DAILY_FULL_HOURS": "Harian: batas hari penuh (jam)",
-  "PAYROLL_RULE_DAILY_HALF_HOURS": "Harian: batas setengah hari (jam)"
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "Harian: batas setengah hari (jam)",
+  "RPT_IN_TIME_2": "Masuk (ke-2)",
+  "RPT_OUT_TIME_2": "Pulang (ke-2)",
+  "RPT_ALL_PUNCHES": "Semua absen",
+  "RPT_PUNCH_NOT_COUNTED": " (belum disetujui, tidak dihitung)"
 }

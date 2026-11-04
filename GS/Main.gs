@@ -86,7 +86,8 @@ const DEPLOY_CHECKS = [
                             String(writeSession_).indexOf('createSessionForUser_') !== -1 &&
                             String(punchAdjusted).indexOf('ERR_ADJUST_PUNCH_LIMIT') !== -1 &&
                             typeof updateReviewStatusLocked_ === 'function' &&
-                            String(updateReviewStatusLocked_).indexOf('ERR_REVIEW_STALE') !== -1],
+                            String(updateReviewStatusLocked_).indexOf('ERR_REVIEW_STALE') !== -1 &&
+                            String(getAttendanceDetails).indexOf('computeDayWorkFromPunches_') !== -1],
   ['EmployeeSheetRepair.gs', () => typeof readOriginalLockedNames_ === 'function'],
   ['Expense.gs', () => typeof handleReviewExpense === 'function'],
   ['Handlers.gs', () => typeof handleGetLoginUrl === 'function' && handleGetLoginUrl.length >= 1 &&
@@ -138,7 +139,7 @@ const DEPLOY_CHECKS = [
 ];
 
 // 每次後端有更新就改這個日期，健康檢查會回報，從外面就知道正式區部署到哪一版
-const BACKEND_VERSION = '2026-11-03a';
+const BACKEND_VERSION = '2026-11-04a';
 
 function handleHealthCheck() {
   const problems = [];

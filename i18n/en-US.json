@@ -1957,5 +1957,9 @@
   "DAILY_MANUAL_HINT": "(Adjusted by hand; punches give {full} full and {half} half days)",
   "DAILY_DAYS_AUTO_HINT": "Leave blank to count from punches; a number you enter is used instead.",
   "PAYROLL_RULE_DAILY_FULL_HOURS": "Daily wage: full-day hours",
-  "PAYROLL_RULE_DAILY_HALF_HOURS": "Daily wage: half-day hours"
+  "PAYROLL_RULE_DAILY_HALF_HOURS": "Daily wage: half-day hours",
+  "RPT_IN_TIME_2": "In (2nd shift)",
+  "RPT_OUT_TIME_2": "Out (2nd shift)",
+  "RPT_ALL_PUNCHES": "All punches",
+  "RPT_PUNCH_NOT_COUNTED": " (not approved, not counted)"
 }

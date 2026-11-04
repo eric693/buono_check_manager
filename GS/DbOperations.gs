@@ -668,6 +668,11 @@ function getAttendanceDetails(monthParam, userIdParam) {
           note: r.note || '',
           audit: r.audit || ''   // 補打卡要核准（v）才算數，判斷當天有沒有少打卡時要用
         });
+        // 算工時用：跟薪資同一支 computeDayWorkFromPunches_（一天兩組上下班、扣排班休息）
+        if (r.note !== '補打卡' || r.audit === 'v') {
+          (dailyRecords[dateKey]._punches = dailyRecords[dateKey]._punches || [])
+            .push({ type: r.type, time: r.date instanceof Date ? r.date : new Date(r.date) });
+        }
       }
     });
     
@@ -745,6 +750,27 @@ function getAttendanceDetails(monthParam, userIdParam) {
           daily.reason = 'STATUS_PUNCH_OUT_MISSING';
         }
       }
+    });
+    
+    // 每天的工作段與工時：匯出報表以前只取第一張上班卡、第一張下班卡，兩頭班的第二段整個不見，
+    // 工時也只是兩張卡相減。改成跟薪資計算一樣配對所有的卡，再扣排班的休息時間
+    const shiftMaps = {};
+    Object.keys(dailyRecords).forEach(dateKey => {
+      const daily = dailyRecords[dateKey];
+      const punches = (daily._punches || []).filter(p => !isNaN(p.time.getTime())).sort((a, b) => a.time - b.time);
+      delete daily._punches;
+      const uid = String(daily.userId || '').trim();
+      let shift = null;
+      if (uid && typeof getEmployeeShiftMapForMonth === 'function') {
+        if (!shiftMaps[uid]) {
+          try { shiftMaps[uid] = getEmployeeShiftMapForMonth(uid, monthParam) || {}; } catch (e) { shiftMaps[uid] = {}; }
+        }
+        shift = shiftMaps[uid][daily.date] || null;
+      }
+      const work = computeDayWorkFromPunches_(punches, shift);
+      daily.segments = work.segments;
+      daily.unpaired = work.unpaired;
+      daily.workHours = Math.round(work.netMinutes / 60 * 100) / 100;
     });
     
     //  修正：轉換為陣列並排序（確保所有 date 都存在）
